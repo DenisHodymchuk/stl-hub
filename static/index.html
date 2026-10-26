@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="uk" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STL-HUB — Візуальний пошук 3D-моделей на 6 сайтах</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'] },
+          colors: {
+            bambu: {
+              DEFAULT: '#00AE42',
+              hover: '#00993A',
+              light: '#E6F7ED',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --bg-base: #F5F6F7;
+      --bg-surface: #FFFFFF;
+      --bg-elevated: #F0F2F5;
+      --text-primary: #242424;
+      --text-secondary: #595959;
+      --text-muted: #8C8C8C;
+      --border-color: #E5E7EB;
+      --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      --card-hover-shadow: 0 8px 20px rgba(0, 0, 0, 0.10);
+    }
+    html.dark {
+      --bg-base: #121212;
+      --bg-surface: #1C1C1E;
+      --bg-elevated: #262629;
+      --text-primary: #F2F2F2;
+      --text-secondary: #A6A6A6;
+      --text-muted: #737373;
+      --border-color: #2E2E32;
+      --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      --card-hover-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-primary);
+      min-height: 100vh;
+      transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .mw-surface {
+      background-color: var(--bg-surface);
+      border-color: var(--border-color);
+    }
+    .mw-elevated {
+      background-color: var(--bg-elevated);
+      border-color: var(--border-color);
+    }
+    .mw-text-primary { color: var(--text-primary); }
+    .mw-text-secondary { color: var(--text-secondary); }
+    .mw-text-muted { color: var(--text-muted); }
+    .mw-border { border-color: var(--border-color); }
+
+    /* MakerWorld Card Style — GPU optimized for 120fps scrolling */
+    .mw-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      box-shadow: var(--card-shadow);
+      content-visibility: auto;
+      contain-intrinsic-size: 0 295px;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+    }
+    .mw-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--card-hover-shadow);
+      border-color: #00AE42;
+    }
+
+    /* MakerWorld Pill Search Input */
+    .mw-search-bar {
+      background-color: var(--bg-elevated);
+      border: 1.5px solid var(--border-color);
+      border-radius: 9999px;
+      transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .mw-search-bar:focus-within {
+      border-color: #00AE42;
+      background-color: var(--bg-surface);
+      box-shadow: 0 0 0 3px rgba(0, 174, 66, 0.15);
+    }
+
+    .drop-active {
+      border-color: #00AE42 !important;
+      background-color: rgba(0, 174, 66, 0.08) !important;
+    }
+
+    /* STL-HUB Platform Filter Pills — Zero scrollbars, crisp layout */
+    .hub-filter-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 13px;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background-color: var(--bg-elevated);
+      border: 1px solid var(--border-color);
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .hub-filter-pill:hover {
+      color: var(--text-primary);
+      border-color: #00AE42;
+    }
+    .hub-filter-pill.active {
+      background-color: #00AE42;
+      color: #FFFFFF;
+      border-color: #00AE42;
+      box-shadow: 0 2px 10px rgba(0, 174, 66, 0.25);
+    }
+    .hub-filter-count {
+      padding: 1px 7px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      background-color: rgba(0, 0, 0, 0.18);
+      color: inherit;
+    }
+    .hub-filter-pill.active .hub-filter-count {
+      background-color: rgba(0, 0, 0, 0.28);
+      color: #FFFFFF;
+    }
+
+    /* Custom Dropdowns & Modern Switch */
+    .hub-dropdown-btn {
+      height: 36px;
+      padding: 0 13px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+      background-color: var(--bg-elevated);
+      border: 1px solid var(--border-color);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+    .hub-dropdown-btn:hover, .hub-dropdown-btn.open {
+      border-color: #00AE42;
+      background-color: var(--bg-surface);
+    }
+    .hub-dropdown-menu {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 6px);
+      min-width: 190px;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 5px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+      z-index: 50;
+    }
+    .hub-dropdown-item {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 11px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: all 0.12s ease;
+      text-align: left;
+      cursor: pointer;
+    }
+    .hub-dropdown-item:hover {
+      background-color: var(--bg-elevated);
+      color: var(--text-primary);
+    }
+    .hub-dropdown-item.selected {
+      background-color: rgba(0, 174, 66, 0.14);
+      color: #00AE42;
+      font-weight: 700;
+    }
+
+    /* Modern Toggle Switch */
+    .hub-switch-track {
+      width: 34px;
+      height: 19px;
+      background-color: var(--border-color);
+      border-radius: 9999px;
+      position: relative;
+      transition: background-color 0.18s ease;
+    }
+    .hub-switch-thumb {
+      width: 15px;
+      height: 15px;
+      background-color: #FFFFFF;
+      border-radius: 50%;
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.18s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+    input:checked + .hub-switch-track {
+      background-color: #00AE42;
+    }
+    input:checked + .hub-switch-track .hub-switch-thumb {
+      transform: translateX(15px);
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-[#00AE42] selection:text-white">
+
+  <!-- MakerWorld-Style Top Header -->
+  <header class="sticky top-0 z-40 mw-surface border-b">
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-[68px] flex items-center justify-between gap-4">
+
+      <!-- Left: STL-HUB Custom Original Brand Logo (3D Isometric Wireframe Cube inside Camera Viewfinder Brackets) -->
+      <a href="/" class="flex items-center gap-3 shrink-0 group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00C853] to-[#008C35] flex items-center justify-center text-white shadow-md shadow-[#00AE42]/20 group-hover:scale-105 transition-transform">
+          <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Camera Lens Viewfinder Corner Brackets -->
+            <path d="M3 8V5C3 3.89543 3.89543 3 5 3H8" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M20 3H23C24.1046 3 25 3.89543 25 5V8" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M25 20V23C25 24.1046 24.1046 25 23 25H20" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M8 25H5C3.89543 25 3 24.1046 3 23V20" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+            <!-- 3D Isometric Mesh Cube in Center -->
+            <path d="M14 7.5L20 11V17L14 20.5L8 17V11L14 7.5Z" fill="white" fill-opacity="0.22" stroke="white" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M8 11L14 14.5L20 11" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14 14.5V20.5" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="flex flex-col">
+          <div class="flex items-center gap-1.5">
+            <span class="font-extrabold text-xl tracking-tight mw-text-primary">STL<span class="text-[#00AE42]">-HUB</span></span>
+          </div>
+          <span class="text-[11px] mw-text-muted hidden sm:block leading-none mt-0.5">Пошук 3D-моделей по фото</span>
+        </div>
+      </a>
+
+      <!-- Center: MakerWorld-Style Omni Search Bar with Embedded Photo Thumbnail & Camera Popover -->
+      <div class="relative flex-1 max-w-2xl">
+        <div class="mw-search-bar h-11 px-3.5 flex items-center gap-2.5">
+          <!-- Search Icon -->
+          <button onclick="triggerCurrentSearch()" class="mw-text-secondary hover:text-[#00AE42] transition shrink-0" title="Шукати">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
+
+          <!-- Uploaded Photo Pill Inside Search Bar (Just like MakerWorld screenshot 3!) -->
+          <div id="searchBarPhotoChip" class="hidden items-center gap-1.5 pl-1 pr-2 py-0.5 rounded-md mw-surface border text-xs shrink-0 cursor-pointer" onclick="toggleUploadPopover(true)" title="Натисніть, щоб переглянути або змінити фото">
+            <img id="searchBarThumb" src="" alt="Photo" class="w-7 h-6 object-cover rounded" />
+            <span class="text-[11px] font-semibold text-[#00AE42] hidden sm:inline">Фото</span>
+            <button type="button" onclick="clearImage(event)" class="mw-text-muted hover:text-red-500 ml-0.5 font-bold" title="Скинути фото">✕</button>
+          </div>
+
+          <!-- Text Input -->
+          <input id="manualQueryInput"
+                 type="text"
+                 placeholder="Пошук 3D-моделей або вставте фото (Ctrl+V)..."
+                 oninput="document.getElementById('clearTextBtn').classList.toggle('hidden', !this.value)"
+                 onkeydown="if(event.key==='Enter') runTextSearch(this.value)"
+                 class="flex-1 bg-transparent text-sm mw-text-primary placeholder:text-neutral-500 focus:outline-none min-w-0" />
+
+          <!-- Clear Text Button (Shown only when input has text) -->
+          <button id="clearTextBtn" onclick="const inp=document.getElementById('manualQueryInput'); inp.value=''; this.classList.add('hidden'); inp.focus();"
+                  class="hidden mw-text-muted hover:mw-text-primary text-xs px-1.5 py-0.5 rounded hover:bg-neutral-700/30 transition" title="Очистити">
+            ✕
+          </button>
+
+          <div class="h-5 w-[1px] bg-neutral-700/40"></div>
+
+          <!-- Camera Button (MakerWorld Image Search Trigger) -->
+          <button onclick="toggleUploadPopover()"
+                  class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#00AE42]/15 hover:bg-[#00AE42] text-[#00AE42] hover:text-white text-xs font-bold transition shrink-0"
+                  title="Пошук 3D-моделі по фото">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span class="hidden md:inline">Пошук по фото</span>
+          </button>
+        </div>
+
+        <!-- MakerWorld-Style Camera Upload Dropdown Popover -->
+        <div id="uploadPopover" class="hidden absolute left-0 right-0 top-[52px] z-50 mw-surface border rounded-2xl shadow-2xl p-5">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#00AE42]"></span>
+              <h3 class="text-sm font-bold mw-text-primary">Візуальний пошук 3D-моделі по зображенню</h3>
+              <span class="text-xs mw-text-muted">(або просто натисніть <kbd class="px-1.5 py-0.5 rounded mw-elevated border text-[11px]">Ctrl+V</kbd>)</span>
+            </div>
+            <button onclick="toggleUploadPopover(false)" class="mw-text-muted hover:mw-text-primary text-sm font-bold px-2">✕</button>
+          </div>
+
+          <!-- Dropzone inside Popover -->
+          <div id="dropzone"
+               onclick="document.getElementById('fileInput').click()"
+               class="border-2 border-dashed mw-border hover:border-[#00AE42] rounded-xl p-6 text-center cursor-pointer transition mw-elevated min-h-[175px] flex flex-col items-center justify-center">
+            <input id="fileInput" type="file" accept="image/*" class="hidden" onchange="handleFileSelect(event)" />
+
+            <div id="uploadEmptyState" class="space-y-2">
+              <div class="w-12 h-12 mx-auto rounded-xl bg-[#00AE42]/15 text-[#00AE42] flex items-center justify-center">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <p class="text-sm font-semibold mw-text-primary">
+                Перетягніть зображення сюди або <span class="text-[#00AE42] underline">оберіть файл</span>
+              </p>
+              <p class="text-xs mw-text-muted">Підтримуються JPG, PNG, WEBP або скріншот з буфера обміну (Ctrl+V)</p>
+            </div>
+
+            <div id="uploadPreviewState" class="hidden w-full">
+              <div class="relative mx-auto max-h-44 overflow-hidden rounded-lg flex items-center justify-center">
+                <img id="previewImage" src="" alt="Preview" class="max-h-40 object-contain mx-auto rounded-lg" />
+              </div>
+              <p id="previewFileName" class="text-xs mw-text-muted mt-2 truncate"></p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-3">
+            <input id="imageUrlInput" type="url" placeholder="Або вставте URL картинки (https://...)"
+                   oninput="handleUrlInput()"
+                   class="px-3 py-2 rounded-lg mw-elevated border text-xs mw-text-primary focus:outline-none focus:border-[#00AE42]" />
+            <input id="hintInput" type="text" placeholder="Уточнення (необов'язково, напр.: ручка дверей)"
+                   class="px-3 py-2 rounded-lg mw-elevated border text-xs mw-text-primary focus:outline-none focus:border-[#00AE42]" />
+          </div>
+
+          <button id="searchBtn" onclick="startPhotoSearch()"
+                  class="w-full mt-3 py-2.5 px-4 rounded-lg bg-[#00AE42] hover:bg-[#00993A] text-white font-bold text-sm shadow flex items-center justify-center gap-2 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <span>Знайти візуально схожі моделі на 6 сайтах</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Controls: Theme Switcher (Light/Dark) -->
+      <div class="flex items-center gap-2 shrink-0">
+        <button onclick="toggleTheme()" class="p-2 rounded-lg mw-elevated border hover:border-[#00AE42] transition" title="Перемкнути Світлу / Темну тему">
+          <!-- Sun/Moon Icon -->
+          <svg id="themeIconSun" class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container (Wide 1600px MakerWorld Layout) -->
+  <main class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- Initial Hero Dropzone (Visible before first search so user can immediately drop a photo) -->
+    <div id="heroUploadSection" class="mw-surface border rounded-2xl p-6 sm:p-8 mb-6 shadow-sm">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+        <div class="lg:col-span-6 space-y-3">
+          <h1 class="text-2xl sm:text-3xl font-extrabold mw-text-primary tracking-tight leading-tight">
+            Шукайте 3D-моделі по фото одразу на 6 топових сайтах
+          </h1>
+          <p class="text-sm mw-text-secondary leading-relaxed">
+            Завантажте фото готового виробу або просто натисніть <kbd class="px-1.5 py-0.5 rounded mw-elevated border text-xs font-semibold">Ctrl+V</kbd>.
+            <strong>STL-HUB</strong> знайде візуально ідентичні моделі через рушій MakerWorld та просканує <strong>Printables, Thingiverse, Cults3D, Thangs і MyMiniFactory</strong>.
+          </p>
+          <div class="flex flex-wrap gap-2 pt-2">
+            <button onclick="runTextSearch('articulated dragon')" class="px-3 py-1.5 rounded-full mw-elevated border hover:border-[#00AE42] text-xs font-medium transition">
+              🐉 Articulated Dragon
+            </button>
+            <button onclick="runTextSearch('sliding door handle')" class="px-3 py-1.5 rounded-full mw-elevated border hover:border-[#00AE42] text-xs font-medium transition">
+              🚪 Ручка розсувних дверей
+            </button>
+            <button onclick="runTextSearch('dummy 13')" class="px-3 py-1.5 rounded-full mw-elevated border hover:border-[#00AE42] text-xs font-medium transition">
+              🤖 Dummy 13
+            </button>
+            <button onclick="runTextSearch('orbital sander wall mount')" class="px-3 py-1.5 rounded-full mw-elevated border hover:border-[#00AE42] text-xs font-medium transition">
+              🛠️ Тримач шліфмашини
+            </button>
+            <button onclick="runTextSearch('headphone wall mount')" class="px-3 py-1.5 rounded-full mw-elevated border hover:border-[#00AE42] text-xs font-medium transition">
+              🎧 Тримач навушників
+            </button>
+          </div>
+        </div>
+
+        <!-- Right Quick Drop Box -->
+        <div class="lg:col-span-6">
+          <div onclick="document.getElementById('fileInput').click()"
+               onover="event.preventDefault()"
+               id="heroDropzone"
+               class="border-2 border-dashed mw-border hover:border-[#00AE42] rounded-2xl p-6 text-center cursor-pointer transition mw-elevated flex flex-col items-center justify-center min-h-[190px]">
+            <div class="w-14 h-14 rounded-2xl bg-[#00AE42] text-white flex items-center justify-center shadow-md mb-3">
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            <p class="text-base font-bold mw-text-primary">Перетягніть фото деталі сюди або натисніть для вибору</p>
+            <p class="text-xs mw-text-muted mt-1">Ми автоматично запустимо пошук по всіх 6 базах 3D-моделей</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loadingCard" class="hidden mw-surface border rounded-2xl p-10 text-center my-6">
+      <div class="w-12 h-12 mx-auto rounded-full border-4 border-[#00AE42]/20 border-t-[#00AE42] animate-spin mb-4"></div>
+      <h3 id="loadingTitle" class="text-base font-bold mw-text-primary">Шукаємо візуально схожі моделі на 6 сайтах...</h3>
+      <p class="text-xs mw-text-muted mt-1">MakerWorld Visual Search • Printables • Thingiverse • Cults3D • Thangs • MyMiniFactory</p>
+    </div>
+
+    <!-- Clear & Intuitive 3-Column AI Photo Recognition Header Card -->
+    <div id="aiResultCard" class="hidden mw-surface border rounded-2xl p-5 mb-5 shadow-sm">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+
+        <!-- Part 1 (Left): Uploaded Photo + Change Button -->
+        <div class="lg:col-span-7 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div class="relative group shrink-0 cursor-pointer" onclick="toggleUploadPopover(true)" title="Натисніть, щоб завантажити інше фото">
+            <img id="aiStripThumb" src="" alt="Ваше фото"
+                 class="w-24 h-24 rounded-xl object-cover border-2 border-[#00AE42]/60 shadow-sm" />
+            <div class="absolute inset-0 rounded-xl bg-black/55 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+              <span class="text-[11px] font-bold text-white px-2 py-1 rounded bg-[#00AE42]">Змінити</span>
+            </div>
+          </div>
+
+          <div class="space-y-1.5 min-w-0 flex-1">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-[#00AE42]/15 text-[#00AE42] text-xs font-bold border border-[#00AE42]/30">
+                ✓ Розпізнано по фото
+              </span>
+              <span id="aiCategoryBadge" class="px-2.5 py-0.5 rounded-md mw-elevated border text-xs mw-text-secondary font-medium"></span>
+              <button onclick="toggleUploadPopover(true)" class="text-xs text-[#00AE42] hover:underline font-semibold ml-auto sm:ml-1">
+                📷 Завантажити інше фото
+              </button>
+            </div>
+
+            <h3 id="aiTitleUk" class="text-lg font-extrabold mw-text-primary leading-snug"></h3>
+            <p id="aiDescriptionUk" class="text-xs mw-text-secondary leading-relaxed"></p>
+            <div id="aiFeaturesContainer" class="flex flex-wrap gap-1.5 pt-0.5"></div>
+          </div>
+        </div>
+
+        <!-- Part 2 (Right): Search Query Switcher with Clear Explanation -->
+        <div class="lg:col-span-5 lg:border-l mw-border lg:pl-5 flex flex-col justify-center">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold mw-text-primary flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-[#00AE42]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+              Варіанти назв цієї деталі (натисніть для уточнення):
+            </span>
+          </div>
+          <p class="text-[11px] mw-text-muted mb-2.5">
+            Різні автори можуть називати таку деталь по-різному — клікніть на будь-який варіант нижче, щоб оновити результати:
+          </p>
+          <div class="flex flex-wrap items-center gap-2" id="aiQueriesList"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Results Section (MakerWorld 5-Column Grid + Tabs) -->
+    <section id="resultsSection" class="hidden space-y-5">
+
+      <!-- Clean Multi-Row Filter & Control Bar (No ugly scrollbars!) -->
+      <div class="mw-surface border rounded-2xl p-4 flex flex-col gap-3.5 shadow-sm">
+
+        <!-- Row 1: Platform Pills (Wraps cleanly, zero scrollbars) -->
+        <div class="flex flex-wrap items-center gap-2" id="siteFilterButtons">
+          <button onclick="setSiteFilter('all')" data-site="all" class="hub-filter-pill active">
+            <span>Усі моделі</span>
+            <span id="count-all" class="hub-filter-count">0</span>
+          </button>
+          <button onclick="setSiteFilter('makerworld')" data-site="makerworld" class="hub-filter-pill">
+            <span class="w-2 h-2 rounded-full bg-[#00AE42]"></span>
+            <span>MakerWorld</span>
+            <span id="count-makerworld" class="hub-filter-count">0</span>
+          </button>
+          <button onclick="setSiteFilter('printables')" data-site="printables" class="hub-filter-pill">
+            <span class="w-2 h-2 rounded-full bg-orange-500"></span>
+            <span>Printables</span>
+            <span id="count-printables" class="hub-filter-count">0</span>
+          </button>
+          <button onclick="setSiteFilter('thangs')" data-site="thangs" class="hub-filter-pill">
+            <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+            <span>Thangs</span>
+            <span id="count-thangs" class="hub-filter-count">0</span>
+          </button>
+          <button onclick="setSiteFilter('cults3d')" data-site="cults3d" class="hub-filter-pill">
+            <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+            <span>Cults3D</span>
+            <span id="count-cults3d" class="hub-filter-count">0</span>
+          </button>
+          <button onclick="setSiteFilter('myminifactory')" data-site="myminifactory" class="hub-filter-pill">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span>MyMiniFactory</span>
+            <span id="count-myminifactory" class="hub-filter-count">0</span>
+          </button>
+          <button onclick="setSiteFilter('thingiverse')" data-site="thingiverse" class="hub-filter-pill">
+            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+            <span>Thingiverse</span>
+            <span id="count-thingiverse" class="hub-filter-count">0</span>
+          </button>
+        </div>
+
+        <!-- Row 2: Active Query Info Left + Controls & Top Pagination Right in One Single Clean Line -->
+        <div class="pt-3 border-t mw-border flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div class="text-xs mw-text-secondary flex flex-wrap items-center gap-1.5">
+            <span>Пошук: <strong id="activeQueryLabel" class="mw-text-primary font-bold"></strong></span>
+            <span class="mw-text-muted">•</span>
+            <span id="pageRangeLabel" class="mw-text-secondary"></span>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2.5">
+            <!-- Modern Toggle Switch: Free Only -->
+            <label class="hub-dropdown-btn">
+              <input id="freeOnlyCheckbox" type="checkbox" onchange="onFilterOrSortChange()" class="sr-only" />
+              <div class="hub-switch-track">
+                <div class="hub-switch-thumb"></div>
+              </div>
+              <span>Тільки безкоштовні</span>
+            </label>
+
+            <!-- Custom Dropdown: Per Page -->
+            <div class="relative" id="perPageDropdown">
+              <input type="hidden" id="perPageSelect" value="25" />
+              <button type="button" onclick="toggleCustomDropdown('perPageMenu', this)" class="hub-dropdown-btn">
+                <span class="mw-text-muted font-normal">Показувати:</span>
+                <span id="perPageLabel">По 25 моделей</span>
+                <svg class="w-3.5 h-3.5 mw-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <div id="perPageMenu" class="hub-dropdown-menu hidden">
+                <button type="button" onclick="selectPerPage('25', 'По 25 моделей', this)" class="hub-dropdown-item selected">
+                  <span>По 25 моделей</span><span class="check-icon">✓</span>
+                </button>
+                <button type="button" onclick="selectPerPage('50', 'По 50 моделей', this)" class="hub-dropdown-item">
+                  <span>По 50 моделей</span><span class="check-icon hidden">✓</span>
+                </button>
+                <button type="button" onclick="selectPerPage('100', 'По 100 моделей', this)" class="hub-dropdown-item">
+                  <span>По 100 моделей</span><span class="check-icon hidden">✓</span>
+                </button>
+                <button type="button" onclick="selectPerPage('999', 'Усі одразу', this)" class="hub-dropdown-item">
+                  <span>Усі одразу</span><span class="check-icon hidden">✓</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Custom Dropdown: Sort Mode -->
+            <div class="relative" id="sortDropdown">
+              <input type="hidden" id="sortSelect" value="similarity" />
+              <button type="button" onclick="toggleCustomDropdown('sortMenu', this)" class="hub-dropdown-btn">
+                <span class="mw-text-muted font-normal">Сортування:</span>
+                <span id="sortLabel">За схожістю</span>
+                <svg class="w-3.5 h-3.5 mw-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <div id="sortMenu" class="hub-dropdown-menu hidden">
+                <button type="button" onclick="selectSortMode('similarity', 'За схожістю', this)" class="hub-dropdown-item selected">
+                  <span>За візуальною схожістю</span><span class="check-icon">✓</span>
+                </button>
+                <button type="button" onclick="selectSortMode('popular', 'За популярністю', this)" class="hub-dropdown-item">
+                  <span>За популярністю (лайки)</span><span class="check-icon hidden">✓</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Top Pagination -->
+            <div id="paginationTop" class="flex items-center gap-1 pl-1"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MakerWorld 5-Column Cards Grid -->
+      <div id="resultsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"></div>
+
+      <!-- Bottom Pagination Bar -->
+      <div class="mw-surface border rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <span id="pageRangeLabelBottom" class="text-xs mw-text-secondary"></span>
+        <div id="paginationBottom" class="flex flex-wrap items-center justify-center gap-1.5"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="hidden fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+    <div class="mw-surface border rounded-2xl max-w-md w-full p-6 shadow-2xl">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-base font-bold mw-text-primary">Налаштування Google Gemini API</h3>
+        <button onclick="closeSettingsModal()" class="mw-text-muted hover:mw-text-primary">✕</button>
+      </div>
+      <p class="text-xs mw-text-secondary leading-relaxed mb-4">
+        Для розпізнавання деталей використовується <strong>Google Gemini 2.5 Flash</strong> разом із візуальним пошуком MakerWorld.
+      </p>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-medium mw-text-secondary mb-1">Gemini API Key:</label>
+          <input id="settingsApiKeyInput" type="password" placeholder="Введіть API ключ..."
+                 class="w-full px-3 py-2 rounded-lg mw-elevated border text-sm mw-text-primary focus:outline-none focus:border-[#00AE42]" />
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button onclick="closeSettingsModal()" class="px-4 py-2 rounded-lg mw-elevated text-xs font-semibold">Скасувати</button>
+          <button onclick="saveApiKey()" class="px-4 py-2 rounded-lg bg-[#00AE42] hover:bg-[#00993A] text-white text-xs font-bold">Зберегти</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let selectedFile = null;
+    let currentImageId = null;
+    let currentResults = [];
+    let currentCounts = {};
+    let currentSiteFilter = 'all';
+    let currentQuery = '';
+    let currentPage = 1;
+
+    const SITE_BADGES = {
+      makerworld: { bg: 'bg-[#00AE42]', text: 'text-white', label: 'MakerWorld' },
+      printables: { bg: 'bg-[#FA6831]', text: 'text-white', label: 'Printables' },
+      thangs: { bg: 'bg-[#0891B2]', text: 'text-white', label: 'Thangs' },
+      cults3d: { bg: 'bg-[#8224E3]', text: 'text-white', label: 'Cults3D' },
+      myminifactory: { bg: 'bg-[#059669]', text: 'text-white', label: 'MyMiniFactory' },
+      thingiverse: { bg: 'bg-[#2563EB]', text: 'text-white', label: 'Thingiverse' },
+    };
+
+    // Theme Switcher (Dark / Light MakerWorld Mode)
+    function toggleTheme() {
+      const html = document.documentElement;
+      html.classList.toggle('dark');
+      localStorage.setItem('stlhub_theme', html.classList.contains('dark') ? 'dark' : 'light');
+    }
+    (function initTheme() {
+      const saved = localStorage.getItem('stlhub_theme');
+      if (saved === 'light') {
+        document.documentElement.classList.remove('dark');
+      }
+    })();
+
+    function toggleUploadPopover(forceState) {
+      const pop = document.getElementById('uploadPopover');
+      if (typeof forceState === 'boolean') {
+        pop.classList.toggle('hidden', !forceState);
+      } else {
+        pop.classList.toggle('hidden');
+      }
+    }
+
+    // Close popover when clicking outside
+    document.addEventListener('click', e => {
+      const pop = document.getElementById('uploadPopover');
+      const header = document.querySelector('header');
+      const stripThumb = document.getElementById('aiStripThumb');
+      if (!pop.classList.contains('hidden') && !header.contains(e.target) && e.target !== stripThumb) {
+        pop.classList.add('hidden');
+      }
+    });
+
+    // Setup Drag & Drop on both Dropzone and Hero Dropzone
+    ['dropzone', 'heroDropzone'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      ['dragenter', 'dragover'].forEach(evt => {
+        el.addEventListener(evt, e => {
+          e.preventDefault();
+          e.stopPropagation();
+          el.classList.add('drop-active');
+        });
+      });
+      ['dragleave', 'drop'].forEach(evt => {
+        el.addEventListener(evt, e => {
+          e.preventDefault();
+          e.stopPropagation();
+          el.classList.remove('drop-active');
+        });
+      });
+      el.addEventListener('drop', e => {
+        const files = e.dataTransfer?.files;
+        if (files && files.length > 0) {
+          setPhotoFile(files[0], true);
+        }
+      });
+    });
+
+    // Global Ctrl+V Paste -> Immediately sets file and starts visual search!
+    window.addEventListener('paste', e => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (const item of items) {
+        if (item.type.startsWith('image/')) {
+          const file = item.getAsFile();
+          if (file) {
+            setPhotoFile(file, true);
+            break;
+          }
+        }
+      }
+    });
+
+    function handleFileSelect(event) {
+      const file = event.target.files?.[0];
+      if (file) setPhotoFile(file, true);
+    }
+
+    function setPhotoFile(file, autoSearch = false) {
+      selectedFile = file;
+      document.getElementById('imageUrlInput').value = '';
+      const reader = new FileReader();
+      reader.onload = e => {
+        const dataUrl = e.target.result;
+        document.getElementById('previewImage').src = dataUrl;
+        document.getElementById('searchBarThumb').src = dataUrl;
+        document.getElementById('aiStripThumb').src = dataUrl;
+        document.getElementById('searchBarPhotoChip').classList.remove('hidden');
+        document.getElementById('searchBarPhotoChip').classList.add('flex');
+        document.getElementById('previewFileName').textContent = file.name || 'Зображення з буфера обміну';
+        document.getElementById('uploadEmptyState').classList.add('hidden');
+        document.getElementById('uploadPreviewState').classList.remove('hidden');
+        if (autoSearch) {
+          startPhotoSearch();
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleUrlInput() {
+      const url = document.getElementById('imageUrlInput').value.trim();
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        selectedFile = null;
+        document.getElementById('previewImage').src = url;
+        document.getElementById('searchBarThumb').src = url;
+        document.getElementById('aiStripThumb').src = url;
+        document.getElementById('searchBarPhotoChip').classList.remove('hidden');
+        document.getElementById('searchBarPhotoChip').classList.add('flex');
+        document.getElementById('previewFileName').textContent = url;
+        document.getElementById('uploadEmptyState').classList.add('hidden');
+        document.getElementById('uploadPreviewState').classList.remove('hidden');
+      }
+    }
+
+    function clearImage(event) {
+      if (event) event.stopPropagation();
+      selectedFile = null;
+      currentImageId = null;
+      document.getElementById('fileInput').value = '';
+      document.getElementById('imageUrlInput').value = '';
+      document.getElementById('searchBarPhotoChip').classList.add('hidden');
+      document.getElementById('searchBarPhotoChip').classList.remove('flex');
+      document.getElementById('uploadEmptyState').classList.remove('hidden');
+      document.getElementById('uploadPreviewState').classList.add('hidden');
+    }
+
+    function triggerCurrentSearch() {
+      const q = document.getElementById('manualQueryInput').value.trim();
+      if (q) {
+        runTextSearch(q);
+      } else if (selectedFile || document.getElementById('imageUrlInput').value.trim()) {
+        startPhotoSearch();
+      } else {
+        toggleUploadPopover(true);
+      }
+    }
+
+    async function startPhotoSearch() {
+      const imageUrl = document.getElementById('imageUrlInput').value.trim();
+      const hint = document.getElementById('hintInput').value.trim();
+
+      if (!selectedFile && !imageUrl) {
+        toggleUploadPopover(true);
+        return;
+      }
+
+      toggleUploadPopover(false);
+      showLoading('Візуальний пошук MakerWorld + мульти-пошук на 6 сайтах...');
+
+      const formData = new FormData();
+      if (selectedFile) {
+        formData.append('file', selectedFile);
+      } else if (imageUrl) {
+        formData.append('image_url', imageUrl);
+      }
+      formData.append('hint', hint);
+      formData.append('limit_per_site', '30');
+
+      try {
+        const resp = await fetch('/api/search-by-photo', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+          throw new Error(data.detail || 'Помилка під час пошуку');
+        }
+
+        currentImageId = data.image_id;
+        document.getElementById('heroUploadSection').classList.add('hidden');
+        displayAiAnalysis(data.ai_analysis, data.search.query);
+        updateSearchResults(data.search);
+      } catch (err) {
+        alert(err.message || 'Сталася помилка при обробці фото.');
+      } finally {
+        hideLoading();
+      }
+    }
+
+    async function runTextSearch(query) {
+      const cleanQ = (query || '').trim();
+      if (!cleanQ) return;
+      document.getElementById('manualQueryInput').value = cleanQ;
+      document.getElementById('clearTextBtn').classList.remove('hidden');
+      toggleUploadPopover(false);
+
+      showLoading(`Шукаємо "${cleanQ}" на всіх 6 сайтах...`);
+      try {
+        const url = new URL('/api/search', window.location.origin);
+        url.searchParams.set('q', cleanQ);
+        if (currentImageId) url.searchParams.set('image_id', currentImageId);
+        url.searchParams.set('limit_per_site', '30');
+
+        const resp = await fetch(url);
+        const data = await resp.json();
+        if (!resp.ok) {
+          throw new Error(data.detail || 'Помилка пошуку');
+        }
+        document.getElementById('heroUploadSection').classList.add('hidden');
+        highlightActiveQueryButton(cleanQ);
+        updateSearchResults(data.search);
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        hideLoading();
+      }
+    }
+
+    function displayAiAnalysis(ai, activeQuery) {
+      const card = document.getElementById('aiResultCard');
+      card.classList.remove('hidden');
+
+      document.getElementById('aiTitleUk').textContent = ai.title_uk || 'Розпізнаний виріб';
+      document.getElementById('aiDescriptionUk').textContent = ai.description_uk || '';
+      const catEl = document.getElementById('aiCategoryBadge');
+      if (ai.category_uk) {
+        catEl.textContent = ai.category_uk;
+        catEl.classList.remove('hidden');
+      } else {
+        catEl.classList.add('hidden');
+      }
+
+      const featContainer = document.getElementById('aiFeaturesContainer');
+      if (featContainer) {
+        featContainer.innerHTML = '';
+        (ai.detected_features || []).forEach(f => {
+          const span = document.createElement('span');
+          span.className = 'px-2 py-0.5 rounded-md mw-elevated border text-[11px] mw-text-muted';
+          span.textContent = `# ${f}`;
+          featContainer.appendChild(span);
+        });
+      }
+
+      const qList = document.getElementById('aiQueriesList');
+      qList.innerHTML = '';
+      (ai.alternative_queries || [ai.primary_query]).forEach(q => {
+        const btn = document.createElement('button');
+        btn.dataset.query = q;
+        btn.onclick = () => runTextSearch(q);
+        const isActive = q.toLowerCase() === (activeQuery || '').toLowerCase();
+        btn.className = isActive
+          ? 'ai-query-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#00AE42] text-white shadow-sm flex items-center gap-1.5 transition'
+          : 'ai-query-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold mw-elevated border hover:border-[#00AE42] mw-text-primary flex items-center gap-1.5 transition';
+        btn.innerHTML = `<span>🔍</span><span>${escapeHtml(q)}</span>`;
+        qList.appendChild(btn);
+      });
+    }
+
+    function highlightActiveQueryButton(activeQuery) {
+      document.querySelectorAll('.ai-query-btn').forEach(btn => {
+        const isAct = (btn.dataset.query || '').toLowerCase() === activeQuery.toLowerCase();
+        btn.className = isAct
+          ? 'ai-query-btn px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#00AE42] text-white shadow-sm flex items-center gap-1.5 transition'
+          : 'ai-query-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold mw-elevated border hover:border-[#00AE42] mw-text-primary flex items-center gap-1.5 transition';
+      });
+    }
+
+    // Custom Dropdown Logic
+    function toggleCustomDropdown(menuId, btnEl) {
+      const menu = document.getElementById(menuId);
+      const isHidden = menu.classList.contains('hidden');
+      closeAllCustomDropdowns();
+      if (isHidden) {
+        menu.classList.remove('hidden');
+        btnEl.classList.add('open');
+      }
+    }
+
+    function closeAllCustomDropdowns() {
+      document.querySelectorAll('.hub-dropdown-menu').forEach(m => m.classList.add('hidden'));
+      document.querySelectorAll('.hub-dropdown-btn').forEach(b => b.classList.remove('open'));
+    }
+
+    document.addEventListener('click', e => {
+      if (!e.target.closest('#perPageDropdown') && !e.target.closest('#sortDropdown')) {
+        closeAllCustomDropdowns();
+      }
+    });
+
+    function selectPerPage(val, labelText, itemEl) {
+      document.getElementById('perPageSelect').value = val;
+      document.getElementById('perPageLabel').textContent = labelText;
+      const menu = document.getElementById('perPageMenu');
+      menu.querySelectorAll('.hub-dropdown-item').forEach(btn => {
+        btn.classList.toggle('selected', btn === itemEl);
+        btn.querySelector('.check-icon').classList.toggle('hidden', btn !== itemEl);
+      });
+      closeAllCustomDropdowns();
+      onFilterOrSortChange();
+    }
+
+    function selectSortMode(val, labelText, itemEl) {
+      document.getElementById('sortSelect').value = val;
+      document.getElementById('sortLabel').textContent = labelText;
+      const menu = document.getElementById('sortMenu');
+      menu.querySelectorAll('.hub-dropdown-item').forEach(btn => {
+        btn.classList.toggle('selected', btn === itemEl);
+        btn.querySelector('.check-icon').classList.toggle('hidden', btn !== itemEl);
+      });
+      closeAllCustomDropdowns();
+      onFilterOrSortChange();
+    }
+
+    function updateSearchResults(searchObj) {
+      currentQuery = searchObj.query || '';
+      currentResults = searchObj.results || [];
+      currentCounts = searchObj.counts_by_site || {};
+      currentPage = 1;
+
+      document.getElementById('activeQueryLabel').textContent = currentQuery;
+      document.getElementById('resultsSection').classList.remove('hidden');
+
+      document.getElementById('count-all').textContent = currentResults.length;
+      ['printables', 'thingiverse', 'makerworld', 'cults3d', 'thangs', 'myminifactory'].forEach(siteKey => {
+        const el = document.getElementById(`count-${siteKey}`);
+        if (el) el.textContent = currentCounts[siteKey] || 0;
+      });
+
+      renderResults();
+    }
+
+    function setSiteFilter(site) {
+      currentSiteFilter = site;
+      currentPage = 1;
+      document.querySelectorAll('.hub-filter-pill').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.site === site);
+      });
+      renderResults();
+    }
+
+    function onFilterOrSortChange() {
+      currentPage = 1;
+      renderResults();
+    }
+
+    function goToPage(page, shouldScroll = true) {
+      currentPage = page;
+      renderResults();
+      if (shouldScroll) {
+        document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    function buildPaginationHtml(totalPages, activePage) {
+      if (totalPages <= 1) return '';
+      let html = '';
+
+      const prevDisabled = activePage <= 1;
+      html += `
+        <button ${prevDisabled ? 'disabled' : `onclick="goToPage(${activePage - 1})"`}
+                class="px-2.5 py-1 rounded-md text-xs font-semibold border transition ${prevDisabled ? 'opacity-40 cursor-not-allowed mw-elevated' : 'mw-elevated hover:border-[#00AE42]'}">
+          «
+        </button>
+      `;
+
+      for (let p = 1; p <= totalPages; p++) {
+        if (totalPages > 8 && p > 2 && p < totalPages - 1 && Math.abs(p - activePage) > 2) {
+          if (p === 3 || p === totalPages - 2) {
+            html += `<span class="px-1 text-xs mw-text-muted">...</span>`;
+          }
+          continue;
+        }
+        const isCurrent = p === activePage;
+        html += `
+          <button onclick="goToPage(${p})"
+                  class="w-7 h-7 rounded-md text-xs font-bold border transition ${isCurrent ? 'bg-[#00AE42] text-white border-[#00AE42]' : 'mw-elevated hover:border-[#00AE42] mw-text-primary'}">
+            ${p}
+          </button>
+        `;
+      }
+
+      const nextDisabled = activePage >= totalPages;
+      html += `
+        <button ${nextDisabled ? 'disabled' : `onclick="goToPage(${activePage + 1})"`}
+                class="px-2.5 py-1 rounded-md text-xs font-semibold border transition ${nextDisabled ? 'opacity-40 cursor-not-allowed mw-elevated' : 'mw-elevated hover:border-[#00AE42]'}">
+          »
+        </button>
+      `;
+      return html;
+    }
+
+    function renderResults() {
+      const grid = document.getElementById('resultsGrid');
+      const freeOnly = document.getElementById('freeOnlyCheckbox').checked;
+      const sortMode = document.getElementById('sortSelect').value;
+      const perPage = parseInt(document.getElementById('perPageSelect').value || '25', 10);
+
+      let filtered = currentResults.filter(item => {
+        if (currentSiteFilter !== 'all' && item.site_id !== currentSiteFilter) return false;
+        if (freeOnly && item.is_free === false) return false;
+        return true;
+      });
+
+      if (sortMode === 'popular') {
+        filtered.sort((a, b) => ((b.likes || 0) + (b.downloads || 0)) - ((a.likes || 0) + (a.downloads || 0)));
+      } else {
+        filtered.sort((a, b) => (b.similarity || 0) - (a.similarity || 0));
+      }
+
+      const totalFiltered = filtered.length;
+      const totalPages = Math.max(1, Math.ceil(totalFiltered / perPage));
+      if (currentPage > totalPages) currentPage = totalPages;
+
+      const startIndex = (currentPage - 1) * perPage;
+      const pageItems = filtered.slice(startIndex, startIndex + perPage);
+
+      const rangeText = totalFiltered > 0
+        ? `Показано ${startIndex + 1}–${Math.min(startIndex + perPage, totalFiltered)} із ${totalFiltered} моделей (Сторінка ${currentPage} з ${totalPages})`
+        : 'Моделей не знайдено';
+
+      document.getElementById('pageRangeLabel').textContent = rangeText;
+      document.getElementById('pageRangeLabelBottom').textContent = rangeText;
+
+      const pagHtml = buildPaginationHtml(totalPages, currentPage);
+      document.getElementById('paginationTop').innerHTML = pagHtml;
+      document.getElementById('paginationBottom').innerHTML = pagHtml;
+
+      if (pageItems.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full mw-surface border rounded-xl p-12 text-center mw-text-secondary">
+            <p class="text-base font-bold mw-text-primary">За цим фільтром моделей не знайдено</p>
+            <p class="text-xs mt-1">Оберіть вкладку "Усі моделі" або натисніть на інший тег вище.</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = pageItems.map(item => {
+        const badge = SITE_BADGES[item.site_id] || { bg: 'bg-neutral-700', text: 'text-white', label: item.site };
+        const sim = item.similarity || 85;
+        const rawImg = item.thumbnail || item.image || '';
+        const proxyImg = rawImg ? `/api/proxy-image?url=${encodeURIComponent(rawImg)}` : '';
+        const authorInitial = (item.author || 'U').trim().charAt(0).toUpperCase();
+
+        return `
+          <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer"
+             class="mw-card overflow-hidden flex flex-col justify-between group">
+            <div>
+              <!-- 4:3 MakerWorld Aspect Image Box -->
+              <div class="relative aspect-[4/3] bg-neutral-900 overflow-hidden flex items-center justify-center">
+                <img src="${escapeHtml(rawImg)}"
+                     onerror="if(this.src !== '${proxyImg}') this.src='${proxyImg}'; else this.style.display='none';"
+                     alt="${escapeHtml(item.title)}"
+                     loading="lazy"
+                     decoding="async"
+                     class="w-full h-full object-cover" />
+
+                <!-- Platform Pill (Top Left) -->
+                <span class="absolute top-2 left-2 px-2 py-0.5 rounded text-[11px] font-bold shadow-sm ${badge.bg} ${badge.text}">
+                  ${escapeHtml(badge.label)}
+                </span>
+
+                <!-- Match Badge (Top Right) -->
+                <span class="absolute top-2 right-2 px-2 py-0.5 rounded text-[11px] font-bold bg-black/75 text-white">
+                  ${item.is_visual_match ? '📷 ' + sim + '%' : sim + '%'}
+                </span>
+
+                ${item.price && item.price !== 'Безкоштовно' && item.price !== 'Див. на сайті' ? `
+                  <span class="absolute bottom-2 right-2 px-2 py-0.5 rounded text-[11px] font-bold bg-black/80 text-amber-300">
+                    ${escapeHtml(item.price)}
+                  </span>
+                ` : ''}
+              </div>
+
+              <!-- Title (MakerWorld Clean Typography) -->
+              <div class="px-3 pt-2.5 pb-1">
+                <h4 class="font-bold text-[13.5px] mw-text-primary line-clamp-2 group-hover:text-[#00AE42] transition-colors leading-snug">
+                  ${escapeHtml(item.title)}
+                </h4>
+              </div>
+            </div>
+
+            <!-- MakerWorld Style Card Footer: Avatar + Author Left, Downloads & Likes Right -->
+            <div class="px-3 pb-2.5 pt-1.5 flex items-center justify-between text-xs mw-text-muted">
+              <div class="flex items-center gap-1.5 min-w-0 pr-2">
+                <span class="w-5 h-5 rounded-full mw-elevated border flex items-center justify-center text-[10px] font-bold mw-text-primary shrink-0">
+                  ${escapeHtml(authorInitial)}
+                </span>
+                <span class="truncate text-[12px] mw-text-secondary">${escapeHtml(item.author || 'Creator')}</span>
+              </div>
+
+              <div class="flex items-center gap-2.5 shrink-0 text-[12px]">
+                ${item.downloads ? `
+                  <span class="flex items-center gap-0.5" title="Завантаження">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                    ${formatNum(item.downloads)}
+                  </span>
+                ` : ''}
+                ${item.likes ? `
+                  <span class="flex items-center gap-0.5" title="Вподобання">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/>
+                    </svg>
+                    ${formatNum(item.likes)}
+                  </span>
+                ` : ''}
+                ${(!item.downloads && !item.likes) ? `<span class="text-[#00AE42] font-semibold">Відкрити ↗</span>` : ''}
+              </div>
+            </div>
+          </a>
+        `;
+      }).join('');
+    }
+
+    function showLoading(titleText) {
+      document.getElementById('loadingTitle').textContent = titleText;
+      document.getElementById('loadingCard').classList.remove('hidden');
+    }
+
+    function hideLoading() {
+      document.getElementById('loadingCard').classList.add('hidden');
+    }
+
+    function openSettingsModal() {
+      document.getElementById('settingsModal').classList.remove('hidden');
+    }
+    function closeSettingsModal() {
+      document.getElementById('settingsModal').classList.add('hidden');
+    }
+    async function saveApiKey() {
+      const key = document.getElementById('settingsApiKeyInput').value.trim();
+      if (!key) return alert('Введіть ключ API');
+      const resp = await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gemini_api_key: key })
+      });
+      if (resp.ok) {
+        closeSettingsModal();
+        alert('API ключ успішно збережено!');
+      } else {
+        alert('Помилка збереження ключа');
+      }
+    }
+
+    function formatNum(n) {
+      if (!n) return '0';
+      if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+      return String(n);
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>
