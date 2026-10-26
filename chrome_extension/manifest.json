@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "STL-HUB — Пошук 3D-моделей по фото",
+  "version": "1.0.0",
+  "description": "Клікніть правою кнопкою миші на будь-якому зображенні в інтернеті, щоб миттєво знайти цю 3D-модель на 6 сайтах у STL-HUB.",
+  "permissions": ["contextMenus", "tabs"],
+  "background": {
+    "service_worker": "background.js"
+  }
+}
