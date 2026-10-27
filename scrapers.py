@@ -11,7 +11,9 @@ from curl_cffi import requests
 from bs4 import BeautifulSoup
 from PIL import Image
 
-# Thread-local session pool to reuse TCP/TLS connections and avoid repeated handshakes
+# Global reusable worker pool for parallel site queries (avoids spawning nested threads per request)
+_SEARCH_EXECUTOR = concurrent.futures.ThreadPoolExecutor(max_workers=20)
+
 _thread_local = threading.local()
 
 # Semaphore to prevent concurrent TLS handshake drops on Yahoo Images
@@ -69,7 +71,17 @@ def extract_keywords_from_title(title: str) -> str:
     return " ".join(words[:3])
 
 
-def search_makerworld_by_image(image_bytes: bytes, limit: int = 40) -> Dict[str, Any]:
+_MW_HEADERS = {
+    "X-BBL-Client-Type": "web",
+    "X-BBL-Client-Version": "00.00.00.01",
+    "X-BBL-App-Source": "makerworld",
+    "X-BBL-Client-Name": "MakerWorld",
+    "Referer": "https://makerworld.com/en",
+    "Origin": "https://makerworld.com",
+}
+
+
+def search_makerworld_by_image(image_bytes: bytes, limit: int = 50) -> Dict[str, Any]:
     """
     Uploads the user's photo to MakerWorld's native visual search engine (picsearch)
     and returns up to `limit` visually matched 3D models + their titles/tags.
@@ -91,12 +103,7 @@ def search_makerworld_by_image(image_bytes: bytes, limit: int = 40) -> Dict[str,
         r1 = session.post(
             "https://makerworld.com/api/v1/design-user-service/user/upload/picsearch",
             json={"fileName": "search.jpg"},
-            headers={
-                "X-BBL-Client-Type": "web",
-                "X-BBL-Client-Version": "00.00.00.01",
-                "X-BBL-App-Source": "makerworld",
-                "X-BBL-Client-Name": "MakerWorld",
-            },
+            headers=_MW_HEADERS,
             timeout=7,
         )
         if r1.status_code != 200:
@@ -116,21 +123,26 @@ def search_makerworld_by_image(image_bytes: bytes, limit: int = 40) -> Dict[str,
         parsed_cdn = urllib.parse.urlparse(cdn_prefix)
         final_img_url = f"{parsed_cdn.scheme}://{parsed_cdn.netloc}{parsed_up.path}"
 
-        batches = [0, 20] if limit > 20 else [0]
+        batches = [0, 20, 40] if limit > 40 else ([0, 20] if limit > 20 else [0])
         seen_ids = set()
-        for offset in batches:
-            batch_lim = min(20, limit - len(results))
-            if batch_lim <= 0:
-                break
-            r3 = session.get(
+
+        def _fetch_mw_batch(offset: int):
+            sess = create_session()
+            return sess.get(
                 "https://makerworld.com/api/v1/search-service/select/design2",
-                params={"image": final_img_url, "offset": offset, "limit": batch_lim},
-                timeout=7,
+                params={"image": final_img_url, "offset": offset, "limit": 20},
+                headers=_MW_HEADERS,
+                timeout=6,
             )
+
+        batch_futs = [_SEARCH_EXECUTOR.submit(_fetch_mw_batch, off) for off in batches]
+        for fut in batch_futs:
+            try:
+                r3 = fut.result()
+            except Exception:
+                continue
             if r3.status_code == 200:
                 hits = r3.json().get("hits", []) or []
-                if not hits:
-                    break
                 for hit in hits:
                     model_id = hit.get("id")
                     if model_id in seen_ids:
@@ -246,7 +258,10 @@ def search_makerworld(query: str, limit: int = 24) -> List[Dict[str, Any]]:
         session = create_session()
         q_enc = urllib.parse.quote(query)
         url = f"https://makerworld.com/api/v1/search-service/select/design2?keyword={q_enc}&offset=0&limit={limit}"
-        resp = session.get(url, timeout=6)
+        resp = session.get(url, headers=_MW_HEADERS, timeout=6)
+        if resp.status_code != 200:
+            session = requests.Session(impersonate="safari")
+            resp = session.get(url, headers=_MW_HEADERS, timeout=6)
         if resp.status_code == 200:
             data = resp.json()
             hits = data.get("hits", []) or []
@@ -327,41 +342,55 @@ def search_myminifactory(query: str, limit: int = 24) -> List[Dict[str, Any]]:
         return cached
 
     results = []
+    seen_ids = set()
     try:
-        session = create_session()
         q_enc = urllib.parse.quote(query)
-        url = f"https://www.myminifactory.com/search/fetch_search?query={q_enc}"
-        resp = session.get(url, headers={"X-Requested-With": "XMLHttpRequest"}, timeout=6)
-        if resp.status_code == 200:
-            data = resp.json()
-            items = data.get("objectResults", []) or []
-            for idx, item in enumerate(items[:limit]):
-                model_id = item.get("id")
-                slug = item.get("url") or ""
-                abs_url = item.get("absolute_url") or f"https://www.myminifactory.com/object/3d-print-{slug}"
-                img = item.get("obj_img") or item.get("obj_original_img") or ""
-                price_info = item.get("price") or {}
-                val = price_info.get("value", 0)
-                sym = price_info.get("symbol", "$")
-                try:
-                    is_free = float(val or 0) == 0
-                except ValueError:
-                    is_free = False
-                results.append({
-                    "id": f"mmf_{model_id}",
-                    "site": "MyMiniFactory",
-                    "site_id": "myminifactory",
-                    "title": item.get("name") or "MyMiniFactory Model",
-                    "url": abs_url,
-                    "image": img,
-                    "thumbnail": img,
-                    "author": item.get("user_name") or item.get("user_username") or "MMF Creator",
-                    "likes": item.get("visits") or 0,
-                    "downloads": 0,
-                    "price": "Безкоштовно" if is_free else f"{sym}{val}",
-                    "is_free": is_free,
-                    "similarity": max(70, 91 - idx),
-                })
+        pages = [1, 2] if limit > 20 else [1]
+        for p in pages:
+            if len(results) >= limit:
+                break
+            session = create_session()
+            url = f"https://www.myminifactory.com/search/fetch_search?query={q_enc}&page={p}"
+            resp = session.get(url, headers={"X-Requested-With": "XMLHttpRequest"}, timeout=6)
+            if resp.status_code == 200:
+                data = resp.json()
+                items = data.get("objectResults", []) or []
+                if not items:
+                    break
+                for item in items:
+                    model_id = item.get("id")
+                    if model_id in seen_ids:
+                        continue
+                    seen_ids.add(model_id)
+                    idx = len(results)
+                    slug = item.get("url") or ""
+                    abs_url = item.get("absolute_url") or f"https://www.myminifactory.com/object/3d-print-{slug}"
+                    img = item.get("obj_img") or item.get("obj_original_img") or ""
+                    price_info = item.get("price") or {}
+                    val = price_info.get("value", 0)
+                    sym = price_info.get("symbol", "$")
+                    try:
+                        is_free = float(val or 0) == 0
+                    except ValueError:
+                        is_free = False
+                    results.append({
+                        "id": f"mmf_{model_id}",
+                        "site": "MyMiniFactory",
+                        "site_id": "myminifactory",
+                        "title": item.get("name") or "MyMiniFactory Model",
+                        "url": abs_url,
+                        "image": img,
+                        "thumbnail": img,
+                        "author": item.get("user_name") or item.get("user_username") or "MMF Creator",
+                        "likes": item.get("visits") or 0,
+                        "downloads": 0,
+                        "price": "Безкоштовно" if is_free else f"{sym}{val}",
+                        "is_free": is_free,
+                        "similarity": max(70, 91 - idx),
+                    })
+                    if len(results) >= limit:
+                        break
+        if results:
             _set_cached("myminifactory", query, limit, results)
     except Exception as e:
         print(f"[MyMiniFactory Error] {e}")
@@ -627,7 +656,7 @@ def search_thingiverse(query: str, limit: int = 24) -> List[Dict[str, Any]]:
     return results
 
 
-def search_multi_queries_on_site(search_fn, queries: List[str], limit_total: int = 30) -> List[Dict[str, Any]]:
+def search_multi_queries_on_site(search_fn, queries: List[str], limit_total: int = 50) -> List[Dict[str, Any]]:
     """Runs up to 3 distinct search queries in parallel for a site and merges unique results."""
     unique_queries = []
     for q in queries:
@@ -642,21 +671,20 @@ def search_multi_queries_on_site(search_fn, queries: List[str], limit_total: int
     if len(unique_queries) == 1:
         return search_fn(unique_queries[0], limit_total)
 
-    per_q = max(12, (limit_total + len(unique_queries) - 1) // len(unique_queries))
+    per_q = max(24, (limit_total + len(unique_queries) - 1) // len(unique_queries))
     merged: List[Dict[str, Any]] = []
     seen_ids = set()
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
-        futs = [pool.submit(search_fn, q, per_q) for q in unique_queries]
-        for f in futs:
-            try:
-                for item in f.result():
-                    uid = item.get("id") or item.get("url")
-                    if uid not in seen_ids:
-                        seen_ids.add(uid)
-                        merged.append(item)
-            except Exception:
-                pass
+    futs = [_SEARCH_EXECUTOR.submit(search_fn, q, per_q) for q in unique_queries]
+    for f in futs:
+        try:
+            for item in f.result(timeout=7):
+                uid = item.get("id") or item.get("url")
+                if uid not in seen_ids:
+                    seen_ids.add(uid)
+                    merged.append(item)
+        except Exception:
+            pass
     return merged[:limit_total]
 
 
@@ -699,7 +727,7 @@ def _apply_smart_keyword_boost(items: List[Dict[str, Any]], queries: List[str]) 
 
 def search_all_sites(
     query: str,
-    limit_per_site: int = 30,
+    limit_per_site: int = 50,
     user_image_bytes: Optional[bytes] = None,
     secondary_queries: Optional[List[str]] = None,
     precomputed_makerworld_visual: Optional[List[Dict[str, Any]]] = None,
@@ -730,37 +758,36 @@ def search_all_sites(
         "thingiverse": 0,
     }
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
-        future_to_site = {
-            executor.submit(search_multi_queries_on_site, fn, queries_to_use, limit_per_site): site_key
-            for site_key, fn in other_sites.items()
-        }
+    future_to_site = {
+        _SEARCH_EXECUTOR.submit(search_multi_queries_on_site, fn, queries_to_use, limit_per_site): site_key
+        for site_key, fn in other_sites.items()
+    }
 
-        if precomputed_makerworld_visual is not None and len(precomputed_makerworld_visual) > 0:
-            mw_text_fut = executor.submit(search_makerworld, query, 16)
-            mw_items = [dict(x) for x in precomputed_makerworld_visual]
-            seen_mw = {x["id"] for x in mw_items}
-            try:
-                for extra in mw_text_fut.result():
-                    if extra["id"] not in seen_mw:
-                        seen_mw.add(extra["id"])
-                        mw_items.append(dict(extra))
-            except Exception:
-                pass
-            counts_by_site["makerworld"] = len(mw_items)
-            all_items.extend(mw_items)
-        else:
-            future_to_site[executor.submit(search_multi_queries_on_site, search_makerworld, queries_to_use, limit_per_site)] = "makerworld"
+    if precomputed_makerworld_visual is not None and len(precomputed_makerworld_visual) > 0:
+        mw_text_fut = _SEARCH_EXECUTOR.submit(search_multi_queries_on_site, search_makerworld, queries_to_use, 30)
+        mw_items = [dict(x) for x in precomputed_makerworld_visual]
+        seen_mw = {x["id"] for x in mw_items}
+        try:
+            for extra in mw_text_fut.result(timeout=6):
+                if extra["id"] not in seen_mw:
+                    seen_mw.add(extra["id"])
+                    mw_items.append(dict(extra))
+        except Exception:
+            pass
+        counts_by_site["makerworld"] = len(mw_items)
+        all_items.extend(mw_items)
+    else:
+        future_to_site[_SEARCH_EXECUTOR.submit(search_multi_queries_on_site, search_makerworld, queries_to_use, limit_per_site)] = "makerworld"
 
-        for future in concurrent.futures.as_completed(future_to_site):
-            site_key = future_to_site[future]
-            try:
-                site_results = future.result()
-                counts_by_site[site_key] = len(site_results)
-                all_items.extend(site_results)
-            except Exception as e:
-                print(f"[Search All Error - {site_key}] {e}")
-                counts_by_site[site_key] = 0
+    for future in concurrent.futures.as_completed(future_to_site):
+        site_key = future_to_site[future]
+        try:
+            site_results = future.result(timeout=7)
+            counts_by_site[site_key] = len(site_results)
+            all_items.extend(site_results)
+        except Exception as e:
+            print(f"[Search All Error - {site_key}] {e}")
+            counts_by_site[site_key] = 0
 
     _apply_smart_keyword_boost(all_items, queries_to_use)
     all_items.sort(key=lambda x: (x.get("similarity", 0), x.get("likes", 0)), reverse=True)

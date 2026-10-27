@@ -6,5 +6,8 @@ venv/
 env/
 .env
 config.json
+analytics.db
+analytics.db-shm
+analytics.db-wal
 .DS_Store
 Thumbs.db

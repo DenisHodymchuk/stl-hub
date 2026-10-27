@@ -1,4 +1,4 @@
-const STLHUB_BASE_URL = "http://127.0.0.1:8000";
+const STLHUB_BASE_URL = "https://stl-hub.top";
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({

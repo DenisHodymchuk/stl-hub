@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>STL-HUB — Візуальний пошук 3D-моделей на 6 сайтах</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v=2" />
+  <link rel="shortcut icon" href="/static/favicon.svg?v=2" />
+  <link rel="apple-touch-icon" href="/static/favicon.svg?v=2" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -53,7 +56,6 @@
       background-color: var(--bg-base);
       color: var(--text-primary);
       min-height: 100vh;
-      transition: background-color 0.15s ease, color 0.15s ease;
     }
 
     .mw-surface {
@@ -69,14 +71,33 @@
     .mw-text-muted { color: var(--text-muted); }
     .mw-border { border-color: var(--border-color); }
 
+    /* Hardware-accelerated View Transitions API for zero-jank 60fps theme crossfade */
+    ::view-transition-group(root) {
+      animation-duration: 0.26s;
+      animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation-duration: 0.26s;
+      animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+      mix-blend-mode: normal;
+    }
+
+    /* Fallback transition ONLY for browsers without View Transitions API */
+    html.theme-fallback-anim,
+    html.theme-fallback-anim body,
+    html.theme-fallback-anim .mw-surface,
+    html.theme-fallback-anim .mw-elevated,
+    html.theme-fallback-anim .mw-card {
+      transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease !important;
+    }
+
     /* MakerWorld Card Style — GPU optimized for 120fps scrolling */
     .mw-card {
       background-color: var(--bg-surface);
       border: 1px solid var(--border-color);
       border-radius: 10px;
       box-shadow: var(--card-shadow);
-      content-visibility: auto;
-      contain-intrinsic-size: 0 295px;
       transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
     }
     .mw-card:hover {
@@ -103,50 +124,84 @@
       background-color: rgba(0, 174, 66, 0.08) !important;
     }
 
-    /* STL-HUB Platform Filter Pills — Zero scrollbars, crisp layout */
+    /* STL-HUB Platform Filter Pills — Clean MakerWorld-style Segmented Bar */
     .hub-filter-pill {
       display: inline-flex;
       align-items: center;
       gap: 7px;
-      padding: 7px 13px;
-      border-radius: 9px;
+      height: 36px;
+      padding: 0 13px;
+      border-radius: 10px;
       font-size: 13px;
       font-weight: 600;
       color: var(--text-secondary);
       background-color: var(--bg-elevated);
       border: 1px solid var(--border-color);
-      transition: all 0.15s ease;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       white-space: nowrap;
       cursor: pointer;
     }
     .hub-filter-pill:hover {
       color: var(--text-primary);
       border-color: #00AE42;
+      transform: translateY(-1px);
     }
     .hub-filter-pill.active {
       background-color: #00AE42;
       color: #FFFFFF;
       border-color: #00AE42;
-      box-shadow: 0 2px 10px rgba(0, 174, 66, 0.25);
+      box-shadow: 0 3px 12px rgba(0, 174, 66, 0.28);
     }
     .hub-filter-pill.active-fav {
       background-color: #E11D48;
       color: #FFFFFF;
       border-color: #E11D48;
-      box-shadow: 0 2px 10px rgba(225, 29, 72, 0.28);
+      box-shadow: 0 3px 12px rgba(225, 29, 72, 0.30);
     }
     .hub-filter-count {
       padding: 1px 7px;
       border-radius: 6px;
       font-size: 11px;
       font-weight: 700;
-      background-color: rgba(0, 0, 0, 0.18);
+      background-color: rgba(128, 128, 128, 0.16);
       color: inherit;
     }
     .hub-filter-pill.active .hub-filter-count,
     .hub-filter-pill.active-fav .hub-filter-count {
-      background-color: rgba(0, 0, 0, 0.28);
+      background-color: rgba(0, 0, 0, 0.26);
       color: #FFFFFF;
+    }
+
+    /* Compact Stepper Pagination */
+    .hub-page-stepper {
+      display: inline-flex;
+      align-items: center;
+      height: 36px;
+      background-color: var(--bg-elevated);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 2px;
+      gap: 2px;
+    }
+    .hub-page-step-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      transition: all 0.15s ease;
+    }
+    .hub-page-step-btn:hover:not(:disabled) {
+      background-color: #00AE42;
+      color: #FFFFFF;
+    }
+    .hub-page-step-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
     }
 
     /* Custom Dropdowns & Modern Switch */
@@ -381,9 +436,12 @@
           <span id="headerFavCount" class="px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-500 text-[11px] font-extrabold">0</span>
         </button>
 
-        <button onclick="toggleTheme()" class="p-2 rounded-lg mw-elevated border hover:border-[#00AE42] transition" title="Перемкнути Світлу / Темну тему">
-          <svg id="themeIconSun" class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button onclick="toggleTheme()" class="p-2 rounded-lg mw-elevated border hover:border-[#00AE42] transition relative overflow-hidden" title="Перемкнути Світлу / Темну тему">
+          <svg id="themeIconSun" class="w-4 h-4 text-amber-400 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+          <svg id="themeIconMoon" class="w-4 h-4 text-sky-400 hidden transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
           </svg>
         </button>
       </div>
@@ -522,61 +580,68 @@
     <!-- Results Section (MakerWorld 5-Column Grid + Tabs) -->
     <section id="resultsSection" class="hidden space-y-5">
 
-      <!-- Clean Multi-Row Filter & Control Bar (No ugly scrollbars!) -->
-      <div class="mw-surface border rounded-2xl p-4 flex flex-col gap-3.5 shadow-sm">
+      <!-- Clean Structured 2-Row Filter & Control Toolbar -->
+      <div class="mw-surface border rounded-2xl p-4 sm:px-5 sm:py-4 flex flex-col gap-3.5 shadow-sm">
 
-        <!-- Row 1: Platform Pills (Wraps cleanly, zero scrollbars) -->
-        <div class="flex flex-wrap items-center gap-2" id="siteFilterButtons">
-          <button onclick="setSiteFilter('all')" data-site="all" class="hub-filter-pill active">
-            <span>Усі моделі</span>
-            <span id="count-all" class="hub-filter-count">0</span>
-          </button>
-          <button onclick="setSiteFilter('makerworld')" data-site="makerworld" class="hub-filter-pill">
-            <span class="w-2 h-2 rounded-full bg-[#00AE42]"></span>
-            <span>MakerWorld</span>
-            <span id="count-makerworld" class="hub-filter-count">0</span>
-          </button>
-          <button onclick="setSiteFilter('printables')" data-site="printables" class="hub-filter-pill">
-            <span class="w-2 h-2 rounded-full bg-orange-500"></span>
-            <span>Printables</span>
-            <span id="count-printables" class="hub-filter-count">0</span>
-          </button>
-          <button onclick="setSiteFilter('thangs')" data-site="thangs" class="hub-filter-pill">
-            <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
-            <span>Thangs</span>
-            <span id="count-thangs" class="hub-filter-count">0</span>
-          </button>
-          <button onclick="setSiteFilter('cults3d')" data-site="cults3d" class="hub-filter-pill">
-            <span class="w-2 h-2 rounded-full bg-purple-500"></span>
-            <span>Cults3D</span>
-            <span id="count-cults3d" class="hub-filter-count">0</span>
-          </button>
-          <button onclick="setSiteFilter('myminifactory')" data-site="myminifactory" class="hub-filter-pill">
-            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-            <span>MyMiniFactory</span>
-            <span id="count-myminifactory" class="hub-filter-count">0</span>
-          </button>
-          <button onclick="setSiteFilter('thingiverse')" data-site="thingiverse" class="hub-filter-pill">
-            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-            <span>Thingiverse</span>
-            <span id="count-thingiverse" class="hub-filter-count">0</span>
-          </button>
-          <button onclick="setSiteFilter('favorites')" data-site="favorites" class="hub-filter-pill ml-auto">
+        <!-- Row 1: Platform Filter Pills Left + Favorites Right -->
+        <div class="flex flex-wrap items-center justify-between gap-2" id="siteFilterButtons">
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="setSiteFilter('all')" data-site="all" class="hub-filter-pill active">
+              <span>Усі моделі</span>
+              <span id="count-all" class="hub-filter-count">0</span>
+            </button>
+            <button onclick="setSiteFilter('makerworld')" data-site="makerworld" class="hub-filter-pill">
+              <span class="w-2 h-2 rounded-full bg-[#00AE42]"></span>
+              <span>MakerWorld</span>
+              <span id="count-makerworld" class="hub-filter-count">0</span>
+            </button>
+            <button onclick="setSiteFilter('printables')" data-site="printables" class="hub-filter-pill">
+              <span class="w-2 h-2 rounded-full bg-orange-500"></span>
+              <span>Printables</span>
+              <span id="count-printables" class="hub-filter-count">0</span>
+            </button>
+            <button onclick="setSiteFilter('thangs')" data-site="thangs" class="hub-filter-pill">
+              <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+              <span>Thangs</span>
+              <span id="count-thangs" class="hub-filter-count">0</span>
+            </button>
+            <button onclick="setSiteFilter('cults3d')" data-site="cults3d" class="hub-filter-pill">
+              <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+              <span>Cults3D</span>
+              <span id="count-cults3d" class="hub-filter-count">0</span>
+            </button>
+            <button onclick="setSiteFilter('myminifactory')" data-site="myminifactory" class="hub-filter-pill">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span>MyMiniFactory</span>
+              <span id="count-myminifactory" class="hub-filter-count">0</span>
+            </button>
+            <button onclick="setSiteFilter('thingiverse')" data-site="thingiverse" class="hub-filter-pill">
+              <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+              <span>Thingiverse</span>
+              <span id="count-thingiverse" class="hub-filter-count">0</span>
+            </button>
+          </div>
+
+          <button onclick="setSiteFilter('favorites')" data-site="favorites" class="hub-filter-pill">
             <span>❤️ Обране</span>
             <span id="count-favorites" class="hub-filter-count">0</span>
           </button>
         </div>
 
-        <!-- Row 2: Active Query Info Left + Controls & Top Pagination Right in One Single Clean Line -->
-        <div class="pt-3 border-t mw-border flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-          <div class="text-xs mw-text-secondary flex flex-wrap items-center gap-1.5">
-            <span>Пошук: <strong id="activeQueryLabel" class="mw-text-primary font-bold"></strong></span>
-            <span id="elapsedTimeBadge" class="hidden px-2 py-0.5 rounded bg-[#00AE42]/15 text-[#00AE42] font-bold text-[11px]"></span>
-            <span class="mw-text-muted">•</span>
-            <span id="pageRangeLabel" class="mw-text-secondary"></span>
+        <!-- Row 2: Search Status Badge Left + Single-Line Controls & Compact Page Stepper Right -->
+        <div class="pt-3 border-t mw-border flex flex-col xl:flex-row xl:items-center justify-between gap-3">
+          <!-- Left Status Pill -->
+          <div class="flex flex-wrap items-center gap-2 text-xs">
+            <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg mw-elevated border">
+              <span class="mw-text-muted">Запит:</span>
+              <strong id="activeQueryLabel" class="mw-text-primary font-bold"></strong>
+            </div>
+            <span id="elapsedTimeBadge" class="hidden px-2.5 py-1.5 rounded-lg bg-[#00AE42]/15 text-[#00AE42] font-bold text-xs"></span>
+            <span id="pageRangeLabel" class="mw-text-secondary font-medium pl-1"></span>
           </div>
 
-          <div class="flex flex-wrap items-center gap-2.5">
+          <!-- Right Controls (Strictly 1 horizontal row on desktop, never wraps pagination underneath!) -->
+          <div class="flex flex-wrap items-center gap-2">
             <!-- Modern Toggle Switch: Free Only -->
             <label class="hub-dropdown-btn">
               <input id="freeOnlyCheckbox" type="checkbox" onchange="onFilterOrSortChange()" class="sr-only" />
@@ -590,20 +655,20 @@
             <div class="relative" id="perPageDropdown">
               <input type="hidden" id="perPageSelect" value="25" />
               <button type="button" onclick="toggleCustomDropdown('perPageMenu', this)" class="hub-dropdown-btn">
-                <span class="mw-text-muted font-normal">Показувати:</span>
-                <span id="perPageLabel">По 25 моделей</span>
+                <span class="mw-text-muted font-normal">Показ:</span>
+                <span id="perPageLabel">По 25</span>
                 <svg class="w-3.5 h-3.5 mw-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
               <div id="perPageMenu" class="hub-dropdown-menu hidden">
-                <button type="button" onclick="selectPerPage('25', 'По 25 моделей', this)" class="hub-dropdown-item selected">
+                <button type="button" onclick="selectPerPage('25', 'По 25', this)" class="hub-dropdown-item selected">
                   <span>По 25 моделей</span><span class="check-icon">✓</span>
                 </button>
-                <button type="button" onclick="selectPerPage('50', 'По 50 моделей', this)" class="hub-dropdown-item">
+                <button type="button" onclick="selectPerPage('50', 'По 50', this)" class="hub-dropdown-item">
                   <span>По 50 моделей</span><span class="check-icon hidden">✓</span>
                 </button>
-                <button type="button" onclick="selectPerPage('100', 'По 100 моделей', this)" class="hub-dropdown-item">
+                <button type="button" onclick="selectPerPage('100', 'По 100', this)" class="hub-dropdown-item">
                   <span>По 100 моделей</span><span class="check-icon hidden">✓</span>
                 </button>
                 <button type="button" onclick="selectPerPage('999', 'Усі одразу', this)" class="hub-dropdown-item">
@@ -632,8 +697,8 @@
               </div>
             </div>
 
-            <!-- Top Pagination -->
-            <div id="paginationTop" class="flex items-center gap-1 pl-1"></div>
+            <!-- Top Compact Page Stepper -->
+            <div id="paginationTop" class="flex items-center"></div>
           </div>
         </div>
       </div>
@@ -733,17 +798,39 @@
       thingiverse: { bg: 'bg-[#2563EB]', text: 'text-white', label: 'Thingiverse' },
     };
 
-    // Theme Switcher
+    // Theme Switcher with smooth View Transition + Sun/Moon icon sync
+    function syncThemeIcon() {
+      const isDark = document.documentElement.classList.contains('dark');
+      const sun = document.getElementById('themeIconSun');
+      const moon = document.getElementById('themeIconMoon');
+      if (sun && moon) {
+        sun.classList.toggle('hidden', !isDark);
+        moon.classList.toggle('hidden', isDark);
+      }
+    }
+
     function toggleTheme() {
       const html = document.documentElement;
-      html.classList.toggle('dark');
-      localStorage.setItem('stlhub_theme', html.classList.contains('dark') ? 'dark' : 'light');
+      const applySwitch = () => {
+        html.classList.toggle('dark');
+        localStorage.setItem('stlhub_theme', html.classList.contains('dark') ? 'dark' : 'light');
+        syncThemeIcon();
+      };
+      if (document.startViewTransition) {
+        document.startViewTransition(applySwitch);
+      } else {
+        html.classList.add('theme-fallback-anim');
+        applySwitch();
+        setTimeout(() => html.classList.remove('theme-fallback-anim'), 300);
+      }
     }
+
     (function initTheme() {
       const saved = localStorage.getItem('stlhub_theme');
       if (saved === 'light') {
         document.documentElement.classList.remove('dark');
       }
+      syncThemeIcon();
     })();
 
     // Favorites Management
@@ -804,13 +891,29 @@
       renderSearchHistoryBar();
     }
 
+    function makeTinyThumb(dataUrl) {
+      if (!dataUrl || !dataUrl.startsWith('data:image/')) return dataUrl || '';
+      try {
+        const img = document.getElementById('aiStripThumb') || document.getElementById('previewImage');
+        if (!img || !img.naturalWidth) return '';
+        const c = document.createElement('canvas');
+        c.width = 48;
+        c.height = 48;
+        const ctx = c.getContext('2d');
+        ctx.drawImage(img, 0, 0, 48, 48);
+        return c.toDataURL('image/jpeg', 0.6);
+      } catch (e) {
+        return '';
+      }
+    }
+
     function addSearchHistoryEntry(entry) {
       if (!entry || !entry.query) return;
       searchHistory = searchHistory.filter(x => x.query.toLowerCase() !== entry.query.toLowerCase());
       searchHistory.unshift({
         query: entry.query,
         title: entry.title || entry.query,
-        thumb: entry.thumb || '',
+        thumb: makeTinyThumb(entry.thumb || ''),
         ts: Date.now()
       });
       if (searchHistory.length > 8) searchHistory = searchHistory.slice(0, 8);
@@ -915,26 +1018,68 @@
       if (file) setPhotoFile(file, true);
     }
 
-    function setPhotoFile(file, autoSearch = false) {
-      selectedFile = file;
+    function compressImageFile(file, maxDim = 800, quality = 0.85) {
+      return new Promise((resolve) => {
+        const objUrl = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+          URL.revokeObjectURL(objUrl);
+          let w = img.naturalWidth || img.width;
+          let h = img.naturalHeight || img.height;
+          if (!w || !h) {
+            resolve({ file, dataUrl: '' });
+            return;
+          }
+          if (w > maxDim || h > maxDim) {
+            if (w > h) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
+            } else {
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          const dataUrl = canvas.toDataURL('image/jpeg', quality);
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const compressed = new File([blob], (file.name || 'photo').replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' });
+              resolve({ file: compressed, dataUrl });
+            } else {
+              resolve({ file, dataUrl });
+            }
+          }, 'image/jpeg', quality);
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(objUrl);
+          const reader = new FileReader();
+          reader.onload = e => resolve({ file, dataUrl: e.target.result });
+          reader.readAsDataURL(file);
+        };
+        img.src = objUrl;
+      });
+    }
+
+    async function setPhotoFile(file, autoSearch = false) {
       document.getElementById('imageUrlInput').value = '';
-      const reader = new FileReader();
-      reader.onload = e => {
-        const dataUrl = e.target.result;
-        currentImageDataUrl = dataUrl;
-        document.getElementById('previewImage').src = dataUrl;
-        document.getElementById('searchBarThumb').src = dataUrl;
-        document.getElementById('aiStripThumb').src = dataUrl;
-        document.getElementById('searchBarPhotoChip').classList.remove('hidden');
-        document.getElementById('searchBarPhotoChip').classList.add('flex');
-        document.getElementById('previewFileName').textContent = file.name || 'Зображення з буфера обміну';
-        document.getElementById('uploadEmptyState').classList.add('hidden');
-        document.getElementById('uploadPreviewState').classList.remove('hidden');
-        if (autoSearch) {
-          startPhotoSearch();
-        }
-      };
-      reader.readAsDataURL(file);
+      const { file: optimizedFile, dataUrl } = await compressImageFile(file, 800, 0.85);
+      selectedFile = optimizedFile;
+      currentImageDataUrl = dataUrl;
+      document.getElementById('previewImage').src = dataUrl;
+      document.getElementById('searchBarThumb').src = dataUrl;
+      document.getElementById('aiStripThumb').src = dataUrl;
+      document.getElementById('searchBarPhotoChip').classList.remove('hidden');
+      document.getElementById('searchBarPhotoChip').classList.add('flex');
+      document.getElementById('previewFileName').textContent = file.name || 'Зображення з буфера обміну';
+      document.getElementById('uploadEmptyState').classList.add('hidden');
+      document.getElementById('uploadPreviewState').classList.remove('hidden');
+      if (autoSearch) {
+        startPhotoSearch();
+      }
     }
 
     function handleUrlInput() {
@@ -1113,19 +1258,19 @@
       toggleUploadPopover(false);
       showLoading('Паралельний візуальний пошук MakerWorld + ШІ-аналіз на 6 сайтах...');
 
-      const formData = new FormData();
-      if (selectedFile) {
-        formData.append('file', selectedFile);
-      } else if (imageUrl) {
-        formData.append('image_url', imageUrl);
-      }
-      formData.append('hint', hint);
-      formData.append('limit_per_site', '30');
+      const payload = {
+        image_base64: (selectedFile && currentImageDataUrl && currentImageDataUrl.startsWith('data:')) ? currentImageDataUrl : '',
+        image_url: (!selectedFile && imageUrl) ? imageUrl : '',
+        hint: hint,
+        limit_per_site: 50,
+        fast_mode: true
+      };
 
       try {
         const resp = await fetch('/api/search-by-photo', {
           method: 'POST',
-          body: formData
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
         });
         const data = await resp.json();
         if (!resp.ok) {
@@ -1137,12 +1282,35 @@
         displayAiAnalysis(data.ai_analysis, data.search.query);
         if (currentSiteFilter === 'favorites') currentSiteFilter = 'all';
         updateSearchResults(data.search);
+        hideLoading();
 
         addSearchHistoryEntry({
           query: data.search.query,
           title: data.ai_analysis.title_uk || data.search.query,
           thumb: document.getElementById('aiStripThumb').src || ''
         });
+
+        // Stage 2: Fetch the remaining 5 sites in the background without blocking the UI
+        const elapsedEl = document.getElementById('elapsedTimeBadge');
+        if (elapsedEl) {
+          elapsedEl.textContent = `⏳ Довантажуємо ще 5 сайтів...`;
+          elapsedEl.classList.remove('hidden');
+        }
+        const url2 = new URL('/api/search', window.location.origin);
+        url2.searchParams.set('q', data.search.query);
+        if (data.secondary_queries && data.secondary_queries.length) {
+          url2.searchParams.set('secondary_q', data.secondary_queries.join('|'));
+        }
+        if (currentImageId) url2.searchParams.set('image_id', currentImageId);
+        url2.searchParams.set('limit_per_site', '50');
+
+        const resp2 = await fetch(url2);
+        if (resp2.ok) {
+          const data2 = await resp2.json();
+          const totalElapsed = ((data.search.elapsed_seconds || 0) + (data2.search.elapsed_seconds || 0)).toFixed(2);
+          data2.search.elapsed_seconds = totalElapsed;
+          updateSearchResults(data2.search);
+        }
       } catch (err) {
         alert(err.message || 'Сталася помилка при обробці фото.');
       } finally {
@@ -1162,7 +1330,7 @@
         const url = new URL('/api/search', window.location.origin);
         url.searchParams.set('q', cleanQ);
         if (currentImageId) url.searchParams.set('image_id', currentImageId);
-        url.searchParams.set('limit_per_site', '30');
+        url.searchParams.set('limit_per_site', '50');
 
         const resp = await fetch(url);
         const data = await resp.json();
@@ -1331,6 +1499,27 @@
       }
     }
 
+    function buildTopStepperHtml(totalPages, activePage) {
+      if (totalPages <= 1) return '';
+      const prevDisabled = activePage <= 1;
+      const nextDisabled = activePage >= totalPages;
+      return `
+        <div class="hub-page-stepper">
+          <button ${prevDisabled ? 'disabled' : `onclick="goToPage(${activePage - 1}, false)"`}
+                  class="hub-page-step-btn" title="Попередня сторінка">
+            ‹
+          </button>
+          <span class="px-2 text-xs font-bold mw-text-primary select-none whitespace-nowrap">
+            ${activePage} <span class="mw-text-muted font-normal">/ ${totalPages}</span>
+          </span>
+          <button ${nextDisabled ? 'disabled' : `onclick="goToPage(${activePage + 1}, false)"`}
+                  class="hub-page-step-btn" title="Наступна сторінка">
+            ›
+          </button>
+        </div>
+      `;
+    }
+
     function buildPaginationHtml(totalPages, activePage) {
       if (totalPages <= 1) return '';
       let html = '';
@@ -1398,16 +1587,18 @@
       const startIndex = (currentPage - 1) * perPage;
       const pageItems = filtered.slice(startIndex, startIndex + perPage);
 
-      const rangeText = totalFiltered > 0
+      const topRangeText = totalFiltered > 0
+        ? `Показано ${startIndex + 1}–${Math.min(startIndex + perPage, totalFiltered)} із ${totalFiltered} моделей`
+        : 'Моделей не знайдено';
+      const bottomRangeText = totalFiltered > 0
         ? `Показано ${startIndex + 1}–${Math.min(startIndex + perPage, totalFiltered)} із ${totalFiltered} моделей (Сторінка ${currentPage} з ${totalPages})`
         : 'Моделей не знайдено';
 
-      document.getElementById('pageRangeLabel').textContent = rangeText;
-      document.getElementById('pageRangeLabelBottom').textContent = rangeText;
+      document.getElementById('pageRangeLabel').textContent = topRangeText;
+      document.getElementById('pageRangeLabelBottom').textContent = bottomRangeText;
 
-      const pagHtml = buildPaginationHtml(totalPages, currentPage);
-      document.getElementById('paginationTop').innerHTML = pagHtml;
-      document.getElementById('paginationBottom').innerHTML = pagHtml;
+      document.getElementById('paginationTop').innerHTML = buildTopStepperHtml(totalPages, currentPage);
+      document.getElementById('paginationBottom').innerHTML = buildPaginationHtml(totalPages, currentPage);
 
       if (pageItems.length === 0) {
         grid.innerHTML = `
@@ -1433,6 +1624,7 @@
 
         return `
           <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer"
+             onclick="trackModelClick('${escapeJsString(item.site_id)}', '${escapeJsString(item.title)}', '${escapeJsString(item.url)}')"
              class="mw-card overflow-hidden flex flex-col justify-between group">
             <div>
               <!-- 4:3 MakerWorld Aspect Image Box -->
@@ -1555,6 +1747,17 @@
       } else {
         alert('Помилка збереження ключа');
       }
+    }
+
+    function trackModelClick(siteId, title, url) {
+      try {
+        fetch('/api/track-click', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ site_id: siteId, title: title, url: url }),
+          keepalive: true
+        });
+      } catch (e) {}
     }
 
     function formatNum(n) {

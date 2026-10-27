@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="uk" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STL-HUB Admin — Панель аналітики та керування</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v=2" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #121212;
+      --bg-surface: #1C1C1E;
+      --bg-elevated: #262629;
+      --text-primary: #F2F2F2;
+      --text-secondary: #A6A6A6;
+      --text-muted: #737373;
+      --border-color: #2E2E32;
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-base);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+    .mw-surface { background-color: var(--bg-surface); border-color: var(--border-color); }
+    .mw-elevated { background-color: var(--bg-elevated); border-color: var(--border-color); }
+    .mw-text-primary { color: var(--text-primary); }
+    .mw-text-secondary { color: var(--text-secondary); }
+    .mw-text-muted { color: var(--text-muted); }
+    .mw-border { border-color: var(--border-color); }
+  </style>
+</head>
+<body class="antialiased selection:bg-[#00AE42] selection:text-white">
+
+  <!-- Top Header -->
+  <header class="sticky top-0 z-40 mw-surface border-b">
+    <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-[64px] flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <a href="/" class="flex items-center gap-2.5 group">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#00C853] to-[#008C35] flex items-center justify-center text-white shadow">
+            <svg width="20" height="20" viewBox="0 0 28 28" fill="none">
+              <path d="M3 8V5C3 3.89543 3.89543 3 5 3H8" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M20 3H23C24.1046 3 25 3.89543 25 5V8" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M25 20V23C25 24.1046 24.1046 25 23 25H20" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M8 25H5C3.89543 25 3 24.1046 3 23V20" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M14 7.5L20 11V17L14 20.5L8 17V11L14 7.5Z" fill="white" fill-opacity="0.22" stroke="white" stroke-width="1.8" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="font-extrabold text-lg tracking-tight">STL<span class="text-[#00AE42]">-HUB</span></span>
+        </a>
+        <span class="px-2.5 py-0.5 rounded-md bg-[#00AE42]/15 text-[#00AE42] text-xs font-bold border border-[#00AE42]/30">
+          Адмін-панель
+        </span>
+      </div>
+
+      <div id="adminHeaderActions" class="hidden items-center gap-2.5">
+        <button onclick="loadStats()" class="px-3 py-1.5 rounded-lg mw-elevated border hover:border-[#00AE42] text-xs font-semibold flex items-center gap-1.5 transition">
+          <span>🔄</span><span>Оновити</span>
+        </button>
+        <button onclick="openPasswordModal()" class="px-3 py-1.5 rounded-lg mw-elevated border hover:border-[#00AE42] text-xs font-semibold flex items-center gap-1.5 transition">
+          <span>🔑</span><span class="hidden sm:inline">Змінити пароль</span>
+        </button>
+        <a href="/" class="px-3 py-1.5 rounded-lg mw-elevated border hover:border-[#00AE42] text-xs font-semibold transition">
+          ↗ На сайт
+        </a>
+        <button onclick="logoutAdmin()" class="px-3 py-1.5 rounded-lg bg-red-500/15 text-red-400 hover:bg-red-500 hover:text-white text-xs font-bold transition">
+          Вийти
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Login View -->
+  <div id="loginView" class="min-h-[82vh] flex items-center justify-center p-4">
+    <div class="mw-surface border rounded-2xl max-w-md w-full p-7 shadow-2xl">
+      <div class="w-12 h-12 rounded-2xl bg-[#00AE42]/15 text-[#00AE42] flex items-center justify-center mb-4">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+      </div>
+      <h1 class="text-xl font-extrabold mw-text-primary">Вхід в адмін-панель</h1>
+      <p class="text-xs mw-text-secondary mt-1 mb-5">Введіть пароль адміністратора для перегляду статистики відвідуваності та пошуків STL-HUB.</p>
+
+      <form onsubmit="submitLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold mw-text-secondary mb-1.5">Пароль адміністратора:</label>
+          <input id="adminPasswordInput" type="password" required autofocus placeholder="Введіть пароль..."
+                 class="w-full px-3.5 py-2.5 rounded-xl mw-elevated border text-sm mw-text-primary focus:outline-none focus:border-[#00AE42]" />
+        </div>
+        <p id="loginErrorMsg" class="hidden text-xs text-red-400 font-semibold"></p>
+        <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-[#00AE42] hover:bg-[#00993A] text-white font-bold text-sm shadow transition">
+          Увійти в панель
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Dashboard View -->
+  <main id="dashboardView" class="hidden max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- Top KPI Cards (5 Cards) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <!-- Online Now -->
+      <div class="mw-surface border rounded-2xl p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold mw-text-secondary">Зараз на сайті (15 хв)</span>
+          <span class="w-2.5 h-2.5 rounded-full bg-[#00AE42] animate-ping"></span>
+        </div>
+        <div class="mt-3 flex items-baseline gap-2">
+          <span id="kpiOnline" class="text-3xl font-extrabold text-[#00AE42]">0</span>
+          <span class="text-xs mw-text-muted">активних</span>
+        </div>
+        <p id="kpiDevices" class="text-[11px] mw-text-muted mt-2">ПК: 0 • Мобільні: 0</p>
+      </div>
+
+      <!-- Visitors Today -->
+      <div class="mw-surface border rounded-2xl p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold mw-text-secondary">Сьогодні (Унікальні / Перегляди)</span>
+          <span class="text-sm">👥</span>
+        </div>
+        <div class="mt-3 flex items-baseline gap-2">
+          <span id="kpiTodayUniq" class="text-3xl font-extrabold mw-text-primary">0</span>
+          <span class="text-sm mw-text-muted">/ <span id="kpiTodayViews">0</span> переглядів</span>
+        </div>
+        <p class="text-[11px] mw-text-muted mt-2">За 7 днів: <strong id="kpiWeekUniq" class="mw-text-primary">0</strong> унік. (<span id="kpiWeekViews">0</span> перегл.)</p>
+      </div>
+
+      <!-- Total Visitors All Time -->
+      <div class="mw-surface border rounded-2xl p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold mw-text-secondary">Усього відвідувачів</span>
+          <span class="text-sm">🌍</span>
+        </div>
+        <div class="mt-3 flex items-baseline gap-2">
+          <span id="kpiTotalUniq" class="text-3xl font-extrabold mw-text-primary">0</span>
+          <span class="text-sm mw-text-muted">/ <span id="kpiTotalViews">0</span> переглядів</span>
+        </div>
+        <p class="text-[11px] mw-text-muted mt-2">За весь час роботи сервера</p>
+      </div>
+
+      <!-- Searches (Photo vs Text) -->
+      <div class="mw-surface border rounded-2xl p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold mw-text-secondary">Пошукові запити</span>
+          <span class="text-sm">🔍</span>
+        </div>
+        <div class="mt-3 flex items-baseline gap-2">
+          <span id="kpiTotalSearches" class="text-3xl font-extrabold mw-text-primary">0</span>
+          <span class="text-xs px-2 py-0.5 rounded bg-[#00AE42]/15 text-[#00AE42] font-bold">Сьогодні: <span id="kpiTodaySearches">0</span></span>
+        </div>
+        <p class="text-[11px] mw-text-muted mt-2">
+          📷 Фото: <strong id="kpiPhotoSearches" class="mw-text-primary">0</strong> • ⌨️ Текст: <strong id="kpiTextSearches" class="mw-text-primary">0</strong> • ⚡ Сер. час: <strong id="kpiAvgTime" class="text-[#00AE42]">0s</strong>
+        </p>
+      </div>
+
+      <!-- Outbound Clicks to 3D Sites -->
+      <div class="mw-surface border rounded-2xl p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold mw-text-secondary">Переходи на 3D-сайти</span>
+          <span class="text-sm">🚀</span>
+        </div>
+        <div class="mt-3 flex items-baseline gap-2">
+          <span id="kpiTotalClicks" class="text-3xl font-extrabold mw-text-primary">0</span>
+          <span class="text-xs px-2 py-0.5 rounded bg-blue-500/15 text-blue-400 font-bold">Сьогодні: <span id="kpiTodayClicks">0</span></span>
+        </div>
+        <p class="text-[11px] mw-text-muted mt-2">Кліки по картках моделей</p>
+      </div>
+    </div>
+
+    <!-- Middle Row: 14-Day Traffic Chart + Clicks by 3D Platform -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <!-- 14-Day Activity Bar Chart -->
+      <div class="lg:col-span-8 mw-surface border rounded-2xl p-5">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+          <div>
+            <h2 class="text-sm font-bold mw-text-primary">Динаміка за останні 14 днів</h2>
+            <p class="text-xs mw-text-muted">Перегляди сторінок, унікальні відвідувачі та виконані пошуки по днях</p>
+          </div>
+          <div class="flex items-center gap-4 text-xs">
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-[#00AE42]"></span>Перегляди</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-sky-400"></span>Пошуки</span>
+          </div>
+        </div>
+        <div id="dailyChartContainer" class="h-52 flex items-end gap-2 pt-6 pb-2 px-2 border-b mw-border"></div>
+        <div id="dailyChartLabels" class="grid grid-cols-14 gap-2 pt-2 text-center text-[10px] mw-text-muted"></div>
+      </div>
+
+      <!-- Platform Clicks Distribution -->
+      <div class="lg:col-span-4 mw-surface border rounded-2xl p-5 flex flex-col justify-between">
+        <div>
+          <h2 class="text-sm font-bold mw-text-primary mb-1">Популярність 3D-платформ</h2>
+          <p class="text-xs mw-text-muted mb-4">Куди найчастіше переходять користувачі з результатів пошуку</p>
+          <div id="siteClicksBars" class="space-y-3"></div>
+        </div>
+        <div class="pt-4 border-t mw-border mt-4 text-[11px] mw-text-muted flex items-center justify-between">
+          <span>Автооновлення кожні 15 сек</span>
+          <span id="lastUpdatedLabel">Оновлено щойно</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Row: Top Queries + Live Recent Searches + Recent Outbound Clicks -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <!-- Top Search Queries -->
+      <div class="lg:col-span-4 mw-surface border rounded-2xl p-5">
+        <h2 class="text-sm font-bold mw-text-primary mb-1">🔥 Топ популярних запитів</h2>
+        <p class="text-xs mw-text-muted mb-4">Найчастіші пошукові запити на сайті</p>
+        <div id="topQueriesList" class="space-y-2"></div>
+      </div>
+
+      <!-- Recent Searches Live Table -->
+      <div class="lg:col-span-8 mw-surface border rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h2 class="text-sm font-bold mw-text-primary">🕓 Останні пошуки в реальному часі</h2>
+            <p class="text-xs mw-text-muted">Останні 25 запитів користувачів (по фото та тексту)</p>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="border-b mw-border mw-text-muted">
+                <th class="py-2 pr-3 font-semibold">Час</th>
+                <th class="py-2 px-3 font-semibold">Тип</th>
+                <th class="py-2 px-3 font-semibold">Запит / Розпізнана деталь</th>
+                <th class="py-2 px-3 font-semibold">Знайдено</th>
+                <th class="py-2 px-3 font-semibold">Швидкість</th>
+                <th class="py-2 pl-3 font-semibold">Користувач</th>
+              </tr>
+            </thead>
+            <tbody id="recentSearchesTable" class="divide-y divide-[#2E2E32]"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Change Admin Password Modal -->
+  <div id="passwordModal" class="hidden fixed inset-0 z-50 bg-black/75 flex items-center justify-center p-4">
+    <div class="mw-surface border rounded-2xl max-w-md w-full p-6 shadow-2xl">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-base font-bold mw-text-primary">Змінити пароль адмін-панелі</h3>
+        <button onclick="closePasswordModal()" class="mw-text-muted hover:mw-text-primary">✕</button>
+      </div>
+      <form onsubmit="submitPasswordChange(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs mw-text-secondary mb-1">Поточний пароль:</label>
+          <input id="curPassInput" type="password" required class="w-full px-3 py-2 rounded-lg mw-elevated border text-sm mw-text-primary focus:outline-none focus:border-[#00AE42]" />
+        </div>
+        <div>
+          <label class="block text-xs mw-text-secondary mb-1">Новий пароль:</label>
+          <input id="newPassInput" type="password" required minlength="4" class="w-full px-3 py-2 rounded-lg mw-elevated border text-sm mw-text-primary focus:outline-none focus:border-[#00AE42]" />
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closePasswordModal()" class="px-4 py-2 rounded-lg mw-elevated text-xs font-semibold">Скасувати</button>
+          <button type="submit" class="px-4 py-2 rounded-lg bg-[#00AE42] hover:bg-[#00993A] text-white text-xs font-bold">Зберегти пароль</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let adminToken = localStorage.getItem('stlhub_admin_token') || '';
+    let refreshTimer = null;
+
+    const SITE_META = {
+      makerworld: { name: 'MakerWorld', color: '#00AE42' },
+      printables: { name: 'Printables', color: '#FA6831' },
+      thangs: { name: 'Thangs', color: '#0891B2' },
+      cults3d: { name: 'Cults3D', color: '#8224E3' },
+      myminifactory: { name: 'MyMiniFactory', color: '#059669' },
+      thingiverse: { name: 'Thingiverse', color: '#2563EB' },
+    };
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    async function submitLogin(e) {
+      e.preventDefault();
+      const pw = document.getElementById('adminPasswordInput').value;
+      const errEl = document.getElementById('loginErrorMsg');
+      errEl.classList.add('hidden');
+      try {
+        const resp = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pw })
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+          throw new Error(data.detail || 'Невірний пароль');
+        }
+        adminToken = data.token;
+        localStorage.setItem('stlhub_admin_token', adminToken);
+        showDashboard();
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.remove('hidden');
+      }
+    }
+
+    function logoutAdmin() {
+      adminToken = '';
+      localStorage.removeItem('stlhub_admin_token');
+      if (refreshTimer) clearInterval(refreshTimer);
+      document.getElementById('dashboardView').classList.add('hidden');
+      document.getElementById('adminHeaderActions').classList.add('hidden');
+      document.getElementById('loginView').classList.remove('hidden');
+    }
+
+    function showDashboard() {
+      document.getElementById('loginView').classList.add('hidden');
+      document.getElementById('dashboardView').classList.remove('hidden');
+      document.getElementById('adminHeaderActions').classList.remove('hidden');
+      document.getElementById('adminHeaderActions').classList.add('flex');
+      loadStats();
+      if (refreshTimer) clearInterval(refreshTimer);
+      refreshTimer = setInterval(loadStats, 15000);
+    }
+
+    async function loadStats() {
+      if (!adminToken) return;
+      try {
+        const resp = await fetch('/api/admin/stats?days=14', {
+          headers: { 'X-Admin-Token': adminToken }
+        });
+        if (resp.status === 401) {
+          logoutAdmin();
+          return;
+        }
+        const s = await resp.json();
+        renderDashboard(s);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function renderDashboard(s) {
+      document.getElementById('kpiOnline').textContent = s.online_now || 0;
+      const pcCount = (s.devices && s.devices['💻 ПК']) || 0;
+      const mobCount = (s.devices && s.devices['📱 Мобільний']) || 0;
+      document.getElementById('kpiDevices').textContent = `💻 ПК: ${pcCount} • 📱 Мобільні: ${mobCount}`;
+
+      document.getElementById('kpiTodayUniq').textContent = s.today.unique_visitors;
+      document.getElementById('kpiTodayViews').textContent = s.today.views;
+      document.getElementById('kpiWeekUniq').textContent = s.week.unique_visitors;
+      document.getElementById('kpiWeekViews').textContent = s.week.views;
+
+      document.getElementById('kpiTotalUniq').textContent = s.all_time.unique_visitors;
+      document.getElementById('kpiTotalViews').textContent = s.all_time.views;
+
+      document.getElementById('kpiTotalSearches').textContent = s.all_time.searches;
+      document.getElementById('kpiTodaySearches').textContent = s.today.searches;
+      document.getElementById('kpiPhotoSearches').textContent = s.all_time.photo_searches;
+      document.getElementById('kpiTextSearches').textContent = s.all_time.text_searches;
+      document.getElementById('kpiAvgTime').textContent = `${s.all_time.avg_search_sec || 0} сек`;
+
+      document.getElementById('kpiTotalClicks').textContent = s.all_time.clicks;
+      document.getElementById('kpiTodayClicks').textContent = s.today.clicks;
+      document.getElementById('lastUpdatedLabel').textContent = `Оновлено о ${new Date().toLocaleTimeString('uk-UA')}`;
+
+      // Render 14-day Bar Chart
+      const series = s.daily_series || [];
+      const maxVal = Math.max(1, ...series.map(d => Math.max(d.views, d.searches)));
+      const chartEl = document.getElementById('dailyChartContainer');
+      chartEl.innerHTML = series.map(d => {
+        const vH = Math.max(4, Math.round((d.views / maxVal) * 155));
+        const sH = Math.max(4, Math.round((d.searches / maxVal) * 155));
+        return `
+          <div class="flex-1 flex flex-col items-center justify-end gap-1 group relative">
+            <div class="opacity-0 group-hover:opacity-100 transition absolute -top-7 bg-black/90 text-white text-[10px] px-2 py-0.5 rounded whitespace-nowrap pointer-events-none z-10">
+              ${d.label}: ${d.views} перегл. (${d.unique_visitors} унік.), ${d.searches} пош.
+            </div>
+            <div class="w-full flex items-end justify-center gap-1">
+              <div style="height:${vH}px" class="w-2.5 sm:w-3.5 rounded-t bg-[#00AE42] transition-all"></div>
+              <div style="height:${sH}px" class="w-2.5 sm:w-3.5 rounded-t bg-sky-400 transition-all"></div>
+            </div>
+            <span class="text-[10px] mw-text-muted mt-1">${escapeHtml(d.label)}</span>
+          </div>
+        `;
+      }).join('');
+
+      // Render Platform Clicks Bars
+      const siteClicks = s.clicks_by_site || {};
+      const totalClicks = Math.max(1, Object.values(siteClicks).reduce((a, b) => a + b, 0));
+      const siteOrder = ['makerworld', 'printables', 'thangs', 'cults3d', 'myminifactory', 'thingiverse'];
+      document.getElementById('siteClicksBars').innerHTML = siteOrder.map(siteKey => {
+        const meta = SITE_META[siteKey] || { name: siteKey, color: '#00AE42' };
+        const cnt = siteClicks[siteKey] || 0;
+        const pct = Math.round((cnt / totalClicks) * 100);
+        return `
+          <div>
+            <div class="flex items-center justify-between text-xs mb-1">
+              <span class="font-semibold mw-text-primary">${escapeHtml(meta.name)}</span>
+              <span class="mw-text-secondary font-bold">${cnt} кліків (${cnt ? pct : 0}%)</span>
+            </div>
+            <div class="w-full h-2 rounded-full mw-elevated overflow-hidden">
+              <div style="width:${cnt ? Math.max(4, pct) : 0}%; background-color:${meta.color}" class="h-full rounded-full transition-all"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Render Top Queries
+      const topQ = s.top_queries || [];
+      document.getElementById('topQueriesList').innerHTML = topQ.length ? topQ.map((item, idx) => `
+        <div class="flex items-center justify-between px-3 py-2 rounded-xl mw-elevated border text-xs">
+          <div class="flex items-center gap-2 min-w-0 pr-2">
+            <span class="w-5 h-5 rounded-md bg-[#00AE42]/15 text-[#00AE42] font-bold flex items-center justify-center shrink-0">${idx + 1}</span>
+            <div class="truncate">
+              <span class="font-bold mw-text-primary">${escapeHtml(item.query)}</span>
+              ${item.ai_title ? `<span class="mw-text-muted ml-1">(${escapeHtml(item.ai_title)})</span>` : ''}
+            </div>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-black/30 mw-text-primary font-bold shrink-0">${item.count}</span>
+        </div>
+      `).join('') : `<p class="text-xs mw-text-muted py-4 text-center">Поки немає пошукових запитів</p>`;
+
+      // Render Recent Searches Table
+      const recS = s.recent_searches || [];
+      document.getElementById('recentSearchesTable').innerHTML = recS.length ? recS.map(r => `
+        <tr class="hover:bg-white/[0.02]">
+          <td class="py-2.5 pr-3 mw-text-muted whitespace-nowrap">${escapeHtml(r.time_str)}</td>
+          <td class="py-2.5 px-3 whitespace-nowrap">
+            ${r.search_type === 'photo'
+              ? '<span class="px-2 py-0.5 rounded bg-[#00AE42]/15 text-[#00AE42] font-bold">📷 По фото</span>'
+              : '<span class="px-2 py-0.5 rounded bg-sky-500/15 text-sky-400 font-bold">⌨️ Текст</span>'}
+          </td>
+          <td class="py-2.5 px-3">
+            <span class="font-bold mw-text-primary">${escapeHtml(r.query)}</span>
+            ${r.ai_title ? `<span class="mw-text-muted ml-1.5">— ${escapeHtml(r.ai_title)}</span>` : ''}
+          </td>
+          <td class="py-2.5 px-3 font-semibold">${r.results_count} моделей</td>
+          <td class="py-2.5 px-3 text-[#00AE42] font-bold">${r.elapsed_sec} с</td>
+          <td class="py-2.5 pl-3 mw-text-muted font-mono">#${escapeHtml(r.visitor)}</td>
+        </tr>
+      `).join('') : `<tr><td colspan="6" class="py-6 text-center mw-text-muted">Ще немає записів</td></tr>`;
+    }
+
+    function openPasswordModal() {
+      document.getElementById('passwordModal').classList.remove('hidden');
+    }
+    function closePasswordModal() {
+      document.getElementById('passwordModal').classList.add('hidden');
+    }
+
+    async function submitPasswordChange(e) {
+      e.preventDefault();
+      const cur = document.getElementById('curPassInput').value;
+      const nw = document.getElementById('newPassInput').value;
+      const resp = await fetch('/api/admin/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Token': adminToken
+        },
+        body: JSON.stringify({ current_password: cur, new_password: nw })
+      });
+      const data = await resp.json();
+      if (!resp.ok) {
+        alert(data.detail || 'Помилка зміни пароля');
+        return;
+      }
+      adminToken = data.token;
+      localStorage.setItem('stlhub_admin_token', adminToken);
+      closePasswordModal();
+      alert('Пароль успішно змінено!');
+    }
+
+    if (adminToken) {
+      showDashboard();
+    }
+  </script>
+</body>
+</html>

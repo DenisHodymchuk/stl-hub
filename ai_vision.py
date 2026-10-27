@@ -11,6 +11,16 @@ CONFIG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.j
 
 DEFAULT_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 
+_GENAI_CLIENTS: Dict[str, genai.Client] = {}
+
+
+def _get_genai_client(api_key: str) -> genai.Client:
+    client = _GENAI_CLIENTS.get(api_key)
+    if client is None:
+        client = genai.Client(api_key=api_key)
+        _GENAI_CLIENTS[api_key] = client
+    return client
+
 
 def load_config() -> Dict[str, Any]:
     if os.path.exists(CONFIG_PATH):
@@ -25,8 +35,17 @@ def load_config() -> Dict[str, Any]:
 
 
 def save_config(api_key: str, model: str = "gemini-2.5-flash") -> None:
+    existing = {}
+    if os.path.exists(CONFIG_PATH):
+        try:
+            with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+                existing = json.load(f)
+        except Exception:
+            existing = {}
+    existing["gemini_api_key"] = api_key.strip()
+    existing["model"] = model
     with open(CONFIG_PATH, "w", encoding="utf-8") as f:
-        json.dump({"gemini_api_key": api_key.strip(), "model": model}, f, indent=2, ensure_ascii=False)
+        json.dump(existing, f, indent=2, ensure_ascii=False)
 
 
 def analyze_image_with_gemini(
@@ -76,7 +95,7 @@ Return ONLY valid JSON:
 }
 """
 
-    client = genai.Client(api_key=api_key)
+    client = _get_genai_client(api_key)
     response = client.models.generate_content(
         model=model_name,
         contents=[
