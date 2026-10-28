@@ -99,6 +99,7 @@
       border-radius: 10px;
       box-shadow: var(--card-shadow);
       transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+      contain: layout paint style;
     }
     .mw-card:hover {
       transform: translateY(-3px);
@@ -824,6 +825,8 @@
     // Favorites & Search History in localStorage
     let favoriteMap = {};
     let searchHistory = [];
+    // DOM Element Pool for zero-jank 120fps sorting/filtering (reuses loaded <img> nodes!)
+    let cardNodeCache = new Map();
 
     const SITE_BADGES = {
       makerworld: { bg: 'bg-[#00AE42]', text: 'text-white', label: 'MakerWorld' },
@@ -907,7 +910,22 @@
         }
       }
       saveFavorites();
-      renderResults();
+      if (currentSiteFilter === 'favorites') {
+        renderResults();
+      } else {
+        const cachedNode = cardNodeCache.get(itemId);
+        if (cachedNode) {
+          syncCardFavButton(cachedNode, Boolean(favoriteMap[itemId]));
+        }
+      }
+    }
+
+    function syncCardFavButton(cardEl, isFav) {
+      const btn = cardEl.querySelector('.fav-toggle-btn');
+      if (!btn) return;
+      btn.title = isFav ? 'Прибрати з Обраного' : 'Додати в Обране';
+      btn.className = `fav-toggle-btn w-6 h-6 rounded-full flex items-center justify-center text-xs transition shadow ${isFav ? 'bg-rose-500 text-white' : 'bg-black/70 text-white/80 hover:bg-rose-500 hover:text-white'}`;
+      btn.textContent = isFav ? '♥' : '♡';
     }
 
     function openFavoritesView() {
@@ -1506,6 +1524,13 @@
       currentResults = searchObj.results || [];
       currentCounts = searchObj.counts_by_site || {};
       currentPage = 1;
+      // Keep existing cached nodes for items with matching IDs (e.g. Phase 1 -> Phase 2) and update their similarity badge if needed
+      const nextIds = new Set(currentResults.map(x => x.id));
+      for (const cachedId of cardNodeCache.keys()) {
+        if (!nextIds.has(cachedId) && !favoriteMap[cachedId]) {
+          cardNodeCache.delete(cachedId);
+        }
+      }
 
       document.getElementById('activeQueryLabel').textContent = currentQuery;
       const elapsedEl = document.getElementById('elapsedTimeBadge');
@@ -1541,20 +1566,22 @@
           btn.classList.add(site === 'favorites' ? 'active-fav' : 'active');
         }
       });
-      renderResults();
+      requestAnimationFrame(() => renderResults());
     }
 
     function onFilterOrSortChange() {
       currentPage = 1;
-      renderResults();
+      requestAnimationFrame(() => renderResults());
     }
 
     function goToPage(page, shouldScroll = true) {
       currentPage = page;
-      renderResults();
-      if (shouldScroll) {
-        document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
+      requestAnimationFrame(() => {
+        renderResults();
+        if (shouldScroll) {
+          document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
     }
 
     function buildTopStepperHtml(totalPages, activePage) {
@@ -1616,6 +1643,142 @@
       return html;
     }
 
+    function getOrCreateCardNode(item) {
+      const sim = item.similarity || 85;
+      const isFav = Boolean(favoriteMap[item.id]);
+      let cardEl = cardNodeCache.get(item.id);
+      if (cardEl) {
+        // Update dynamic similarity badge & favorite state without touching <img>!
+        const simEl = cardEl.querySelector('.sim-badge');
+        if (simEl) {
+          simEl.textContent = item.is_visual_match ? '📷 ' + sim + '%' : sim + '%';
+        }
+        syncCardFavButton(cardEl, isFav);
+        return cardEl;
+      }
+
+      const badge = SITE_BADGES[item.site_id] || { bg: 'bg-neutral-700', text: 'text-white', label: item.site };
+      const rawImg = item.thumbnail || item.image || '';
+      const proxyImg = rawImg ? `/api/proxy-image?url=${encodeURIComponent(rawImg)}` : '';
+      const authorInitial = (item.author || 'U').trim().charAt(0).toUpperCase();
+
+      const tpl = document.createElement('template');
+      tpl.innerHTML = `
+        <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer"
+           onclick="trackModelClick('${escapeJsString(item.site_id)}', '${escapeJsString(item.title)}', '${escapeJsString(item.url)}')"
+           class="mw-card overflow-hidden flex flex-col justify-between group">
+          <div>
+            <!-- 4:3 MakerWorld Aspect Image Box -->
+            <div class="relative aspect-[4/3] bg-neutral-900 overflow-hidden flex items-center justify-center">
+              <img src="${escapeHtml(rawImg)}"
+                   onerror="if(this.src !== '${proxyImg}') this.src='${proxyImg}'; else this.style.display='none';"
+                   alt="${escapeHtml(item.title)}"
+                   loading="lazy"
+                   decoding="async"
+                   class="w-full h-full object-cover" />
+
+              <!-- Platform Pill (Top Left) -->
+              <span class="absolute top-2 left-2 px-2 py-0.5 rounded text-[11px] font-bold shadow-sm ${badge.bg} ${badge.text}">
+                ${escapeHtml(badge.label)}
+              </span>
+
+              <!-- Match Badge + Heart Favorite Button (Top Right) -->
+              <div class="absolute top-2 right-2 flex items-center gap-1.5">
+                <span class="sim-badge px-2 py-0.5 rounded text-[11px] font-bold bg-black/75 text-white">
+                  ${item.is_visual_match ? '📷 ' + sim + '%' : sim + '%'}
+                </span>
+                <button type="button"
+                        onclick="toggleFavoriteById(event, '${escapeJsString(item.id)}')"
+                        title="${isFav ? 'Прибрати з Обраного' : 'Додати в Обране'}"
+                        class="fav-toggle-btn w-6 h-6 rounded-full flex items-center justify-center text-xs transition shadow ${isFav ? 'bg-rose-500 text-white' : 'bg-black/70 text-white/80 hover:bg-rose-500 hover:text-white'}">
+                  ${isFav ? '♥' : '♡'}
+                </button>
+              </div>
+
+              <!-- Bottom Left: "📷 Схожі" Visual Search Button (Finds free/similar alternatives to this card!) -->
+              ${rawImg ? `
+                <button type="button"
+                        onclick="findSimilarToCard(event, '${escapeJsString(rawImg)}', '${escapeJsString(item.title)}')"
+                        title="Знайти безкоштовні аналоги або схожі моделі по фото цієї картки"
+                        class="absolute bottom-2 left-2 px-2 py-0.5 rounded text-[11px] font-bold bg-black/80 hover:bg-[#00AE42] text-white opacity-0 group-hover:opacity-100 transition-all shadow flex items-center gap-1">
+                  <span>📷</span><span>Схожі</span>
+                </button>
+              ` : ''}
+
+              <!-- Bottom Right: Price Badge -->
+              ${item.price && item.price !== 'Безкоштовно' && item.price !== 'Див. на сайті' ? `
+                <span class="absolute bottom-2 right-2 px-2 py-0.5 rounded text-[11px] font-bold bg-black/80 text-amber-300">
+                  ${escapeHtml(item.price)}
+                </span>
+              ` : (item.is_free === true ? `
+                <span class="absolute bottom-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-black/65 text-[#00E65B]">
+                  FREE
+                </span>
+              ` : '')}
+            </div>
+
+            <!-- Title + Commercial License Status Pill -->
+            <div class="px-3 pt-2.5 pb-1">
+              <h4 class="font-bold text-[13.5px] mw-text-primary line-clamp-2 group-hover:text-[#00AE42] transition-colors leading-snug">
+                ${escapeHtml(item.title)}
+              </h4>
+              <div class="mt-1.5 flex flex-wrap items-center gap-1">
+                ${item.commercial_allowed === true ? `
+                  <span title="${escapeHtml(item.license_label || 'Комерційний продаж друку дозволено')}"
+                        class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10.5px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                    <span>✓</span><span>Продаж дозволено • ${escapeHtml(item.license_code || 'CC BY')}</span>
+                  </span>
+                ` : (item.commercial_allowed === false ? `
+                  <span title="${escapeHtml(item.license_label || 'Комерційний продаж друку заборонено')}"
+                        class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10.5px] font-semibold bg-neutral-500/10 mw-text-muted border mw-border">
+                    <span>🔒</span><span>Не для продажу • ${escapeHtml(item.license_code || 'Personal')}</span>
+                  </span>
+                ` : `
+                  <span title="${escapeHtml(item.license_label || 'Перевірте ліцензію на сторінці сайту')}"
+                        class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10.5px] font-medium bg-amber-500/10 text-amber-400/90 border border-amber-500/25">
+                    <span>⚖️</span><span>Перевірте ліцензію на сайті</span>
+                  </span>
+                `)}
+              </div>
+            </div>
+          </div>
+
+          <!-- MakerWorld Style Card Footer: Avatar + Author Left, Downloads & Likes Right -->
+          <div class="px-3 pb-2.5 pt-1.5 flex items-center justify-between text-xs mw-text-muted">
+            <div class="flex items-center gap-1.5 min-w-0 pr-2">
+              <span class="w-5 h-5 rounded-full mw-elevated border flex items-center justify-center text-[10px] font-bold mw-text-primary shrink-0">
+                ${escapeHtml(authorInitial)}
+              </span>
+              <span class="truncate text-[12px] mw-text-secondary">${escapeHtml(item.author || 'Creator')}</span>
+            </div>
+
+            <div class="flex items-center gap-2.5 shrink-0 text-[12px]">
+              ${item.downloads ? `
+                <span class="flex items-center gap-0.5" title="Завантаження">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                  </svg>
+                  ${formatNum(item.downloads)}
+                </span>
+              ` : ''}
+              ${item.likes ? `
+                <span class="flex items-center gap-0.5" title="Вподобання">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/>
+                  </svg>
+                  ${formatNum(item.likes)}
+                </span>
+              ` : ''}
+              ${(!item.downloads && !item.likes) ? `<span class="text-[#00AE42] font-semibold">Відкрити ↗</span>` : ''}
+            </div>
+          </div>
+        </a>
+      `;
+      cardEl = tpl.content.firstElementChild;
+      cardNodeCache.set(item.id, cardEl);
+      return cardEl;
+    }
+
     function renderResults() {
       const grid = document.getElementById('resultsGrid');
       const freeOnly = document.getElementById('freeOnlyCheckbox').checked;
@@ -1662,139 +1825,25 @@
       document.getElementById('paginationBottom').innerHTML = buildPaginationHtml(totalPages, currentPage);
 
       if (pageItems.length === 0) {
-        grid.innerHTML = `
-          <div class="col-span-full mw-surface border rounded-xl p-12 text-center mw-text-secondary">
-            <p class="text-base font-bold mw-text-primary">
-              ${currentSiteFilter === 'favorites' ? 'У вас поки немає збережених моделей в Обраному' : 'За цим фільтром моделей не знайдено'}
-            </p>
-            <p class="text-xs mt-1">
-              ${currentSiteFilter === 'favorites' ? 'Натискайте ❤️ на будь-якій картці моделі, щоб зберегти її сюди.' : 'Оберіть вкладку "Усі моделі" або натисніть на інший тег вище.'}
-            </p>
-          </div>
+        const emptyEl = document.createElement('div');
+        emptyEl.className = 'col-span-full mw-surface border rounded-xl p-12 text-center mw-text-secondary';
+        emptyEl.innerHTML = `
+          <p class="text-base font-bold mw-text-primary">
+            ${currentSiteFilter === 'favorites' ? 'У вас поки немає збережених моделей в Обраному' : 'За цим фільтром моделей не знайдено'}
+          </p>
+          <p class="text-xs mt-1">
+            ${currentSiteFilter === 'favorites' ? 'Натискайте ❤️ на будь-якій картці моделі, щоб зберегти її сюди.' : 'Оберіть вкладку "Усі моделі" або натисніть на інший тег вище.'}
+          </p>
         `;
+        grid.replaceChildren(emptyEl);
         return;
       }
 
-      grid.innerHTML = pageItems.map(item => {
-        const badge = SITE_BADGES[item.site_id] || { bg: 'bg-neutral-700', text: 'text-white', label: item.site };
-        const sim = item.similarity || 85;
-        const rawImg = item.thumbnail || item.image || '';
-        const proxyImg = rawImg ? `/api/proxy-image?url=${encodeURIComponent(rawImg)}` : '';
-        const authorInitial = (item.author || 'U').trim().charAt(0).toUpperCase();
-        const isFav = Boolean(favoriteMap[item.id]);
-
-        return `
-          <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer"
-             onclick="trackModelClick('${escapeJsString(item.site_id)}', '${escapeJsString(item.title)}', '${escapeJsString(item.url)}')"
-             class="mw-card overflow-hidden flex flex-col justify-between group">
-            <div>
-              <!-- 4:3 MakerWorld Aspect Image Box -->
-              <div class="relative aspect-[4/3] bg-neutral-900 overflow-hidden flex items-center justify-center">
-                <img src="${escapeHtml(rawImg)}"
-                     onerror="if(this.src !== '${proxyImg}') this.src='${proxyImg}'; else this.style.display='none';"
-                     alt="${escapeHtml(item.title)}"
-                     loading="lazy"
-                     decoding="async"
-                     class="w-full h-full object-cover" />
-
-                <!-- Platform Pill (Top Left) -->
-                <span class="absolute top-2 left-2 px-2 py-0.5 rounded text-[11px] font-bold shadow-sm ${badge.bg} ${badge.text}">
-                  ${escapeHtml(badge.label)}
-                </span>
-
-                <!-- Match Badge + Heart Favorite Button (Top Right) -->
-                <div class="absolute top-2 right-2 flex items-center gap-1.5">
-                  <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-black/75 text-white">
-                    ${item.is_visual_match ? '📷 ' + sim + '%' : sim + '%'}
-                  </span>
-                  <button type="button"
-                          onclick="toggleFavoriteById(event, '${escapeJsString(item.id)}')"
-                          title="${isFav ? 'Прибрати з Обраного' : 'Додати в Обране'}"
-                          class="w-6 h-6 rounded-full flex items-center justify-center text-xs transition shadow ${isFav ? 'bg-rose-500 text-white' : 'bg-black/70 text-white/80 hover:bg-rose-500 hover:text-white'}">
-                    ${isFav ? '♥' : '♡'}
-                  </button>
-                </div>
-
-                <!-- Bottom Left: "📷 Схожі" Visual Search Button (Finds free/similar alternatives to this card!) -->
-                ${rawImg ? `
-                  <button type="button"
-                          onclick="findSimilarToCard(event, '${escapeJsString(rawImg)}', '${escapeJsString(item.title)}')"
-                          title="Знайти безкоштовні аналоги або схожі моделі по фото цієї картки"
-                          class="absolute bottom-2 left-2 px-2 py-0.5 rounded text-[11px] font-bold bg-black/80 hover:bg-[#00AE42] text-white opacity-0 group-hover:opacity-100 transition-all shadow flex items-center gap-1">
-                    <span>📷</span><span>Схожі</span>
-                  </button>
-                ` : ''}
-
-                <!-- Bottom Right: Price Badge -->
-                ${item.price && item.price !== 'Безкоштовно' && item.price !== 'Див. на сайті' ? `
-                  <span class="absolute bottom-2 right-2 px-2 py-0.5 rounded text-[11px] font-bold bg-black/80 text-amber-300">
-                    ${escapeHtml(item.price)}
-                  </span>
-                ` : (item.is_free === true ? `
-                  <span class="absolute bottom-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-black/65 text-[#00E65B]">
-                    FREE
-                  </span>
-                ` : '')}
-              </div>
-
-              <!-- Title + Commercial License Status Pill -->
-              <div class="px-3 pt-2.5 pb-1">
-                <h4 class="font-bold text-[13.5px] mw-text-primary line-clamp-2 group-hover:text-[#00AE42] transition-colors leading-snug">
-                  ${escapeHtml(item.title)}
-                </h4>
-                <div class="mt-1.5 flex flex-wrap items-center gap-1">
-                  ${item.commercial_allowed === true ? `
-                    <span title="${escapeHtml(item.license_label || 'Комерційний продаж друку дозволено')}"
-                          class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10.5px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                      <span>✓</span><span>Продаж дозволено • ${escapeHtml(item.license_code || 'CC BY')}</span>
-                    </span>
-                  ` : (item.commercial_allowed === false ? `
-                    <span title="${escapeHtml(item.license_label || 'Комерційний продаж друку заборонено')}"
-                          class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10.5px] font-semibold bg-neutral-500/10 mw-text-muted border mw-border">
-                      <span>🔒</span><span>Не для продажу • ${escapeHtml(item.license_code || 'Personal')}</span>
-                    </span>
-                  ` : `
-                    <span title="${escapeHtml(item.license_label || 'Перевірте ліцензію на сторінці сайту')}"
-                          class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10.5px] font-medium bg-amber-500/10 text-amber-400/90 border border-amber-500/25">
-                      <span>⚖️</span><span>Перевірте ліцензію на сайті</span>
-                    </span>
-                  `)}
-                </div>
-              </div>
-            </div>
-
-            <!-- MakerWorld Style Card Footer: Avatar + Author Left, Downloads & Likes Right -->
-            <div class="px-3 pb-2.5 pt-1.5 flex items-center justify-between text-xs mw-text-muted">
-              <div class="flex items-center gap-1.5 min-w-0 pr-2">
-                <span class="w-5 h-5 rounded-full mw-elevated border flex items-center justify-center text-[10px] font-bold mw-text-primary shrink-0">
-                  ${escapeHtml(authorInitial)}
-                </span>
-                <span class="truncate text-[12px] mw-text-secondary">${escapeHtml(item.author || 'Creator')}</span>
-              </div>
-
-              <div class="flex items-center gap-2.5 shrink-0 text-[12px]">
-                ${item.downloads ? `
-                  <span class="flex items-center gap-0.5" title="Завантаження">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                    </svg>
-                    ${formatNum(item.downloads)}
-                  </span>
-                ` : ''}
-                ${item.likes ? `
-                  <span class="flex items-center gap-0.5" title="Вподобання">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/>
-                    </svg>
-                    ${formatNum(item.likes)}
-                  </span>
-                ` : ''}
-                ${(!item.downloads && !item.likes) ? `<span class="text-[#00AE42] font-semibold">Відкрити ↗</span>` : ''}
-              </div>
-            </div>
-          </a>
-        `;
-      }).join('');
+      const frag = document.createDocumentFragment();
+      for (let i = 0; i < pageItems.length; i++) {
+        frag.appendChild(getOrCreateCardNode(pageItems[i]));
+      }
+      grid.replaceChildren(frag);
     }
 
     function showLoading(titleText) {
