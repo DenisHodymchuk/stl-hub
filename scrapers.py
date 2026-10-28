@@ -81,6 +81,88 @@ _MW_HEADERS = {
 }
 
 
+def _classify_makerworld_license(raw_lic: Optional[str]) -> Dict[str, Any]:
+    """
+    Classifies a MakerWorld license string into:
+    - commercial_allowed: True (allowed), False (prohibited), None (unknown)
+    - license_code: short badge label (e.g. 'CC BY', 'CC BY-NC', 'Standard')
+    - license_label: human-readable Ukrainian explanation
+    """
+    lic = (raw_lic or "").strip()
+    lic_upper = lic.upper()
+    if not lic:
+        return {"commercial_allowed": None, "license_code": "Див. ліцензію", "license_label": "Перевірте умови ліцензії на сайті"}
+    if lic_upper in ("CC0", "PUBLIC DOMAIN"):
+        return {"commercial_allowed": True, "license_code": "CC0", "license_label": "CC0 Public Domain — комерційний продаж друку дозволено"}
+    if lic_upper in ("BY", "CC BY", "CC-BY"):
+        return {"commercial_allowed": True, "license_code": "CC BY", "license_label": "CC BY — комерційний продаж друку дозволено (із зазначенням автора)"}
+    if lic_upper in ("BY-SA", "CC BY-SA", "CC-BY-SA"):
+        return {"commercial_allowed": True, "license_code": "CC BY-SA", "license_label": "CC BY-SA — комерційний продаж друку дозволено (із зазначенням автора)"}
+    if lic_upper in ("BY-ND", "CC BY-ND", "CC-BY-ND"):
+        return {"commercial_allowed": True, "license_code": "CC BY-ND", "license_label": "CC BY-ND — комерційний продаж оригінальної моделі дозволено (без модифікацій)"}
+    if "NC" in lic_upper or "NONCOMMERCIAL" in lic_upper:
+        return {"commercial_allowed": False, "license_code": f"CC {lic_upper}", "license_label": f"{lic} — комерційний продаж заборонено (Non-Commercial)"}
+    if "EXCLUSIVE" in lic_upper:
+        return {"commercial_allowed": False, "license_code": "MW Exclusive", "license_label": "MakerWorld Exclusive — тільки особисте використання (або потрібна підписка автора)"}
+    if "STANDARD" in lic_upper:
+        return {"commercial_allowed": False, "license_code": "Standard License", "license_label": "Standard Digital File License — тільки для особистого некомерційного використання"}
+    return {"commercial_allowed": None, "license_code": lic[:18], "license_label": f"Ліцензія: {lic}"}
+
+
+def _classify_printables_license(lic_obj: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Classifies a Printables GraphQL license object {id, name} into commercial status.
+    """
+    if not lic_obj:
+        return {"commercial_allowed": None, "license_code": "Див. ліцензію", "license_label": "Перевірте умови ліцензії на сайті"}
+    lic_id = str(lic_obj.get("id") or "")
+    lic_name = (lic_obj.get("name") or "").strip()
+    name_lower = lic_name.lower()
+
+    # Printables explicit commercial / open licenses
+    commercial_true_Map = {
+        "7": ("CC0", "CC0 Public Domain — комерційний продаж друку дозволено"),
+        "1": ("CC BY", "CC BY — комерційний продаж друку дозволено (із зазначенням автора)"),
+        "2": ("CC BY-SA", "CC BY-SA — комерційний продаж друку дозволено (із зазначенням автора)"),
+        "8": ("CC BY-ND", "CC BY-ND — комерційний продаж друку без модифікацій дозволено"),
+        "9": ("GPL v2", "GNU GPL v2.0 — комерційний продаж дозволено"),
+        "12": ("GPL v3", "GNU GPL v3.0 — комерційний продаж дозволено"),
+        "10": ("LGPL", "GNU LGPL — комерційний продаж дозволено"),
+        "11": ("BSD", "BSD License — комерційний продаж дозволено"),
+        "14": ("Commercial ND", "Commercial Use (No Derivative) — комерційний продаж дозволено"),
+        "15": ("Commercial Use", "Commercial Use — комерційний продаж дозволено"),
+        "16": ("OCL v1", "Open Community License — комерційний продаж дозволено"),
+        "17": ("OCL v1.1", "Open Community License v1.1 — комерційний продаж дозволено"),
+        "18": ("CERN OHL", "CERN Open Hardware Licence — комерційний продаж дозволено"),
+        "19": ("OCL + Attr", "Open Community License (Attribution) — комерційний продаж дозволено"),
+        "24": ("Apache 2.0", "Apache License 2.0 — комерційний продаж дозволено"),
+    }
+    if lic_id in commercial_true_Map:
+        code, label = commercial_true_Map[lic_id]
+        return {"commercial_allowed": True, "license_code": code, "license_label": label}
+
+    commercial_false_Map = {
+        "3": ("CC BY-NC", "CC BY-NC — комерційний продаж заборонено (Non-Commercial)"),
+        "4": ("CC BY-NC-SA", "CC BY-NC-SA — комерційний продаж заборонено (Non-Commercial)"),
+        "6": ("CC BY-NC-ND", "CC BY-NC-ND — комерційний продаж заборонено (Non-Commercial)"),
+        "13": ("Standard License", "Standard Digital File License — тільки для особистого використання"),
+        "20": ("OCL R&D Only", "Open Community License (R&D) — комерційний продаж обмежено"),
+        "21": ("OCL MicroBiz", "Open Community License (Micro Business) — обмежено для мікробізнесу"),
+        "22": ("OCL MicroBiz", "Open Community License (Micro Business) — обмежено для мікробізнесу"),
+        "23": ("OCL R&D Only", "Open Community License (R&D) — комерційний продаж обмежено"),
+    }
+    if lic_id in commercial_false_Map:
+        code, label = commercial_false_Map[lic_id]
+        return {"commercial_allowed": False, "license_code": code, "license_label": label}
+
+    if "noncommercial" in name_lower or "standard digital" in name_lower:
+        return {"commercial_allowed": False, "license_code": "Non-Commercial", "license_label": f"{lic_name} — комерційний продаж заборонено"}
+    if "commercial use" in name_lower or "public domain" in name_lower:
+        return {"commercial_allowed": True, "license_code": "Commercial OK", "license_label": f"{lic_name} — комерційний продаж дозволено"}
+
+    return {"commercial_allowed": None, "license_code": lic_name[:18] or "Див. ліцензію", "license_label": lic_name or "Перевірте ліцензію на сайті"}
+
+
 def search_makerworld_by_image(image_bytes: bytes, limit: int = 50) -> Dict[str, Any]:
     """
     Uploads the user's photo to MakerWorld's native visual search engine (picsearch)
@@ -161,6 +243,7 @@ def search_makerworld_by_image(image_bytes: bytes, limit: int = 50) -> Dict[str,
                         if kw and kw not in extracted_queries:
                             extracted_queries.append(kw)
 
+                    lic_info = _classify_makerworld_license(hit.get("license"))
                     results.append({
                         "id": f"makerworld_{model_id}",
                         "site": "MakerWorld",
@@ -174,6 +257,9 @@ def search_makerworld_by_image(image_bytes: bytes, limit: int = 50) -> Dict[str,
                         "downloads": hit.get("downloadCount") or hit.get("printCount") or 0,
                         "price": "Безкоштовно",
                         "is_free": True,
+                        "commercial_allowed": lic_info["commercial_allowed"],
+                        "license_code": lic_info["license_code"],
+                        "license_label": lic_info["license_label"],
                         "similarity": max(78, 98 - (idx // 2)),
                         "is_visual_match": True,
                     })
@@ -208,6 +294,10 @@ def search_printables(query: str, limit: int = 24) -> List[Dict[str, Any]]:
               likesCount
               downloadCount
               price
+              license {
+                id
+                name
+              }
             }
           }
         }
@@ -227,6 +317,7 @@ def search_printables(query: str, limit: int = 24) -> List[Dict[str, Any]]:
                 img_url = f"https://media.printables.com/{file_path}" if file_path else ""
                 price_val = item.get("price")
                 is_free = price_val is None or float(price_val or 0) == 0
+                lic_info = _classify_printables_license(item.get("license"))
                 results.append({
                     "id": f"printables_{model_id}",
                     "site": "Printables",
@@ -240,6 +331,9 @@ def search_printables(query: str, limit: int = 24) -> List[Dict[str, Any]]:
                     "downloads": item.get("downloadCount") or 0,
                     "price": "Безкоштовно" if is_free else f"${price_val}",
                     "is_free": is_free,
+                    "commercial_allowed": lic_info["commercial_allowed"],
+                    "license_code": lic_info["license_code"],
+                    "license_label": lic_info["license_label"],
                     "similarity": max(70, 93 - idx),
                 })
             _set_cached("printables", query, limit, results)
@@ -270,6 +364,7 @@ def search_makerworld(query: str, limit: int = 24) -> List[Dict[str, Any]]:
                 slug = hit.get("slug") or ""
                 cover = hit.get("cover") or ""
                 creator = hit.get("designCreator") or {}
+                lic_info = _classify_makerworld_license(hit.get("license"))
                 results.append({
                     "id": f"makerworld_{model_id}",
                     "site": "MakerWorld",
@@ -283,6 +378,9 @@ def search_makerworld(query: str, limit: int = 24) -> List[Dict[str, Any]]:
                     "downloads": hit.get("downloadCount") or hit.get("printCount") or 0,
                     "price": "Безкоштовно",
                     "is_free": True,
+                    "commercial_allowed": lic_info["commercial_allowed"],
+                    "license_code": lic_info["license_code"],
+                    "license_label": lic_info["license_label"],
                     "similarity": max(70, 93 - idx),
                 })
             _set_cached("makerworld", query, limit, results)
@@ -313,8 +411,17 @@ def search_thangs(query: str, limit: int = 24) -> List[Dict[str, Any]]:
                 if page_url.startswith("/"):
                     page_url = f"https://thangs.com{page_url}"
                 market = item.get("marketplaceInfo") or {}
-                price_val = market.get("price")
+                price_val = market.get("price") or market.get("priceInUSD")
                 is_free = not price_val or float(price_val or 0) == 0
+                has_plans = bool(item.get("plans"))
+                if not is_free or has_plans:
+                    th_comm = False
+                    th_code = "Потрібна підписка" if has_plans else "Personal Only"
+                    th_label = "Модель платна або потребує комерційної підписки автора на Thangs"
+                else:
+                    th_comm = None
+                    th_code = "Див. ліцензію"
+                    th_label = "Перевірте ліцензію на сторінці моделі Thangs"
                 results.append({
                     "id": f"thangs_{model_id}",
                     "site": "Thangs",
@@ -328,6 +435,9 @@ def search_thangs(query: str, limit: int = 24) -> List[Dict[str, Any]]:
                     "downloads": item.get("downloadCount") or item.get("nDownloads") or 0,
                     "price": "Безкоштовно" if is_free else f"${price_val}",
                     "is_free": is_free,
+                    "commercial_allowed": th_comm,
+                    "license_code": th_code,
+                    "license_label": th_label,
                     "similarity": max(70, 92 - idx),
                 })
             _set_cached("thangs", query, limit, results)
@@ -373,6 +483,14 @@ def search_myminifactory(query: str, limit: int = 24) -> List[Dict[str, Any]]:
                         is_free = float(val or 0) == 0
                     except ValueError:
                         is_free = False
+                    if not is_free:
+                        mmf_comm = False
+                        mmf_code = "Personal Only"
+                        mmf_label = "Платна модель MyMiniFactory — стандартна ліцензія лише для особистого друку"
+                    else:
+                        mmf_comm = None
+                        mmf_code = "Див. ліцензію"
+                        mmf_label = "Перевірте умови ліцензії на сторінці MyMiniFactory"
                     results.append({
                         "id": f"mmf_{model_id}",
                         "site": "MyMiniFactory",
@@ -386,6 +504,9 @@ def search_myminifactory(query: str, limit: int = 24) -> List[Dict[str, Any]]:
                         "downloads": 0,
                         "price": "Безкоштовно" if is_free else f"{sym}{val}",
                         "is_free": is_free,
+                        "commercial_allowed": mmf_comm,
+                        "license_code": mmf_code,
+                        "license_label": mmf_label,
                         "similarity": max(70, 91 - idx),
                     })
                     if len(results) >= limit:
@@ -492,6 +613,9 @@ def search_cults3d(query: str, limit: int = 24) -> List[Dict[str, Any]]:
             "downloads": 0,
             "price": "Безкоштовно" if is_free else "Див. на сайті",
             "is_free": True if is_free else None,
+            "commercial_allowed": None,
+            "license_code": "Див. ліцензію",
+            "license_label": "Перевірте тип ліцензії (Cults Private Use / CC) на сторінці моделі",
             "similarity": max(70, 91 - len(results)),
         })
         if len(results) >= limit:
@@ -529,6 +653,9 @@ def search_cults3d(query: str, limit: int = 24) -> List[Dict[str, Any]]:
                     "downloads": 0,
                     "price": "Безкоштовно" if is_free else "Див. на сайті",
                     "is_free": True if is_free else None,
+                    "commercial_allowed": None,
+                    "license_code": "Див. ліцензію",
+                    "license_label": "Перевірте тип ліцензії (Cults Private Use / CC) на сторінці моделі",
                     "similarity": max(70, 91 - len(results)),
                 })
                 if len(results) >= limit:
@@ -568,28 +695,50 @@ def search_thingiverse(query: str, limit: int = 24) -> List[Dict[str, Any]]:
     results: List[Dict[str, Any]] = []
     seen = set()
 
-    # 1. Native Thingiverse v2 API (/v2/search/things) — fast, exact, with real likes & authors!
+    # 1. Native Thingiverse v2 API (/v2/search/things) — fast, exact, with real likes, authors & CC license tagging!
     try:
         token = _get_thingiverse_token()
         if token:
-            session = create_session()
-            rs = session.get(
-                "https://api.thingiverse.com/v2/search/things",
-                params={"page": 1, "per_page": limit, "sort": "relevant", "term": query},
-                headers={"Authorization": f"Bearer {token}"},
-                timeout=6,
-            )
+            def _fetch_tv_slice(lic_filter: Optional[str]):
+                sess = create_session()
+                params = {"page": 1, "per_page": limit, "sort": "relevant", "term": query}
+                if lic_filter:
+                    params["license"] = lic_filter
+                r = sess.get(
+                    "https://api.thingiverse.com/v2/search/things",
+                    params=params,
+                    headers={"Authorization": f"Bearer {token}"},
+                    timeout=5,
+                )
+                return r
+
+            fut_all = _SEARCH_EXECUTOR.submit(_fetch_tv_slice, None)
+            fut_cc = _SEARCH_EXECUTOR.submit(_fetch_tv_slice, "cc")
+            fut_cc_sa = _SEARCH_EXECUTOR.submit(_fetch_tv_slice, "cc-sa")
+
+            rs = fut_all.result()
             if rs.status_code == 401:
                 global _TV_TOKEN_EXPIRES_AT
                 _TV_TOKEN_EXPIRES_AT = 0.0
                 token = _get_thingiverse_token()
                 if token:
-                    rs = session.get(
-                        "https://api.thingiverse.com/v2/search/things",
-                        params={"page": 1, "per_page": limit, "sort": "relevant", "term": query},
-                        headers={"Authorization": f"Bearer {token}"},
-                        timeout=6,
-                    )
+                    rs = _fetch_tv_slice(None)
+
+            cc_ids = set()
+            cc_sa_ids = set()
+            try:
+                r_cc = fut_cc.result(timeout=4)
+                if r_cc.status_code == 200:
+                    cc_ids = {h.get("id") for h in (r_cc.json().get("hits") or []) if h.get("id")}
+            except Exception:
+                pass
+            try:
+                r_cc_sa = fut_cc_sa.result(timeout=4)
+                if r_cc_sa.status_code == 200:
+                    cc_sa_ids = {h.get("id") for h in (r_cc_sa.json().get("hits") or []) if h.get("id")}
+            except Exception:
+                pass
+
             if rs.status_code == 200:
                 hits = rs.json().get("hits", []) or []
                 for idx, hit in enumerate(hits[:limit]):
@@ -600,6 +749,18 @@ def search_thingiverse(query: str, limit: int = 24) -> List[Dict[str, Any]]:
                     seen.add(pub_url)
                     thumb = hit.get("preview_image") or hit.get("thumbnail") or ""
                     creator = hit.get("creator") or {}
+                    if thing_id in cc_ids:
+                        tv_comm = True
+                        tv_code = "CC BY"
+                        tv_label = "Creative Commons Attribution (CC BY) — комерційний продаж друку дозволено"
+                    elif thing_id in cc_sa_ids:
+                        tv_comm = True
+                        tv_code = "CC BY-SA"
+                        tv_label = "Creative Commons Attribution-ShareAlike (CC BY-SA) — комерційний продаж друку дозволено"
+                    else:
+                        tv_comm = False
+                        tv_code = "Non-Commercial"
+                        tv_label = "Некомерційна ліцензія (CC BY-NC) або обмежена — перевірте на Thingiverse"
                     results.append({
                         "id": f"thingiverse_{thing_id}",
                         "site": "Thingiverse",
@@ -613,6 +774,9 @@ def search_thingiverse(query: str, limit: int = 24) -> List[Dict[str, Any]]:
                         "downloads": hit.get("collect_count") or 0,
                         "price": "Безкоштовно",
                         "is_free": True,
+                        "commercial_allowed": tv_comm,
+                        "license_code": tv_code,
+                        "license_label": tv_label,
                         "similarity": max(70, 92 - idx),
                     })
     except Exception as e:
@@ -647,6 +811,9 @@ def search_thingiverse(query: str, limit: int = 24) -> List[Dict[str, Any]]:
                 "downloads": 0,
                 "price": "Безкоштовно",
                 "is_free": True,
+                "commercial_allowed": None,
+                "license_code": "Див. ліцензію",
+                "license_label": "Перевірте ліцензію на сторінці Thingiverse",
                 "similarity": max(70, 91 - len(results)),
             })
             if len(results) >= limit:

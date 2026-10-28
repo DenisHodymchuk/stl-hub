@@ -643,13 +643,49 @@
           <!-- Right Controls (Strictly 1 horizontal row on desktop, never wraps pagination underneath!) -->
           <div class="flex flex-wrap items-center gap-2">
             <!-- Modern Toggle Switch: Free Only -->
-            <label class="hub-dropdown-btn">
+            <label class="hub-dropdown-btn" title="Показувати лише безкоштовні 3D-моделі">
               <input id="freeOnlyCheckbox" type="checkbox" onchange="onFilterOrSortChange()" class="sr-only" />
               <div class="hub-switch-track">
                 <div class="hub-switch-thumb"></div>
               </div>
               <span>Тільки безкоштовні</span>
             </label>
+
+            <!-- Custom Dropdown: License / Commercial Use Filter -->
+            <div class="relative" id="licenseDropdown">
+              <input type="hidden" id="licenseSelect" value="all" />
+              <button type="button" onclick="toggleCustomDropdown('licenseMenu', this)" class="hub-dropdown-btn" id="licenseDropdownBtn" title="Фільтр за ліцензією: чи дозволено продавати надруковані вироби">
+                <span class="mw-text-muted font-normal">Ліцензія:</span>
+                <span id="licenseLabel">Усі ліцензії</span>
+                <span id="commercialCountPill" class="hidden px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[11px] font-bold">0</span>
+                <svg class="w-3.5 h-3.5 mw-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <div id="licenseMenu" class="hub-dropdown-menu hidden !min-w-[275px]">
+                <button type="button" onclick="selectLicenseFilter('all', 'Усі ліцензії', this)" class="hub-dropdown-item selected">
+                  <div class="flex flex-col">
+                    <span>Усі ліцензії</span>
+                    <span class="text-[11px] mw-text-muted font-normal">Без обмежень за типом прав</span>
+                  </div>
+                  <span class="check-icon">✓</span>
+                </button>
+                <button type="button" onclick="selectLicenseFilter('commercial_allowed', '💼 Дозволено продаж', this)" class="hub-dropdown-item">
+                  <div class="flex flex-col">
+                    <span class="text-emerald-400 font-semibold">💼 Дозволено продаж друку</span>
+                    <span class="text-[11px] mw-text-muted font-normal">Тільки підтверджені: CC0, CC BY, CC BY-SA, GPL</span>
+                  </div>
+                  <span class="check-icon hidden">✓</span>
+                </button>
+                <button type="button" onclick="selectLicenseFilter('hide_noncommercial', '🛡️ Сховати некомерційні (NC)', this)" class="hub-dropdown-item">
+                  <div class="flex flex-col">
+                    <span>🛡️ Сховати заборонені (NC)</span>
+                    <span class="text-[11px] mw-text-muted font-normal">Дозволені + сайти де треба перевірити вручну</span>
+                  </div>
+                  <span class="check-icon hidden">✓</span>
+                </button>
+              </div>
+            </div>
 
             <!-- Custom Dropdown: Per Page -->
             <div class="relative" id="perPageDropdown">
@@ -1420,10 +1456,26 @@
     }
 
     document.addEventListener('click', e => {
-      if (!e.target.closest('#perPageDropdown') && !e.target.closest('#sortDropdown')) {
+      if (!e.target.closest('#perPageDropdown') && !e.target.closest('#sortDropdown') && !e.target.closest('#licenseDropdown')) {
         closeAllCustomDropdowns();
       }
     });
+
+    function selectLicenseFilter(val, labelText, itemEl) {
+      document.getElementById('licenseSelect').value = val;
+      document.getElementById('licenseLabel').textContent = labelText;
+      const btn = document.getElementById('licenseDropdownBtn');
+      if (btn) {
+        btn.classList.toggle('border-[#00AE42]', val !== 'all');
+      }
+      const menu = document.getElementById('licenseMenu');
+      menu.querySelectorAll('.hub-dropdown-item').forEach(b => {
+        b.classList.toggle('selected', b === itemEl);
+        b.querySelector('.check-icon').classList.toggle('hidden', b !== itemEl);
+      });
+      closeAllCustomDropdowns();
+      onFilterOrSortChange();
+    }
 
     function selectPerPage(val, labelText, itemEl) {
       document.getElementById('perPageSelect').value = val;
@@ -1468,6 +1520,12 @@
         const el = document.getElementById(`count-${siteKey}`);
         if (el) el.textContent = currentCounts[siteKey] || 0;
       });
+      const commCount = currentResults.filter(x => x.commercial_allowed === true).length;
+      const commPill = document.getElementById('commercialCountPill');
+      if (commPill) {
+        commPill.textContent = commCount;
+        commPill.classList.toggle('hidden', commCount === 0);
+      }
       updateFavoritesBadges();
 
       renderResults();
@@ -1561,6 +1619,7 @@
     function renderResults() {
       const grid = document.getElementById('resultsGrid');
       const freeOnly = document.getElementById('freeOnlyCheckbox').checked;
+      const licenseMode = (document.getElementById('licenseSelect') || {}).value || 'all';
       const sortMode = document.getElementById('sortSelect').value;
       const perPage = parseInt(document.getElementById('perPageSelect').value || '25', 10);
 
@@ -1571,6 +1630,8 @@
       let filtered = sourceList.filter(item => {
         if (currentSiteFilter !== 'all' && currentSiteFilter !== 'favorites' && item.site_id !== currentSiteFilter) return false;
         if (freeOnly && item.is_free === false) return false;
+        if (licenseMode === 'commercial_allowed' && item.commercial_allowed !== true) return false;
+        if (licenseMode === 'hide_noncommercial' && item.commercial_allowed === false) return false;
         return true;
       });
 
@@ -1676,11 +1737,29 @@
                 ` : '')}
               </div>
 
-              <!-- Title (MakerWorld Clean Typography) -->
+              <!-- Title + Commercial License Status Pill -->
               <div class="px-3 pt-2.5 pb-1">
                 <h4 class="font-bold text-[13.5px] mw-text-primary line-clamp-2 group-hover:text-[#00AE42] transition-colors leading-snug">
                   ${escapeHtml(item.title)}
                 </h4>
+                <div class="mt-1.5 flex flex-wrap items-center gap-1">
+                  ${item.commercial_allowed === true ? `
+                    <span title="${escapeHtml(item.license_label || 'Комерційний продаж друку дозволено')}"
+                          class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10.5px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                      <span>✓</span><span>Продаж дозволено • ${escapeHtml(item.license_code || 'CC BY')}</span>
+                    </span>
+                  ` : (item.commercial_allowed === false ? `
+                    <span title="${escapeHtml(item.license_label || 'Комерційний продаж друку заборонено')}"
+                          class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10.5px] font-semibold bg-neutral-500/10 mw-text-muted border mw-border">
+                      <span>🔒</span><span>Не для продажу • ${escapeHtml(item.license_code || 'Personal')}</span>
+                    </span>
+                  ` : `
+                    <span title="${escapeHtml(item.license_label || 'Перевірте ліцензію на сторінці сайту')}"
+                          class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10.5px] font-medium bg-amber-500/10 text-amber-400/90 border border-amber-500/25">
+                      <span>⚖️</span><span>Перевірте ліцензію на сайті</span>
+                    </span>
+                  `)}
+                </div>
               </div>
             </div>
 
