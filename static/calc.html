@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="uk" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Калькулятор 3D-друку — Розрахунок вартості та собівартості | STL-HUB</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v=2" />
+  <link rel="shortcut icon" href="/static/favicon.svg?v=2" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Three.js + Loaders for 3D STL/OBJ Visualization -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            bambu: {
+              DEFAULT: '#00AE42',
+              hover: '#00993A',
+              light: '#E6F7ED',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --bg-base: #F5F6F7;
+      --bg-surface: #FFFFFF;
+      --bg-elevated: #F0F2F5;
+      --text-primary: #242424;
+      --text-secondary: #595959;
+      --text-muted: #8C8C8C;
+      --border-color: #E5E7EB;
+      --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    html.dark {
+      --bg-base: #121212;
+      --bg-surface: #1C1C1E;
+      --bg-elevated: #262629;
+      --text-primary: #F2F2F2;
+      --text-secondary: #A6A6A6;
+      --text-muted: #737373;
+      --border-color: #2E2E32;
+      --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mw-surface { background-color: var(--bg-surface); border-color: var(--border-color); }
+    .mw-elevated { background-color: var(--bg-elevated); border-color: var(--border-color); }
+    .mw-text-primary { color: var(--text-primary); }
+    .mw-text-secondary { color: var(--text-secondary); }
+    .mw-text-muted { color: var(--text-muted); }
+    .mw-border { border-color: var(--border-color); }
+
+    /* Custom range slider */
+    input[type=range] {
+      accent-color: #00AE42;
+    }
+
+    /* Print styles for quotation */
+    @media print {
+      body { background: white !important; color: black !important; }
+      header, footer, #dropzoneContainer, #viewControls, #modeSelector, #actionButtonsRow, .no-print { display: none !important; }
+      #summaryCard { box-shadow: none !important; border: 1px solid #ddd !important; width: 100% !important; max-width: 100% !important; }
+      .print-only { display: block !important; }
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-[#00AE42] selection:text-white flex flex-col min-h-screen">
+
+  <!-- ======================== TOP HEADER ======================== -->
+  <header class="sticky top-0 z-40 mw-surface border-b">
+    <div class="max-w-[1850px] mx-auto px-4 sm:px-6 lg:px-8 h-[68px] flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo + Navigation -->
+      <div class="flex items-center gap-4">
+        <a href="/" class="flex items-center gap-3 shrink-0 group">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00C853] to-[#008C35] flex items-center justify-center text-white shadow-md shadow-[#00AE42]/20 group-hover:scale-105 transition-transform">
+            <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+              <path d="M3 8V5C3 3.89543 3.89543 3 5 3H8" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M20 3H23C24.1046 3 25 3.89543 25 5V8" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M25 20V23C25 24.1046 24.1046 25 23 25H20" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M8 25H5C3.89543 25 3 24.1046 3 23V20" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M14 7.5L20 11V17L14 20.5L8 17V11L14 7.5Z" fill="white" fill-opacity="0.22" stroke="white" stroke-width="1.8" stroke-linejoin="round"/>
+              <path d="M8 11L14 14.5L20 11" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M14 14.5V20.5" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="flex flex-col">
+            <div class="flex items-center gap-1.5">
+              <span class="font-extrabold text-xl tracking-tight mw-text-primary">STL<span class="text-[#00AE42]">-HUB</span></span>
+            </div>
+            <span class="text-[11px] mw-text-muted hidden sm:block leading-none mt-0.5">3D Print Calculator</span>
+          </div>
+        </a>
+
+        <span class="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#00AE42]/15 text-[#00AE42] border border-[#00AE42]/30">
+          <span>🧮</span>
+          <span>Калькулятор вартості 3D-друку</span>
+        </span>
+      </div>
+
+      <!-- Right Header Actions -->
+      <div class="flex items-center gap-3">
+        <a href="/" class="px-3.5 py-1.5 rounded-xl mw-elevated border hover:border-[#00AE42] text-xs font-semibold mw-text-primary transition flex items-center gap-1.5 shadow-sm">
+          <span>🔍</span>
+          <span>Пошук моделей</span>
+        </a>
+        <a href="/admin" class="hidden sm:inline-flex px-3 py-1.5 rounded-xl mw-elevated border hover:border-[#00AE42] text-xs font-semibold mw-text-muted hover:mw-text-primary transition">
+          Адмінка
+        </a>
+        <!-- Theme Toggle -->
+        <button onclick="toggleTheme()" class="p-2 rounded-xl mw-elevated border hover:border-[#00AE42] transition" title="Змінити тему">
+          <svg id="themeIconSun" class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+          <svg id="themeIconMoon" class="w-4 h-4 text-sky-400 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+          </svg>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ======================== MAIN CONTAINER ======================== -->
+  <main class="max-w-[1850px] mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1">
+
+    <!-- Hero Title -->
+    <div class="mb-6">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold mw-text-primary tracking-tight">
+            Професійний калькулятор 3D-друку
+          </h1>
+          <p class="text-xs sm:text-sm mw-text-secondary mt-1">
+            Завантажте <strong class="mw-text-primary font-semibold">.STL або .OBJ</strong> файл для 3D-аналізу об'єму і габаритів, або введіть вагу зі слайсера вручну.
+          </p>
+        </div>
+
+        <!-- Mode Switcher -->
+        <div id="modeSelector" class="flex items-center p-1 rounded-2xl mw-surface border text-xs font-bold shadow-sm">
+          <button type="button" onclick="setMode('file')" id="tabBtnFile"
+                  class="px-4 py-2 rounded-xl transition cursor-pointer flex items-center gap-2 bg-[#00AE42] text-white shadow">
+            <span>📂</span>
+            <span>Завантажити 3D-файл</span>
+          </button>
+          <button type="button" onclick="setMode('manual')" id="tabBtnManual"
+                  class="px-4 py-2 rounded-xl transition cursor-pointer flex items-center gap-2 mw-text-muted hover:mw-text-primary">
+            <span>✍️</span>
+            <span>Ручний ввід даних</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Grid: Left Workspace (7 cols) + Right Summary Receipt (5 cols) -->
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+
+      <!-- ======================== LEFT COLUMN: INPUTS & 3D VIEWER ======================== -->
+      <div class="xl:col-span-7 space-y-6">
+
+        <!-- 1. FILE UPLOAD & 3D VIEWER SECTION -->
+        <div id="fileModeSection" class="mw-surface border rounded-2xl p-5 shadow-sm space-y-4">
+          
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-bold mw-text-primary flex items-center gap-2">
+              <span>📐 3D-модель та інтерактивний аналізатор</span>
+            </h2>
+            <div id="fileLoadedPill" class="hidden items-center gap-2">
+              <span id="fileNameLabel" class="text-xs font-mono mw-text-primary font-bold truncate max-w-[200px]"></span>
+              <button onclick="clearModel()" class="text-xs text-red-400 hover:text-red-500 font-bold px-2 py-0.5 rounded mw-elevated" title="Очистити модель">✕</button>
+            </div>
+          </div>
+
+          <!-- Dropzone -->
+          <div id="dropzoneContainer"
+               onclick="document.getElementById('stlFileInput').click()"
+               class="border-2 border-dashed mw-border hover:border-[#00AE42] rounded-2xl p-6 sm:p-8 text-center cursor-pointer transition mw-elevated flex flex-col items-center justify-center min-h-[160px] group">
+            <input id="stlFileInput" type="file" accept=".stl,.obj" class="hidden" onchange="handleFileSelect(event)" />
+            
+            <div class="w-12 h-12 rounded-2xl bg-[#00AE42]/15 text-[#00AE42] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+            </div>
+            <p class="text-sm font-bold mw-text-primary">
+              Перетягніть 3D-файл сюди або <span class="text-[#00AE42] underline">натисніть для вибору</span>
+            </p>
+            <p class="text-xs mw-text-muted mt-1">
+              Підтримуються <strong class="text-[#00AE42]">.STL</strong> (бінарні та ASCII) і <strong class="text-[#00AE42]">.OBJ</strong> файли
+            </p>
+            <div class="mt-3 flex items-center gap-2">
+              <button type="button" onclick="event.stopPropagation(); loadSampleModel('cube')" class="text-[11px] px-2.5 py-1 rounded-lg mw-surface border text-[#00AE42] hover:bg-[#00AE42] hover:text-white transition font-medium">
+                Тестовий кубик 20×20×20 мм
+              </button>
+              <button type="button" onclick="event.stopPropagation(); loadSampleModel('benchy')" class="text-[11px] px-2.5 py-1 rounded-lg mw-surface border text-[#00AE42] hover:bg-[#00AE42] hover:text-white transition font-medium">
+                Тестовий човник 60 мм
+              </button>
+            </div>
+          </div>
+
+          <!-- Interactive 3D Viewer Container (Canvas) -->
+          <div id="viewerWrapper" class="hidden space-y-3">
+            <div class="relative w-full h-[360px] sm:h-[420px] rounded-2xl overflow-hidden mw-elevated border border-neutral-700/50">
+              <div id="threeCanvasContainer" class="w-full h-full cursor-grab active:cursor-grabbing"></div>
+
+              <!-- Viewer Floating Toolbar -->
+              <div class="absolute top-3 left-3 flex items-center gap-1.5 p-1 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 text-xs text-white z-10">
+                <button type="button" onclick="resetCamera()" class="px-2.5 py-1 rounded-lg hover:bg-white/20 transition flex items-center gap-1" title="Центрувати камеру">
+                  <span>🔄</span><span>Центр</span>
+                </button>
+                <button type="button" onclick="toggleWireframe()" id="btnWireframe" class="px-2.5 py-1 rounded-lg hover:bg-white/20 transition flex items-center gap-1" title="Увімкнути/вимкнути сітку">
+                  <span>🌐</span><span>Сітка</span>
+                </button>
+                <button type="button" onclick="toggleAutoRotate()" id="btnAutoRotate" class="px-2.5 py-1 rounded-lg hover:bg-white/20 transition flex items-center gap-1" title="Автоматичне обертання">
+                  <span>▶️</span><span>Оберт</span>
+                </button>
+              </div>
+
+              <!-- Color Palette for 3D Mesh -->
+              <div class="absolute top-3 right-3 flex items-center gap-1.5 p-1.5 rounded-xl bg-black/60 backdrop-blur-md border border-white/10 z-10">
+                <button type="button" onclick="setMeshColor(0x00AE42)" class="w-5 h-5 rounded-full bg-[#00AE42] border border-white/30 hover:scale-110 transition" title="Зелений"></button>
+                <button type="button" onclick="setMeshColor(0x3B82F6)" class="w-5 h-5 rounded-full bg-blue-500 border border-white/30 hover:scale-110 transition" title="Синій"></button>
+                <button type="button" onclick="setMeshColor(0xF97316)" class="w-5 h-5 rounded-full bg-orange-500 border border-white/30 hover:scale-110 transition" title="Помаранчевий"></button>
+                <button type="button" onclick="setMeshColor(0xE5E7EB)" class="w-5 h-5 rounded-full bg-gray-200 border border-white/30 hover:scale-110 transition" title="Білий"></button>
+                <button type="button" onclick="setMeshColor(0x374151)" class="w-5 h-5 rounded-full bg-gray-700 border border-white/30 hover:scale-110 transition" title="Чорний"></button>
+              </div>
+
+              <!-- Viewport Hint -->
+              <div class="absolute bottom-3 left-3 text-[11px] text-white/70 bg-black/50 px-2.5 py-1 rounded-lg backdrop-blur-sm pointer-events-none select-none">
+                Ліва кнопка миші: обертання • Коліщатко: зум • Права: панорама
+              </div>
+            </div>
+
+            <!-- Model Geometry Analysis Badges (Dimensions, Volume, Surface Area) -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div class="p-3 rounded-xl mw-elevated border space-y-0.5">
+                <span class="text-[11px] mw-text-muted block">Розміри (X × Y × Z)</span>
+                <p id="geoDims" class="text-xs sm:text-sm font-bold font-mono mw-text-primary">0 × 0 × 0 мм</p>
+              </div>
+              <div class="p-3 rounded-xl mw-elevated border space-y-0.5">
+                <span class="text-[11px] mw-text-muted block">Об'єм сітки (Solid)</span>
+                <p id="geoVolume" class="text-xs sm:text-sm font-bold font-mono text-[#00AE42]">0 см³</p>
+              </div>
+              <div class="p-3 rounded-xl mw-elevated border space-y-0.5">
+                <span class="text-[11px] mw-text-muted block">Площа поверхні</span>
+                <p id="geoArea" class="text-xs sm:text-sm font-bold font-mono mw-text-primary">0 см²</p>
+              </div>
+              <div class="p-3 rounded-xl mw-elevated border space-y-0.5">
+                <span class="text-[11px] mw-text-muted block">Трикутників (Polys)</span>
+                <p id="geoTriangles" class="text-xs sm:text-sm font-bold font-mono mw-text-primary">0</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 2. PRINT PARAMETERS & MATERIAL SELECTION -->
+        <div class="mw-surface border rounded-2xl p-5 sm:p-6 shadow-sm space-y-5">
+          
+          <h2 class="text-sm font-bold mw-text-primary flex items-center justify-between">
+            <span class="flex items-center gap-2">
+              <span>🧵 Матеріал та налаштування друку</span>
+            </span>
+            <span class="text-xs mw-text-muted font-normal">Розрахунок у реальному часі</span>
+          </h2>
+
+          <!-- Material Selection (Pills Grid) -->
+          <div>
+            <label class="block text-xs font-semibold mw-text-secondary mb-2">Оберіть тип пластику / смоли:</label>
+            <div id="materialPillsGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Material Price & Density Details -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+            <div>
+              <label class="block text-xs font-semibold mw-text-secondary mb-1">Вартість котушки (грн/кг):</label>
+              <div class="relative">
+                <input id="inputSpoolPrice" type="number" min="1" step="10" oninput="calculateCost()"
+                       class="w-full px-3 py-2 rounded-xl mw-elevated border text-xs mw-text-primary font-mono focus:outline-none focus:border-[#00AE42]" />
+                <span class="absolute right-3 top-2 text-xs mw-text-muted pointer-events-none">₴/кг</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold mw-text-secondary mb-1">Густина (г/см³):</label>
+              <div class="relative">
+                <input id="inputDensity" type="number" min="0.5" max="3" step="0.01" oninput="calculateCost()"
+                       class="w-full px-3 py-2 rounded-xl mw-elevated border text-xs mw-text-primary font-mono focus:outline-none focus:border-[#00AE42]" />
+                <span class="absolute right-3 top-2 text-xs mw-text-muted pointer-events-none">г/см³</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold mw-text-secondary mb-1">Кількість копій (тираж):</label>
+              <div class="relative">
+                <input id="inputQuantity" type="number" min="1" max="1000" step="1" value="1" oninput="calculateCost()"
+                       class="w-full px-3 py-2 rounded-xl mw-elevated border text-xs mw-text-primary font-mono focus:outline-none focus:border-[#00AE42]" />
+                <span class="absolute right-3 top-2 text-xs mw-text-muted pointer-events-none">шт</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Infill % Slider -->
+          <div class="space-y-2 pt-2 border-t mw-border">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-semibold mw-text-secondary">Відсоток заповнення (Infill):</span>
+              <span id="infillPercentLabel" class="font-bold text-[#00AE42] font-mono text-sm">20%</span>
+            </div>
+            <input id="inputInfill" type="range" min="0" max="100" step="5" value="20" oninput="updateInfillLabel(this.value); calculateCost();"
+                   class="w-full h-2 rounded-lg bg-neutral-700 cursor-pointer" />
+            <div class="flex justify-between text-[10px] mw-text-muted">
+              <span>0% (Пустотіле)</span>
+              <span>15% (Стандарт)</span>
+              <span>25% (Міцне)</span>
+              <span>50% (Технічне)</span>
+              <span>100% (Моноліт)</span>
+            </div>
+          </div>
+
+          <!-- Manual Weight & Time Inputs (Available in both modes, auto-filled in file mode) -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t mw-border">
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-xs font-semibold mw-text-secondary">Вага моделі (г):</label>
+                <span id="autoWeightHint" class="text-[10px] text-[#00AE42] font-semibold hidden">Розраховано з 3D</span>
+              </div>
+              <div class="relative">
+                <input id="inputWeightGrams" type="number" min="0.1" step="0.5" value="45" oninput="calculateCost(false)"
+                       class="w-full px-3 py-2.5 rounded-xl mw-elevated border text-sm mw-text-primary font-mono font-bold focus:outline-none focus:border-[#00AE42]" />
+                <span class="absolute right-3 top-2.5 text-xs mw-text-muted pointer-events-none">грам</span>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-xs font-semibold mw-text-secondary">Час друку (години і хвилини):</label>
+                <span id="autoTimeHint" class="text-[10px] text-[#00AE42] font-semibold hidden">Орієнтовний час</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div class="relative">
+                  <input id="inputHours" type="number" min="0" max="999" step="1" value="2" oninput="calculateCost(false)"
+                         class="w-full px-3 py-2.5 rounded-xl mw-elevated border text-sm mw-text-primary font-mono font-bold focus:outline-none focus:border-[#00AE42]" />
+                  <span class="absolute right-3 top-2.5 text-xs mw-text-muted pointer-events-none">год</span>
+                </div>
+                <div class="relative">
+                  <input id="inputMinutes" type="number" min="0" max="59" step="5" value="15" oninput="calculateCost(false)"
+                         class="w-full px-3 py-2.5 rounded-xl mw-elevated border text-sm mw-text-primary font-mono font-bold focus:outline-none focus:border-[#00AE42]" />
+                  <span class="absolute right-3 top-2.5 text-xs mw-text-muted pointer-events-none">хв</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 3. EXPANDABLE WORKSHOP RATES SETTINGS -->
+        <div class="mw-surface border rounded-2xl p-5 shadow-sm space-y-4">
+          <div class="flex items-center justify-between cursor-pointer" onclick="toggleWorkshopSettings()">
+            <h2 class="text-sm font-bold mw-text-primary flex items-center gap-2">
+              <span>⚙️ Тарифи майстерні, електрика та амортизація</span>
+            </h2>
+            <button type="button" id="btnToggleWorkshop" class="text-xs text-[#00AE42] font-bold">
+              Налаштувати ▾
+            </button>
+          </div>
+
+          <div id="workshopSettingsBlock" class="hidden space-y-4 pt-2 border-t mw-border">
+            <p class="text-xs mw-text-muted leading-relaxed">
+              Ці параметри дозволяють врахувати реальні витрати на електроенергію, знос сопла та витратних матеріалів, а також час на підготовку.
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label class="block text-xs font-semibold mw-text-secondary mb-1">Тариф електрики (грн/кВт·год):</label>
+                <div class="relative">
+                  <input id="ratePowerKwh" type="number" min="0" step="0.1" value="4.32" oninput="saveAndCalculateRates()"
+                         class="w-full px-3 py-2 rounded-xl mw-elevated border text-xs mw-text-primary font-mono focus:outline-none focus:border-[#00AE42]" />
+                  <span class="absolute right-3 top-2 text-xs mw-text-muted pointer-events-none">₴/кВт</span>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold mw-text-secondary mb-1">Потужність принтера (Вт):</label>
+                <div class="relative">
+                  <input id="ratePrinterWatts" type="number" min="50" max="1000" step="10" value="180" oninput="saveAndCalculateRates()"
+                         class="w-full px-3 py-2 rounded-xl mw-elevated border text-xs mw-text-primary font-mono focus:outline-none focus:border-[#00AE42]" />
+                  <span class="absolute right-3 top-2 text-xs mw-text-muted pointer-events-none">Вт</span>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold mw-text-secondary mb-1">Амортизація (грн/год друку):</label>
+                <div class="relative">
+                  <input id="rateDepreciation" type="number" min="0" step="5" value="20" oninput="saveAndCalculateRates()"
+                         class="w-full px-3 py-2 rounded-xl mw-elevated border text-xs mw-text-primary font-mono focus:outline-none focus:border-[#00AE42]" />
+                  <span class="absolute right-3 top-2 text-xs mw-text-muted pointer-events-none">₴/год</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              <div>
+                <label class="block text-xs font-semibold mw-text-secondary mb-1">Підготовка та зняття зі столу (грн):</label>
+                <div class="relative">
+                  <input id="ratePrepFee" type="number" min="0" step="5" value="20" oninput="saveAndCalculateRates()"
+                         class="w-full px-3 py-2 rounded-xl mw-elevated border text-xs mw-text-primary font-mono focus:outline-none focus:border-[#00AE42]" />
+                  <span class="absolute right-3 top-2 text-xs mw-text-muted pointer-events-none">₴</span>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold mw-text-secondary mb-1">Ризик браку / підтримки (%):</label>
+                <div class="relative">
+                  <input id="rateFailureRisk" type="number" min="0" max="50" step="1" value="5" oninput="saveAndCalculateRates()"
+                         class="w-full px-3 py-2 rounded-xl mw-elevated border text-xs mw-text-primary font-mono focus:outline-none focus:border-[#00AE42]" />
+                  <span class="absolute right-3 top-2 text-xs mw-text-muted pointer-events-none">%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex justify-end pt-1">
+              <button type="button" onclick="resetDefaultRates()" class="text-xs text-neutral-400 hover:text-white underline">
+                Скинути тарифи до стандартних
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ======================== RIGHT COLUMN: INVOICE RECEIPT CARD ======================== -->
+      <div class="xl:col-span-5 sticky top-24 space-y-4">
+        
+        <div id="summaryCard" class="mw-surface border mw-border rounded-3xl p-6 shadow-2xl space-y-6 relative overflow-hidden">
+          
+          <!-- Card Header & Badge -->
+          <div class="flex items-center justify-between border-b mw-border pb-4">
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-[#00AE42]">Кошторис замовлення</span>
+              <h2 class="text-xl font-extrabold mw-text-primary mt-0.5">Підсумок розрахунку</h2>
+            </div>
+            <span id="receiptBatchBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-[#00AE42]/15 text-[#00AE42] border border-[#00AE42]/30">
+              1 шт
+            </span>
+          </div>
+
+          <!-- Total Price Highlight -->
+          <div class="p-5 rounded-2xl bg-gradient-to-br from-[#00AE42]/15 to-transparent border border-[#00AE42]/30 space-y-1">
+            <span class="text-xs mw-text-muted">Рекомендована ціна для замовника:</span>
+            <div class="flex items-baseline gap-2">
+              <span id="finalTotalPrice" class="text-4xl sm:text-5xl font-black text-[#00AE42] font-mono tracking-tight">0.00</span>
+              <span class="text-2xl font-bold text-[#00AE42]">₴</span>
+            </div>
+            <div id="unitPriceSubtext" class="text-xs mw-text-muted hidden pt-1">
+              Ціна за 1 штуку: <strong id="singleUnitPrice" class="mw-text-primary">0.00 ₴</strong>
+            </div>
+          </div>
+
+          <!-- Commercial Markup Selection Mode -->
+          <div class="space-y-2">
+            <label class="block text-xs font-semibold mw-text-secondary">Режим націнки (маржа майстра):</label>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-xs font-semibold">
+              <button type="button" onclick="setMarkupMode(0)" id="markupBtn0"
+                      class="markup-btn p-2 rounded-xl mw-elevated border text-center transition">
+                <span>0%</span>
+                <span class="block text-[10px] mw-text-muted">Друзям</span>
+              </button>
+              <button type="button" onclick="setMarkupMode(50)" id="markupBtn50"
+                      class="markup-btn p-2 rounded-xl mw-elevated border text-center transition">
+                <span>+50%</span>
+                <span class="block text-[10px] mw-text-muted">1.5x Базовий</span>
+              </button>
+              <button type="button" onclick="setMarkupMode(100)" id="markupBtn100"
+                      class="markup-btn p-2 rounded-xl mw-elevated border text-center transition bg-[#00AE42] text-white border-[#00AE42]">
+                <span>+100%</span>
+                <span class="block text-[10px] text-white/80">2.0x Бізнес</span>
+              </button>
+              <button type="button" onclick="setMarkupMode('custom')" id="markupBtnCustom"
+                      class="markup-btn p-2 rounded-xl mw-elevated border text-center transition">
+                <span>Власний %</span>
+                <span class="block text-[10px] mw-text-muted">Кастом</span>
+              </button>
+            </div>
+
+            <!-- Custom Markup Input (hidden unless selected) -->
+            <div id="customMarkupRow" class="hidden pt-2">
+              <div class="relative">
+                <input id="customMarkupInput" type="number" min="0" max="1000" step="5" value="75" oninput="calculateCost()"
+                       class="w-full px-3 py-2 rounded-xl mw-elevated border text-xs mw-text-primary font-mono focus:outline-none focus:border-[#00AE42]" />
+                <span class="absolute right-3 top-2 text-xs mw-text-muted pointer-events-none">% маржі</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cost Breakdown List -->
+          <div class="space-y-2.5 pt-2 border-t mw-border text-xs">
+            <div class="flex justify-between items-center text-neutral-300">
+              <span class="flex items-center gap-1.5 mw-text-secondary">
+                <span>🧵</span><span>Матеріал (філамент):</span>
+              </span>
+              <span id="costPlastic" class="font-mono font-bold mw-text-primary">0.00 ₴</span>
+            </div>
+
+            <div class="flex justify-between items-center text-neutral-300">
+              <span class="flex items-center gap-1.5 mw-text-secondary">
+                <span>⚡</span><span>Електроенергія:</span>
+              </span>
+              <span id="costElectricity" class="font-mono font-bold mw-text-primary">0.00 ₴</span>
+            </div>
+
+            <div class="flex justify-between items-center text-neutral-300">
+              <span class="flex items-center gap-1.5 mw-text-secondary">
+                <span>🔧</span><span>Амортизація принтера:</span>
+              </span>
+              <span id="costDepreciation" class="font-mono font-bold mw-text-primary">0.00 ₴</span>
+            </div>
+
+            <div class="flex justify-between items-center text-neutral-300">
+              <span class="flex items-center gap-1.5 mw-text-secondary">
+                <span>👷</span><span>Підготовка та постобробка:</span>
+              </span>
+              <span id="costPrep" class="font-mono font-bold mw-text-primary">0.00 ₴</span>
+            </div>
+
+            <div class="pt-2 border-t mw-border flex justify-between items-center font-semibold">
+              <span class="mw-text-muted">Чиста собівартість:</span>
+              <span id="costNetTotal" class="font-mono mw-text-primary font-bold">0.00 ₴</span>
+            </div>
+
+            <div class="flex justify-between items-center font-semibold text-[#00AE42]">
+              <span>Прибуток майстра (націнка):</span>
+              <span id="costProfit" class="font-mono font-bold">+0.00 ₴</span>
+            </div>
+
+            <div id="bulkDiscountRow" class="hidden flex justify-between items-center font-semibold text-amber-400">
+              <span>Оптова знижка на тираж:</span>
+              <span id="costDiscount" class="font-mono font-bold">-0.00 ₴</span>
+            </div>
+          </div>
+
+          <!-- Action Buttons (Copy Offer & Print) -->
+          <div id="actionButtonsRow" class="space-y-2.5 pt-2 border-t mw-border">
+            <button type="button" onclick="copyCommercialOffer()"
+                    class="w-full py-3 px-4 rounded-xl bg-[#00AE42] hover:bg-[#00993A] text-white font-bold text-sm shadow-lg shadow-[#00AE42]/20 flex items-center justify-center gap-2 transition cursor-pointer">
+              <span>📋</span>
+              <span>Скопіювати КП для клієнта</span>
+            </button>
+
+            <button type="button" onclick="window.print()"
+                    class="w-full py-2.5 px-4 rounded-xl mw-elevated border hover:border-[#00AE42] mw-text-primary font-semibold text-xs flex items-center justify-center gap-2 transition cursor-pointer">
+              <span>🖨️</span>
+              <span>Роздрукувати кошторис (PDF)</span>
+            </button>
+          </div>
+
+          <!-- Footer Stamp -->
+          <p class="text-[11px] text-center mw-text-muted leading-tight pt-1">
+            STL-HUB 3D Cost Calculator • Розраховано за ринковими тарифами в Україні
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ======================== FOOTER ======================== -->
+  <footer class="w-full max-w-[1850px] mx-auto px-4 sm:px-6 lg:px-8 mt-auto pt-8 pb-6 shrink-0">
+    <div class="mw-surface border mw-border rounded-2xl px-6 py-4 shadow-xl flex flex-col md:flex-row items-center justify-between gap-5">
+      
+      <!-- Left: Logo & Copyright -->
+      <div class="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-4 text-center sm:text-left">
+        <a href="/" class="font-extrabold text-xl tracking-tight mw-text-primary hover:opacity-90 transition inline-block">
+          STL<span class="text-[#00AE42]">-HUB</span>
+        </a>
+        <span class="text-xs mw-text-muted select-none">
+          © 2024–2026 • Україна <span class="uppercase">UA</span>
+        </span>
+      </div>
+
+      <!-- Center: Navigation Links -->
+      <div class="flex flex-wrap items-center justify-center gap-6 sm:gap-8 text-xs sm:text-sm font-semibold mw-text-secondary">
+        <a href="/" class="hover:mw-text-primary hover:text-[#00AE42] transition">
+          Пошук 3D-моделей
+        </a>
+        <a href="/calc" class="text-[#00AE42] font-bold">
+          Калькулятор 3D-друку
+        </a>
+        <a href="/admin" class="hover:mw-text-primary hover:text-[#00AE42] transition">
+          Адмінка
+        </a>
+      </div>
+
+      <!-- Right: Donate Button & Back to Top -->
+      <div class="flex items-center gap-4">
+        <a id="footerDonateBtn" href="https://send.monobank.ua/jar/4GhNpdNsbp" target="_blank" rel="noopener noreferrer"
+           class="px-4 py-2 rounded-xl border border-[#00AE42] bg-[#00AE42]/10 hover:bg-[#00AE42]/20 text-[#00AE42] hover:text-[#00E65B] text-xs sm:text-sm font-bold flex items-center gap-2 transition shadow-sm cursor-pointer"
+           title="Підтримати розвиток проєкту STL-HUB на Monobank">
+          <span class="text-base leading-none">♡</span>
+          <span>Підтримати</span>
+        </a>
+        <button type="button" onclick="window.scrollTo({top: 0, behavior: 'smooth'})"
+                class="text-xs sm:text-sm font-medium mw-text-muted hover:mw-text-primary transition flex items-center gap-1 cursor-pointer">
+          <span>↑</span>
+          <span>Нагору</span>
+        </button>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- ======================== APPLICATION JAVASCRIPT ======================== -->
+  <script>
+    // 1. POPULAR 3D PRINTING MATERIALS PRESETS IN UKRAINE
+    const MATERIALS = {
+      pla: { name: 'PLA', price: 650, density: 1.24, desc: 'Універсальний, біорозкладний, легкий друк' },
+      petg: { name: 'PETG', price: 580, density: 1.27, desc: 'Ударостійкий, хімостійкий, найпопулярніший' },
+      abs: { name: 'ABS', price: 620, density: 1.05, desc: 'Термостійкий до 100°C, ацетонова обробка' },
+      asa: { name: 'ASA', price: 750, density: 1.07, desc: 'Стійкий до ультрафіолету та вулиці' },
+      tpu: { name: 'TPU 95A', price: 890, density: 1.21, desc: 'Гнучкий, еластичний поліуретан' },
+      copet: { name: 'CoPET', price: 590, density: 1.27, desc: 'Аналог PETG, підвищена прозорість' },
+      nylon: { name: 'Nylon PA', price: 1250, density: 1.14, desc: 'Надвисока зносостійкість, шестерні' },
+      resin: { name: 'Resin (Смола)', price: 1100, density: 1.10, desc: 'Фотополімер високої деталізації' },
+    };
+
+    let selectedMaterialKey = 'petg';
+    let currentMode = 'file'; // 'file' | 'manual'
+    let currentMarkupMode = 100; // 0 | 50 | 100 | 'custom'
+    let currentModelData = null; // { volumeCm3, areaCm2, sizeX, sizeY, sizeZ, triangles, fileName }
+
+    // Three.js State
+    let scene, camera, renderer, controls, meshGroup, currentMesh, buildGrid;
+    let isWireframe = false;
+    let isAutoRotating = false;
+
+    // ==================== INITIALIZATION ====================
+    window.addEventListener('DOMContentLoaded', () => {
+      initThreeViewer();
+      initMaterialPills();
+      loadSavedWorkshopRates();
+      setMaterial('petg');
+      calculateCost();
+      setupDragAndDrop();
+    });
+
+    // Theme Switcher
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.classList.toggle('dark');
+      localStorage.setItem('stlhub_theme', isDark ? 'dark' : 'light');
+      updateThemeIcons(isDark);
+      if (scene) {
+        scene.background = new THREE.Color(isDark ? 0x18181A : 0xEAEAEA);
+      }
+    }
+
+    function updateThemeIcons(isDark) {
+      document.getElementById('themeIconSun').classList.toggle('hidden', isDark);
+      document.getElementById('themeIconMoon').classList.toggle('hidden', !isDark);
+    }
+
+    // Mode Selector (File vs Manual)
+    function setMode(mode) {
+      currentMode = mode;
+      const btnFile = document.getElementById('tabBtnFile');
+      const btnMan = document.getElementById('tabBtnManual');
+
+      if (mode === 'file') {
+        btnFile.classList.add('bg-[#00AE42]', 'text-white', 'shadow');
+        btnFile.classList.remove('mw-text-muted');
+        btnMan.classList.remove('bg-[#00AE42]', 'text-white', 'shadow');
+        btnMan.classList.add('mw-text-muted');
+        document.getElementById('fileModeSection').classList.remove('hidden');
+      } else {
+        btnMan.classList.add('bg-[#00AE42]', 'text-white', 'shadow');
+        btnMan.classList.remove('mw-text-muted');
+        btnFile.classList.remove('bg-[#00AE42]', 'text-white', 'shadow');
+        btnFile.classList.add('mw-text-muted');
+        document.getElementById('fileModeSection').classList.add('hidden');
+      }
+      calculateCost();
+    }
+
+    // Material Selection
+    function initMaterialPills() {
+      const grid = document.getElementById('materialPillsGrid');
+      grid.innerHTML = Object.entries(MATERIALS).map(([key, mat]) => `
+        <button type="button" onclick="setMaterial('${key}')" id="matBtn_${key}"
+                class="mat-btn p-2.5 rounded-xl mw-elevated border text-left transition hover:border-[#00AE42] cursor-pointer">
+          <div class="flex items-center justify-between">
+            <span class="font-extrabold text-xs mw-text-primary">${mat.name}</span>
+            <span class="text-[10px] text-[#00AE42] font-mono font-bold">${mat.price} ₴</span>
+          </div>
+          <span class="text-[10px] mw-text-muted block truncate mt-0.5">${mat.desc}</span>
+        </button>
+      `).join('');
+    }
+
+    function setMaterial(key) {
+      selectedMaterialKey = key;
+      const mat = MATERIALS[key];
+      if (!mat) return;
+
+      document.querySelectorAll('.mat-btn').forEach(btn => {
+        btn.classList.remove('border-[#00AE42]', 'bg-[#00AE42]/10');
+      });
+      const activeBtn = document.getElementById(`matBtn_${key}`);
+      if (activeBtn) {
+        activeBtn.classList.add('border-[#00AE42]', 'bg-[#00AE42]/10');
+      }
+
+      document.getElementById('inputSpoolPrice').value = mat.price;
+      document.getElementById('inputDensity').value = mat.density;
+
+      calculateCost(true);
+    }
+
+    function updateInfillLabel(val) {
+      document.getElementById('infillPercentLabel').textContent = `${val}%`;
+    }
+
+    function setMarkupMode(mode) {
+      currentMarkupMode = mode;
+      document.querySelectorAll('.markup-btn').forEach(b => {
+        b.classList.remove('bg-[#00AE42]', 'text-white', 'border-[#00AE42]');
+      });
+      const customRow = document.getElementById('customMarkupRow');
+
+      if (mode === 0) {
+        document.getElementById('markupBtn0').classList.add('bg-[#00AE42]', 'text-white', 'border-[#00AE42]');
+        customRow.classList.add('hidden');
+      } else if (mode === 50) {
+        document.getElementById('markupBtn50').classList.add('bg-[#00AE42]', 'text-white', 'border-[#00AE42]');
+        customRow.classList.add('hidden');
+      } else if (mode === 100) {
+        document.getElementById('markupBtn100').classList.add('bg-[#00AE42]', 'text-white', 'border-[#00AE42]');
+        customRow.classList.add('hidden');
+      } else {
+        document.getElementById('markupBtnCustom').classList.add('bg-[#00AE42]', 'text-white', 'border-[#00AE42]');
+        customRow.classList.remove('hidden');
+      }
+      calculateCost();
+    }
+
+    function toggleWorkshopSettings() {
+      const block = document.getElementById('workshopSettingsBlock');
+      const btn = document.getElementById('btnToggleWorkshop');
+      const isHidden = block.classList.contains('hidden');
+      block.classList.toggle('hidden', !isHidden);
+      btn.textContent = isHidden ? 'Сховати ▴' : 'Налаштувати ▾';
+    }
+
+    // ==================== WORKSHOP RATES PERSISTENCE ====================
+    function saveAndCalculateRates() {
+      const rates = {
+        powerKwh: parseFloat(document.getElementById('ratePowerKwh').value) || 4.32,
+        printerWatts: parseFloat(document.getElementById('ratePrinterWatts').value) || 180,
+        depreciation: parseFloat(document.getElementById('rateDepreciation').value) || 20,
+        prepFee: parseFloat(document.getElementById('ratePrepFee').value) || 20,
+        failureRisk: parseFloat(document.getElementById('rateFailureRisk').value) || 5,
+      };
+      localStorage.setItem('stlhub_calc_rates', JSON.stringify(rates));
+      calculateCost();
+    }
+
+    function loadSavedWorkshopRates() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('stlhub_calc_rates'));
+        if (saved) {
+          if (saved.powerKwh) document.getElementById('ratePowerKwh').value = saved.powerKwh;
+          if (saved.printerWatts) document.getElementById('ratePrinterWatts').value = saved.printerWatts;
+          if (saved.depreciation !== undefined) document.getElementById('rateDepreciation').value = saved.depreciation;
+          if (saved.prepFee !== undefined) document.getElementById('ratePrepFee').value = saved.prepFee;
+          if (saved.failureRisk !== undefined) document.getElementById('rateFailureRisk').value = saved.failureRisk;
+        }
+      } catch (e) {}
+    }
+
+    function resetDefaultRates() {
+      document.getElementById('ratePowerKwh').value = 4.32;
+      document.getElementById('ratePrinterWatts').value = 180;
+      document.getElementById('rateDepreciation').value = 20;
+      document.getElementById('ratePrepFee').value = 20;
+      document.getElementById('rateFailureRisk').value = 5;
+      saveAndCalculateRates();
+    }
+
+    // ==================== THREE.JS 3D VIEWER ====================
+    function initThreeViewer() {
+      const container = document.getElementById('threeCanvasContainer');
+      const width = container.clientWidth || 600;
+      const height = container.clientHeight || 400;
+
+      scene = new THREE.Scene();
+      const isDark = document.documentElement.classList.contains('dark');
+      scene.background = new THREE.Color(isDark ? 0x18181A : 0xEAEAEA);
+
+      camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 2000);
+      camera.position.set(160, 160, 240);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      container.appendChild(renderer.domElement);
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.08;
+      controls.maxPolarAngle = Math.PI / 2 + 0.1;
+
+      // Lights
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+      scene.add(ambientLight);
+
+      const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.8);
+      dirLight1.position.set(150, 250, 150);
+      scene.add(dirLight1);
+
+      const dirLight2 = new THREE.DirectionalLight(0x00AE42, 0.35);
+      dirLight2.position.set(-150, -100, -150);
+      scene.add(dirLight2);
+
+      // Build Plate Grid (256x256mm Bambu Lab bed)
+      buildGrid = new THREE.GridHelper(256, 25.6, 0x00AE42, 0x3F3F46);
+      buildGrid.position.y = 0;
+      scene.add(buildGrid);
+
+      meshGroup = new THREE.Group();
+      scene.add(meshGroup);
+
+      // Animation Loop
+      function animate() {
+        requestAnimationFrame(animate);
+        if (isAutoRotating && meshGroup) {
+          meshGroup.rotation.y += 0.008;
+        }
+        controls.update();
+        renderer.render(scene, camera);
+      }
+      animate();
+
+      window.addEventListener('resize', onWindowResize);
+    }
+
+    function onWindowResize() {
+      const container = document.getElementById('threeCanvasContainer');
+      if (!container || !renderer || !camera) return;
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height);
+    }
+
+    function resetCamera() {
+      if (!controls || !camera) return;
+      camera.position.set(160, 160, 240);
+      controls.target.set(0, 30, 0);
+      controls.update();
+    }
+
+    function toggleWireframe() {
+      isWireframe = !isWireframe;
+      if (currentMesh && currentMesh.material) {
+        currentMesh.material.wireframe = isWireframe;
+      }
+      const btn = document.getElementById('btnWireframe');
+      btn.classList.toggle('bg-white/30', isWireframe);
+    }
+
+    function toggleAutoRotate() {
+      isAutoRotating = !isAutoRotating;
+      const btn = document.getElementById('btnAutoRotate');
+      btn.classList.toggle('bg-white/30', isAutoRotating);
+    }
+
+    function setMeshColor(hexColor) {
+      if (currentMesh && currentMesh.material) {
+        currentMesh.material.color.setHex(hexColor);
+      }
+    }
+
+    // ==================== DRAG & DROP AND FILE PROCESSING ====================
+    function setupDragAndDrop() {
+      const dropzone = document.getElementById('dropzoneContainer');
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, preventDefaults, false);
+      });
+      function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropzone.addEventListener(eventName, () => dropzone.classList.add('border-[#00AE42]', 'bg-[#00AE42]/10'), false);
+      });
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, () => dropzone.classList.remove('border-[#00AE42]', 'bg-[#00AE42]/10'), false);
+      });
+
+      dropzone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files && files.length > 0) {
+          processFile(files[0]);
+        }
+      });
+    }
+
+    function handleFileSelect(e) {
+      if (e.target.files && e.target.files.length > 0) {
+        processFile(e.target.files[0]);
+      }
+    }
+
+    function processFile(file) {
+      const ext = file.name.split('.').pop().toLowerCase();
+      if (ext !== 'stl' && ext !== 'obj') {
+        alert('Будь ласка, завантажте файл формату .STL або .OBJ');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const buffer = e.target.result;
+        try {
+          if (ext === 'stl') {
+            loadSTLGeometry(buffer, file.name);
+          } else if (ext === 'obj') {
+            loadOBJGeometry(buffer, file.name);
+          }
+        } catch (err) {
+          console.error(err);
+          alert('Не вдалося розібрати 3D-файл. Переконайтеся, що файл не пошкоджений.');
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // ==================== EXACT MESH VOLUME & AREA MATH ====================
+    function computeGeometryMetrics(geometry) {
+      let position = geometry.attributes.position;
+      let faces = position.count / 3;
+      let signedVolume = 0;
+      let surfaceArea = 0;
+      let p1 = new THREE.Vector3(), p2 = new THREE.Vector3(), p3 = new THREE.Vector3();
+      let v1 = new THREE.Vector3(), v2 = new THREE.Vector3(), cross = new THREE.Vector3();
+
+      for (let i = 0; i < faces; i++) {
+        p1.fromBufferAttribute(position, i * 3 + 0);
+        p2.fromBufferAttribute(position, i * 3 + 1);
+        p3.fromBufferAttribute(position, i * 3 + 2);
+
+        // Exact signed tetrahedron volume: (p1 . (p2 x p3)) / 6
+        signedVolume += p1.dot(p2.clone().cross(p3)) / 6.0;
+
+        // Triangle surface area: |(p2 - p1) x (p3 - p1)| / 2
+        v1.subVectors(p2, p1);
+        v2.subVectors(p3, p1);
+        cross.crossVectors(v1, v2);
+        surfaceArea += cross.length() * 0.5;
+      }
+
+      // Convert from mm3 -> cm3 (divided by 1000)
+      const volumeCm3 = Math.max(0.1, Math.abs(signedVolume) / 1000.0);
+      // Convert from mm2 -> cm2 (divided by 100)
+      const areaCm2 = surfaceArea / 100.0;
+
+      return { volumeCm3, areaCm2, triangles: faces };
+    }
+
+    function displayMeshInViewer(geometry, fileName) {
+      geometry.computeVertexNormals();
+      geometry.center();
+
+      // Align bottom of model to the grid (Y = 0)
+      geometry.computeBoundingBox();
+      const bbox = geometry.boundingBox;
+      const sizeX = Math.round((bbox.max.x - bbox.min.x) * 10) / 10;
+      const sizeY = Math.round((bbox.max.y - bbox.min.y) * 10) / 10;
+      const sizeZ = Math.round((bbox.max.z - bbox.min.z) * 10) / 10;
+      geometry.translate(0, -bbox.min.y, 0);
+
+      const metrics = computeGeometryMetrics(geometry);
+
+      // Remove existing mesh
+      while (meshGroup.children.length > 0) {
+        meshGroup.remove(meshGroup.children[0]);
+      }
+
+      // Create Material
+      const material = new THREE.MeshStandardMaterial({
+        color: 0x00AE42,
+        roughness: 0.35,
+        metalness: 0.1,
+        wireframe: isWireframe,
+      });
+
+      currentMesh = new THREE.Mesh(geometry, material);
+      currentMesh.castShadow = true;
+      currentMesh.receiveShadow = true;
+      meshGroup.add(currentMesh);
+
+      // Fit camera nicely
+      const maxDim = Math.max(sizeX, sizeY, sizeZ);
+      const camDist = Math.max(120, maxDim * 2.2);
+      camera.position.set(camDist * 0.8, camDist * 0.7, camDist * 1.1);
+      controls.target.set(0, sizeY / 2, 0);
+      controls.update();
+
+      // Update UI Metrics
+      currentModelData = {
+        fileName,
+        sizeX, sizeY, sizeZ,
+        volumeCm3: Math.round(metrics.volumeCm3 * 100) / 100,
+        areaCm2: Math.round(metrics.areaCm2 * 10) / 10,
+        triangles: metrics.triangles,
+      };
+
+      document.getElementById('fileNameLabel').textContent = fileName;
+      document.getElementById('fileLoadedPill').classList.remove('hidden');
+      document.getElementById('fileLoadedPill').classList.add('flex');
+      document.getElementById('viewerWrapper').classList.remove('hidden');
+      document.getElementById('dropzoneContainer').classList.add('hidden');
+
+      document.getElementById('geoDims').textContent = `${sizeX} × ${sizeZ} × ${sizeY} мм`;
+      document.getElementById('geoVolume').textContent = `${currentModelData.volumeCm3} см³`;
+      document.getElementById('geoArea').textContent = `${currentModelData.areaCm2} см²`;
+      document.getElementById('geoTriangles').textContent = currentModelData.triangles.toLocaleString();
+
+      document.getElementById('autoWeightHint').classList.remove('hidden');
+      document.getElementById('autoTimeHint').classList.remove('hidden');
+
+      calculateCost(true);
+    }
+
+    function loadSTLGeometry(buffer, fileName) {
+      const loader = new THREE.STLLoader();
+      const geometry = loader.parse(buffer);
+      displayMeshInViewer(geometry, fileName);
+    }
+
+    function loadOBJGeometry(buffer, fileName) {
+      const text = new TextDecoder('utf-8').decode(buffer);
+      const loader = new THREE.OBJLoader();
+      const obj = loader.parse(text);
+
+      let mergedGeom = new THREE.BufferGeometry();
+      obj.traverse(child => {
+        if (child.isMesh && child.geometry) {
+          mergedGeom = child.geometry.clone();
+        }
+      });
+      displayMeshInViewer(mergedGeom, fileName);
+    }
+
+    function clearModel() {
+      currentModelData = null;
+      while (meshGroup.children.length > 0) {
+        meshGroup.remove(meshGroup.children[0]);
+      }
+      currentMesh = null;
+      document.getElementById('fileLoadedPill').classList.add('hidden');
+      document.getElementById('viewerWrapper').classList.add('hidden');
+      document.getElementById('dropzoneContainer').classList.remove('hidden');
+      document.getElementById('stlFileInput').value = '';
+      document.getElementById('autoWeightHint').classList.add('hidden');
+      document.getElementById('autoTimeHint').classList.add('hidden');
+      calculateCost();
+    }
+
+    // Demo Sample Models Generator (Cube 20x20x20mm & Benchy silhouette)
+    function loadSampleModel(type) {
+      let geom;
+      let name = 'test_sample.stl';
+      if (type === 'cube') {
+        geom = new THREE.BoxGeometry(20, 20, 20);
+        name = 'Calibration_Cube_20mm.stl';
+      } else {
+        // Create an organic cylinder/boat shape demo
+        geom = new THREE.CylinderGeometry(15, 25, 45, 32);
+        name = '3D_Benchy_Sample_60mm.stl';
+      }
+      displayMeshInViewer(geom, name);
+    }
+
+    // ==================== CALCULATION CORE ENGINE ====================
+    function calculateCost(from3D = false) {
+      const spoolPrice = parseFloat(document.getElementById('inputSpoolPrice').value) || 650;
+      const density = parseFloat(document.getElementById('inputDensity').value) || 1.24;
+      const quantity = Math.max(1, parseInt(document.getElementById('inputQuantity').value) || 1);
+      const infill = Math.max(0, Math.min(100, parseInt(document.getElementById('inputInfill').value) || 20));
+
+      // 1. Calculate weight & print time
+      let weightGrams = parseFloat(document.getElementById('inputWeightGrams').value) || 45;
+      let hours = parseInt(document.getElementById('inputHours').value) || 0;
+      let minutes = parseInt(document.getElementById('inputMinutes').value) || 0;
+
+      if (from3D && currentModelData && currentModelData.volumeCm3) {
+        // Effective volume formula: Solid Volume * (0.18 shell + 0.82 * infill%)
+        const infillRatio = infill / 100.0;
+        const effectiveVolumeCm3 = currentModelData.volumeCm3 * (0.18 + 0.82 * infillRatio);
+        weightGrams = Math.max(1, Math.round(effectiveVolumeCm3 * density * 10) / 10);
+        document.getElementById('inputWeightGrams').value = weightGrams;
+
+        // Speed estimation: Bambu/CoreXY ~ 18 cm3/h average
+        const estTotalHours = Math.max(0.2, effectiveVolumeCm3 / 18.0);
+        hours = Math.floor(estTotalHours);
+        minutes = Math.round((estTotalHours - hours) * 60);
+        document.getElementById('inputHours').value = hours;
+        document.getElementById('inputMinutes').value = minutes;
+      }
+
+      const totalTimeHours = hours + (minutes / 60.0);
+
+      // 2. Read workshop rates
+      const powerKwhRate = parseFloat(document.getElementById('ratePowerKwh').value) || 4.32;
+      const printerWatts = parseFloat(document.getElementById('ratePrinterWatts').value) || 180;
+      const depreciationRate = parseFloat(document.getElementById('rateDepreciation').value) || 20;
+      const prepFee = parseFloat(document.getElementById('ratePrepFee').value) || 20;
+      const failureRiskPct = parseFloat(document.getElementById('rateFailureRisk').value) || 5;
+
+      // 3. Item Net Costs (Single unit)
+      // Material cost with failure / purge risk
+      const plasticCostSingle = (weightGrams / 1000.0) * spoolPrice * (1 + (failureRiskPct / 100.0));
+      // Electricity cost: Watts * Hours / 1000 * Tariff
+      const electricityCostSingle = (printerWatts * totalTimeHours / 1000.0) * powerKwhRate;
+      // Wear / depreciation per print hour
+      const depreciationCostSingle = totalTimeHours * depreciationRate;
+      // Fixed prep fee
+      const prepCostSingle = prepFee;
+
+      const netCostSingle = plasticCostSingle + electricityCostSingle + depreciationCostSingle + prepCostSingle;
+
+      // 4. Commercial Markup / Margin
+      let markupPercent = 100;
+      if (currentMarkupMode === 0) markupPercent = 0;
+      else if (currentMarkupMode === 50) markupPercent = 50;
+      else if (currentMarkupMode === 100) markupPercent = 100;
+      else {
+        markupPercent = Math.max(0, parseFloat(document.getElementById('customMarkupInput').value) || 75);
+      }
+
+      const profitSingle = netCostSingle * (markupPercent / 100.0);
+      const retailPriceSingle = netCostSingle + profitSingle;
+
+      // 5. Batch / Tier Quantity Discount
+      let discountPct = 0;
+      if (quantity >= 20) discountPct = 15;
+      else if (quantity >= 10) discountPct = 10;
+      else if (quantity >= 5) discountPct = 5;
+
+      const subtotalBatch = retailPriceSingle * quantity;
+      const discountBatch = subtotalBatch * (discountPct / 100.0);
+      const finalTotalPrice = Math.round((subtotalBatch - discountBatch) * 10) / 10;
+
+      // 6. Update UI
+      document.getElementById('finalTotalPrice').textContent = finalTotalPrice.toFixed(2);
+      document.getElementById('receiptBatchBadge').textContent = `${quantity} шт`;
+
+      const unitPriceEl = document.getElementById('unitPriceSubtext');
+      if (quantity > 1) {
+        unitPriceEl.classList.remove('hidden');
+        document.getElementById('singleUnitPrice').textContent = `${retailPriceSingle.toFixed(2)} ₴`;
+      } else {
+        unitPriceEl.classList.add('hidden');
+      }
+
+      // Breakdown for entire batch
+      document.getElementById('costPlastic').textContent = `${(plasticCostSingle * quantity).toFixed(2)} ₴`;
+      document.getElementById('costElectricity').textContent = `${(electricityCostSingle * quantity).toFixed(2)} ₴`;
+      document.getElementById('costDepreciation').textContent = `${(depreciationCostSingle * quantity).toFixed(2)} ₴`;
+      document.getElementById('costPrep').textContent = `${(prepCostSingle * quantity).toFixed(2)} ₴`;
+      document.getElementById('costNetTotal').textContent = `${(netCostSingle * quantity).toFixed(2)} ₴`;
+      document.getElementById('costProfit').textContent = `+${(profitSingle * quantity).toFixed(2)} ₴`;
+
+      const discountRow = document.getElementById('bulkDiscountRow');
+      if (discountPct > 0) {
+        discountRow.classList.remove('hidden');
+        document.getElementById('costDiscount').textContent = `-${discountBatch.toFixed(2)} ₴ (-${discountPct}%)`;
+      } else {
+        discountRow.classList.add('hidden');
+      }
+    }
+
+    // ==================== COPY COMMERCIAL OFFER FOR CLIENT ====================
+    function copyCommercialOffer() {
+      const mat = MATERIALS[selectedMaterialKey] || { name: 'Пластик' };
+      const weight = document.getElementById('inputWeightGrams').value;
+      const hours = document.getElementById('inputHours').value;
+      const minutes = document.getElementById('inputMinutes').value;
+      const qty = document.getElementById('inputQuantity').value;
+      const total = document.getElementById('finalTotalPrice').textContent;
+      const singlePrice = (parseFloat(total) / parseInt(qty)).toFixed(2);
+
+      let dimsLine = '';
+      let modelName = currentModelData ? currentModelData.fileName : '3D деталь';
+      if (currentModelData) {
+        dimsLine = `📐 Габарити: ${currentModelData.sizeX} × ${currentModelData.sizeZ} × ${currentModelData.sizeY} мм\n`;
+      }
+
+      const offerText = 
+`🖨️ Розрахунок вартості 3D-друку від STL-HUB:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📦 Замовлення: ${modelName}
+${dimsLine}🧵 Матеріал: ${mat.name}
+⚖️ Вага деталі: ~${weight} г
+⏱️ Орієнтовний час друку: ${hours} год ${minutes} хв
+🔢 Кількість: ${qty} шт
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💰 Разом до сплати: ${total} грн ${qty > 1 ? `(${singlePrice} грн/шт)` : ''}
+🚚 Термін готовності: 1-2 дні
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Для підтвердження замовлення просто напишіть у відповідь! 🤝`;
+
+      navigator.clipboard.writeText(offerText).then(() => {
+        alert('✅ Комерційну пропозицію скопійовано в буфер обміну! Можете надіслати клієнту в Telegram або Viber.');
+      }).catch(() => {
+        alert('Текст:\n\n' + offerText);
+      });
+    }
+  </script>
+</body>
+</html>

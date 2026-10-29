@@ -132,6 +132,27 @@ async def admin_page():
     )
 
 
+@app.get("/calc", response_class=HTMLResponse)
+async def calc_page(request: Request):
+    _SEARCH_EXECUTOR.submit(
+        log_page_view,
+        _get_client_ip(request),
+        request.headers.get("user-agent", ""),
+        request.headers.get("referer", ""),
+    )
+    calc_path = os.path.join(STATIC_DIR, "calc.html")
+    with open(calc_path, "r", encoding="utf-8") as f:
+        content = f.read()
+    return HTMLResponse(
+        content=content,
+        headers={
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0",
+        },
+    )
+
+
 @app.get("/favicon.ico", include_in_schema=False)
 @app.get("/favicon.svg", include_in_schema=False)
 async def favicon():

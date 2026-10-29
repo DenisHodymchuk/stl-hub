@@ -508,8 +508,12 @@
         </div>
       </div>
 
-      <!-- Right Controls: Theme Switcher -->
-      <div class="flex items-center gap-2 shrink-0">
+      <!-- Right Controls: 3D Calculator & Theme Switcher -->
+      <div class="flex items-center gap-2.5 shrink-0">
+        <a href="/calc" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#00AE42]/40 bg-[#00AE42]/10 hover:bg-[#00AE42]/20 text-[#00AE42] hover:text-[#00E65B] text-xs font-bold transition shadow-sm" title="Калькулятор вартості 3D-друку">
+          <span>🧮</span>
+          <span class="hidden sm:inline">Калькулятор 3D</span>
+        </a>
         <button onclick="toggleTheme()" class="p-2 rounded-lg mw-elevated border hover:border-[#00AE42] transition relative overflow-hidden" title="Перемкнути Світлу / Темну тему">
           <svg id="themeIconSun" class="w-4 h-4 text-amber-400 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -879,6 +883,10 @@
 
       <!-- Center: Navigation Links -->
       <div class="flex flex-wrap items-center justify-center gap-6 sm:gap-8 text-xs sm:text-sm font-semibold mw-text-secondary">
+        <a href="/calc" class="hover:mw-text-primary hover:text-[#00AE42] transition cursor-pointer flex items-center gap-1.5 font-bold text-[#00AE42]">
+          <span>🧮</span>
+          <span>Калькулятор 3D</span>
+        </a>
         <button type="button" onclick="openAboutModal()" class="hover:mw-text-primary hover:text-[#00AE42] transition cursor-pointer">
           Про проєкт
         </button>
