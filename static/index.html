@@ -732,20 +732,7 @@
       </aside>
 
       <!-- ================= RIGHT WORKSPACE ================= -->
-      <div class="lg:col-span-8 xl:col-span-9 2xl:col-span-10 space-y-5 min-w-0">
-
-        <!-- Recent Searches Bar (Hidden if empty) -->
-        <div id="recentHistoryBar" class="hidden mw-surface border rounded-xl px-4 py-2.5 flex items-center justify-between gap-3">
-          <div class="flex items-center gap-2 flex-wrap min-w-0">
-            <span class="text-xs font-bold mw-text-muted flex items-center gap-1 shrink-0">
-              🕓 Нещодавні пошуки:
-            </span>
-            <div id="recentHistoryItems" class="flex flex-wrap items-center gap-2"></div>
-          </div>
-          <button onclick="clearSearchHistory()" class="text-[11px] mw-text-muted hover:text-red-400 shrink-0 transition" title="Очистити історію">
-            Очистити
-          </button>
-        </div>
+      <div class="lg:col-span-8 xl:col-span-9 2xl:col-span-10 flex flex-col gap-5 min-w-0">
 
         <!-- Initial Hero Dropzone (Visible before first search) -->
         <div id="heroUploadSection" class="mw-surface border rounded-2xl p-6 sm:p-8 shadow-sm">
@@ -794,6 +781,19 @@
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- Recent Searches Bar (Hidden if empty) -->
+        <div id="recentHistoryBar" class="hidden mw-surface border rounded-xl px-4 py-2.5 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2 flex-wrap min-w-0">
+            <span class="text-xs font-bold mw-text-muted flex items-center gap-1 shrink-0">
+              🕓 Нещодавні пошуки:
+            </span>
+            <div id="recentHistoryItems" class="flex flex-wrap items-center gap-2"></div>
+          </div>
+          <button onclick="clearSearchHistory()" class="text-[11px] mw-text-muted hover:text-red-400 shrink-0 transition" title="Очистити історію">
+            Очистити
+          </button>
         </div>
 
         <!-- Loading Indicator -->
