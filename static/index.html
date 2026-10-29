@@ -1856,6 +1856,10 @@
         }
       } catch (err) {
         alert(err.message || 'Сталася помилка при обробці фото.');
+        if (!currentResults || currentResults.length === 0) {
+          const hero = document.getElementById('heroUploadSection');
+          if (hero) hero.classList.remove('hidden');
+        }
       } finally {
         hideLoading();
       }
@@ -1893,6 +1897,10 @@
         });
       } catch (err) {
         alert(err.message);
+        if (!currentResults || currentResults.length === 0) {
+          const hero = document.getElementById('heroUploadSection');
+          if (hero) hero.classList.remove('hidden');
+        }
       } finally {
         hideLoading();
       }
@@ -2278,6 +2286,8 @@
 
     function showLoading(titleText) {
       document.getElementById('loadingTitle').textContent = titleText;
+      const hero = document.getElementById('heroUploadSection');
+      if (hero) hero.classList.add('hidden');
       document.getElementById('loadingCard').classList.remove('hidden');
     }
 
