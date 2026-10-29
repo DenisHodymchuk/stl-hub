@@ -67,11 +67,18 @@ def init_db() -> None:
                     visitor_hash TEXT NOT NULL,
                     sender_contact TEXT,
                     message TEXT NOT NULL,
-                    ip_masked TEXT
+                    ip_masked TEXT,
+                    status TEXT DEFAULT 'new'
                 );
                 CREATE INDEX IF NOT EXISTS idx_fb_ts ON feedback(ts);
                 """
             )
+            # Automatic schema migration for existing databases
+            try:
+                conn.execute("ALTER TABLE feedback ADD COLUMN status TEXT DEFAULT 'new'")
+            except Exception:
+                pass
+
             conn.commit()
         finally:
             conn.close()
@@ -180,7 +187,7 @@ def log_feedback(ip: str, user_agent: str, message: str, contact: str = "") -> N
             conn = _get_conn()
             try:
                 conn.execute(
-                    "INSERT INTO feedback (ts, date_str, visitor_hash, sender_contact, message, ip_masked) VALUES (?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO feedback (ts, date_str, visitor_hash, sender_contact, message, ip_masked, status) VALUES (?, ?, ?, ?, ?, ?, 'new')",
                     (
                         now,
                         date_str,
@@ -195,6 +202,31 @@ def log_feedback(ip: str, user_agent: str, message: str, contact: str = "") -> N
                 conn.close()
     except Exception as e:
         print(f"[Analytics Feedback Error] {e}")
+
+
+def update_feedback_status(feedback_id: int, status: str) -> bool:
+    valid_statuses = {"new", "read", "processed"}
+    if status not in valid_statuses:
+        status = "new"
+    with _DB_LOCK:
+        conn = _get_conn()
+        try:
+            cur = conn.execute("UPDATE feedback SET status = ? WHERE id = ?", (status, feedback_id))
+            conn.commit()
+            return cur.rowcount > 0
+        finally:
+            conn.close()
+
+
+def delete_feedback(feedback_id: int) -> bool:
+    with _DB_LOCK:
+        conn = _get_conn()
+        try:
+            cur = conn.execute("DELETE FROM feedback WHERE id = ?", (feedback_id,))
+            conn.commit()
+            return cur.rowcount > 0
+        finally:
+            conn.close()
 
 
 def get_dashboard_stats(days: int = 14) -> Dict[str, Any]:
@@ -345,13 +377,13 @@ def get_dashboard_stats(days: int = 14) -> Dict[str, Any]:
         ).fetchall()
         devices = {r["device"] or "💻 ПК": r["cnt"] for r in dev_rows}
 
-        # 10. Feedback Messages (last 50)
+        # 10. Feedback Messages (last 100)
         feedback_rows = conn.execute(
             """
-            SELECT id, ts, date_str, visitor_hash, sender_contact, message, ip_masked
+            SELECT id, ts, date_str, visitor_hash, sender_contact, message, ip_masked, COALESCE(status, 'new') AS status
             FROM feedback
             ORDER BY id DESC
-            LIMIT 50
+            LIMIT 100
             """
         ).fetchall()
         feedback_list = [
@@ -362,9 +394,11 @@ def get_dashboard_stats(days: int = 14) -> Dict[str, Any]:
                 "message": r["message"],
                 "ip": r["ip_masked"] or "",
                 "visitor": r["visitor_hash"][:6],
+                "status": r["status"] or "new",
             }
             for r in feedback_rows
         ]
+        new_feedback_count = sum(1 for f in feedback_list if f["status"] == "new")
 
         return {
             "online_now": online_now,
@@ -396,6 +430,7 @@ def get_dashboard_stats(days: int = 14) -> Dict[str, Any]:
             "recent_clicks": recent_clicks,
             "devices": devices,
             "feedback": feedback_list,
+            "new_feedback_count": new_feedback_count,
         }
     finally:
         conn.close()

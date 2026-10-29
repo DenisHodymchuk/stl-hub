@@ -13,7 +13,15 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from ai_vision import analyze_image_with_gemini, load_config, save_config, CONFIG_PATH
-from analytics import log_page_view, log_search_event, log_click_event, get_dashboard_stats, log_feedback
+from analytics import (
+    log_page_view,
+    log_search_event,
+    log_click_event,
+    get_dashboard_stats,
+    log_feedback,
+    update_feedback_status,
+    delete_feedback,
+)
 from scrapers import search_all_sites, search_makerworld_by_image, create_session, _SEARCH_EXECUTOR
 
 app = FastAPI(title="STL-HUB — Візуальний пошук 3D моделей по фото на 6 сайтах")
@@ -41,6 +49,10 @@ def _cache_put(cache: OrderedDict, key: str, value: object, max_items: int) -> N
 class SettingsPayload(BaseModel):
     gemini_api_key: str
     model: Optional[str] = "gemini-2.5-flash"
+
+
+class FeedbackStatusPayload(BaseModel):
+    status: str
 
 
 class AdminLoginPayload(BaseModel):
@@ -401,6 +413,33 @@ async def admin_change_password(
     with open(CONFIG_PATH, "w", encoding="utf-8") as f:
         json.dump(cfg, f, indent=2, ensure_ascii=False)
     return {"status": "ok", "token": _make_admin_token(new_pw)}
+
+
+@app.post("/api/admin/feedback/{feedback_id}/status")
+async def admin_set_feedback_status(
+    feedback_id: int,
+    payload: FeedbackStatusPayload,
+    x_admin_token: Optional[str] = Header(None),
+):
+    if not _verify_admin_token(x_admin_token):
+        raise HTTPException(status_code=401, detail="Необхідна авторизація")
+    ok = update_feedback_status(feedback_id, payload.status)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Повідомлення не знайдено")
+    return {"status": "ok", "feedback_id": feedback_id, "new_status": payload.status}
+
+
+@app.delete("/api/admin/feedback/{feedback_id}")
+async def admin_delete_feedback(
+    feedback_id: int,
+    x_admin_token: Optional[str] = Header(None),
+):
+    if not _verify_admin_token(x_admin_token):
+        raise HTTPException(status_code=401, detail="Необхідна авторизація")
+    ok = delete_feedback(feedback_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Повідомлення не знайдено")
+    return {"status": "ok", "deleted_id": feedback_id}
 
 
 @app.get("/api/proxy-image")

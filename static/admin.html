@@ -360,7 +360,7 @@
         <section id="viewFeedback" class="hidden space-y-6">
 
           <!-- Feedback Header Bar -->
-          <div class="mw-surface border rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div class="mw-surface border rounded-2xl p-5 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
               <div class="flex items-center gap-3">
                 <h2 class="text-base font-bold mw-text-primary">💬 Вхідні повідомлення та пропозиції</h2>
@@ -371,11 +371,28 @@
               <p class="text-xs mw-text-muted mt-1">Звернення користувачів сайту, надіслані через форму зворотного зв'язку у футері</p>
             </div>
 
-            <!-- Search inside feedback -->
-            <div class="w-full sm:w-72">
-              <input id="feedbackSearchInput" type="text" placeholder="🔍 Фільтр по тексту чи контакту..."
-                     oninput="renderFeedbackView()"
-                     class="w-full px-3.5 py-2 rounded-xl mw-elevated border text-xs mw-text-primary focus:outline-none focus:border-[#00AE42] transition" />
+            <!-- Controls: Status Filter Pills + Search input -->
+            <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+              <div class="flex items-center p-1 rounded-xl mw-elevated border text-xs font-semibold">
+                <button type="button" onclick="setFeedbackFilter('all')" id="btnFilterAll"
+                        class="fb-filter-btn px-3 py-1 rounded-lg transition bg-[#00AE42] text-white">
+                  Всі (<span id="countAll">0</span>)
+                </button>
+                <button type="button" onclick="setFeedbackFilter('new')" id="btnFilterNew"
+                        class="fb-filter-btn px-3 py-1 rounded-lg transition mw-text-muted hover:mw-text-primary">
+                  Нові (<span id="countNew">0</span>)
+                </button>
+                <button type="button" onclick="setFeedbackFilter('processed')" id="btnFilterProcessed"
+                        class="fb-filter-btn px-3 py-1 rounded-lg transition mw-text-muted hover:mw-text-primary">
+                  Опрацьовані (<span id="countProcessed">0</span>)
+                </button>
+              </div>
+
+              <div class="w-full sm:w-60">
+                <input id="feedbackSearchInput" type="text" placeholder="🔍 Пошук по тексту/контакту..."
+                       oninput="renderFeedbackView()"
+                       class="w-full px-3.5 py-1.5 rounded-xl mw-elevated border text-xs mw-text-primary focus:outline-none focus:border-[#00AE42] transition" />
+              </div>
             </div>
           </div>
 
@@ -723,9 +740,13 @@
 
       // 6. Update Feedback Badges
       const fbList = s.feedback || [];
+      const newCount = typeof s.new_feedback_count === 'number' 
+        ? s.new_feedback_count 
+        : fbList.filter(f => f.status === 'new').length;
+
       const badge = document.getElementById('sidebarFeedbackBadge');
-      if (fbList.length > 0) {
-        badge.textContent = fbList.length;
+      if (newCount > 0) {
+        badge.textContent = newCount;
         badge.classList.remove('hidden');
       } else {
         badge.classList.add('hidden');
@@ -737,12 +758,46 @@
     }
 
     // ==================== FEEDBACK VIEW RENDERER ====================
+    let feedbackStatusFilter = 'all'; // 'all' | 'new' | 'processed'
+
+    function setFeedbackFilter(filter) {
+      feedbackStatusFilter = filter;
+      document.querySelectorAll('.fb-filter-btn').forEach(btn => {
+        btn.classList.remove('bg-[#00AE42]', 'text-white');
+        btn.classList.add('mw-text-muted');
+      });
+      const activeBtn = filter === 'all' 
+        ? document.getElementById('btnFilterAll') 
+        : (filter === 'new' ? document.getElementById('btnFilterNew') : document.getElementById('btnFilterProcessed'));
+      if (activeBtn) {
+        activeBtn.classList.remove('mw-text-muted');
+        activeBtn.classList.add('bg-[#00AE42]', 'text-white');
+      }
+      renderFeedbackView();
+    }
+
     function renderFeedbackView() {
       if (!cachedStats) return;
       const allFeedback = cachedStats.feedback || [];
       const query = (document.getElementById('feedbackSearchInput')?.value || '').toLowerCase().trim();
 
+      // Counts
+      const allCount = allFeedback.length;
+      const newCount = allFeedback.filter(f => (f.status || 'new') === 'new').length;
+      const processedCount = allFeedback.filter(f => f.status === 'processed').length;
+
+      const elAll = document.getElementById('countAll');
+      const elNew = document.getElementById('countNew');
+      const elProc = document.getElementById('countProcessed');
+      if (elAll) elAll.textContent = allCount;
+      if (elNew) elNew.textContent = newCount;
+      if (elProc) elProc.textContent = processedCount;
+
       const filtered = allFeedback.filter(f => {
+        const itemStatus = f.status || 'new';
+        if (feedbackStatusFilter !== 'all' && itemStatus !== feedbackStatusFilter) {
+          return false;
+        }
         if (!query) return true;
         return (f.message || '').toLowerCase().includes(query) ||
                (f.contact || '').toLowerCase().includes(query) ||
@@ -752,19 +807,19 @@
 
       const totalBadge = document.getElementById('feedbackTotalBadge');
       if (totalBadge) {
-        totalBadge.textContent = `${filtered.length} з ${allFeedback.length} повідомлень`;
+        totalBadge.textContent = `${filtered.length} з ${allCount} повідомлень`;
       }
 
       const container = document.getElementById('feedbackCardsList');
       if (!filtered.length) {
         container.innerHTML = `
-          <div class="mw-surface border rounded-2xl p-12 text-center space-y-3">
+          <div class="mw-surface border rounded-2xl p-12 text-center space-y-3 shadow-sm">
             <span class="text-4xl">📭</span>
             <h3 class="text-base font-bold mw-text-primary">
-              ${query ? 'Нічого не знайдено за вашим фільтром' : 'Поки що немає нових повідомлень'}
+              ${query ? 'Нічого не знайдено за вашим фільтром' : (feedbackStatusFilter === 'new' ? 'Немає нових неопрацьованих повідомлень' : 'Поки що немає повідомлень у цьому розділі')}
             </h3>
             <p class="text-xs mw-text-muted max-w-md mx-auto">
-              ${query ? 'Спробуйте змінити запит для пошуку серед повідомлень.' : 'Коли відвідувачі сайту надішлють відгук через кнопку «Зворотний зв\'язок» у футері, вони одразу з\'являться тут.'}
+              ${query ? 'Спробуйте змінити запит для пошуку.' : 'Коли відвідувачі сайту надішлють відгук через кнопку «Зворотний зв\'язок» у футері, вони одразу з\'являться тут.'}
             </p>
           </div>
         `;
@@ -775,9 +830,10 @@
         const contactVal = f.contact || 'Анонімно';
         const isTg = contactVal.startsWith('@') || contactVal.includes('t.me/');
         const isEmail = contactVal.includes('@') && !isTg;
-        
+        const isNew = (f.status || 'new') === 'new';
+
         let contactBadge = `
-          <span class="px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-400 font-bold text-xs border border-emerald-500/30 flex items-center gap-1.5">
+          <span class="px-2.5 py-1 rounded-lg bg-white/5 text-neutral-300 font-bold text-xs border border-white/10 flex items-center gap-1.5">
             <span>👤</span>
             <span>${escapeHtml(contactVal)}</span>
           </span>
@@ -801,12 +857,35 @@
           `;
         }
 
+        const statusPill = isNew
+          ? `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30 flex items-center gap-1.5">
+               <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+               <span>Нове</span>
+             </span>`
+          : `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-[#00AE42]/15 text-[#00AE42] border border-[#00AE42]/30 flex items-center gap-1.5">
+               <span>✓</span>
+               <span>Опрацьовано</span>
+             </span>`;
+
+        const actionToggleBtn = isNew
+          ? `<button onclick="updateFeedbackStatus(${f.id}, 'processed')"
+                    class="px-3.5 py-1.5 rounded-xl bg-[#00AE42]/15 hover:bg-[#00AE42] text-[#00AE42] hover:text-white border border-[#00AE42]/30 font-bold transition flex items-center gap-1.5 cursor-pointer shadow-sm">
+               <span>✓</span>
+               <span>Позначити опрацьованим</span>
+             </button>`
+          : `<button onclick="updateFeedbackStatus(${f.id}, 'new')"
+                    class="px-3 py-1.5 rounded-xl mw-elevated hover:border-[#00AE42] mw-text-secondary hover:mw-text-primary transition flex items-center gap-1.5 cursor-pointer">
+               <span>↩</span>
+               <span>Повернути в нові</span>
+             </button>`;
+
         return `
           <div class="mw-surface border rounded-2xl p-5 sm:p-6 shadow-sm hover:border-[#00AE42]/40 transition space-y-4">
             
-            <!-- Card Header: Sender Info & Date -->
+            <!-- Card Header: Sender Info & Status -->
             <div class="flex flex-wrap items-center justify-between gap-3 border-b mw-border pb-3">
               <div class="flex flex-wrap items-center gap-3">
+                ${statusPill}
                 ${contactBadge}
                 <span class="text-xs mw-text-muted flex items-center gap-1 font-mono">
                   <span>ID:</span> #${escapeHtml(f.visitor)}
@@ -826,17 +905,85 @@
             </div>
 
             <!-- Card Actions -->
-            <div class="flex items-center justify-end gap-2 pt-1 text-xs">
-              <button onclick="navigator.clipboard.writeText('${escapeHtml(f.message).replace(/'/g, "\\'")}'); alert('Текст повідомлення скопійовано!');"
-                      class="px-3 py-1.5 rounded-lg mw-elevated border hover:border-[#00AE42] mw-text-secondary hover:mw-text-primary transition flex items-center gap-1.5 cursor-pointer">
-                <span>📋</span>
-                <span>Копіювати текст</span>
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs">
+              <button onclick="deleteFeedbackItem(${f.id})"
+                      class="px-3 py-1.5 rounded-xl hover:bg-red-500/15 text-neutral-500 hover:text-red-400 border border-transparent hover:border-red-500/30 transition flex items-center gap-1.5 cursor-pointer"
+                      title="Видалити повідомлення">
+                <span>🗑️</span>
+                <span>Видалити</span>
               </button>
+
+              <div class="flex items-center gap-2">
+                <button onclick="navigator.clipboard.writeText('${escapeHtml(f.message).replace(/'/g, "\\'")}'); alert('Текст повідомлення скопійовано!');"
+                        class="px-3 py-1.5 rounded-xl mw-elevated border hover:border-[#00AE42] mw-text-secondary hover:mw-text-primary transition flex items-center gap-1.5 cursor-pointer">
+                  <span>📋</span>
+                  <span>Копіювати текст</span>
+                </button>
+                ${actionToggleBtn}
+              </div>
             </div>
 
           </div>
         `;
       }).join('');
+    }
+
+    async function updateFeedbackStatus(feedbackId, newStatus) {
+      if (!adminToken) return;
+      try {
+        const resp = await fetch(`/api/admin/feedback/${feedbackId}/status`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-Token': adminToken
+          },
+          body: JSON.stringify({ status: newStatus })
+        });
+        if (!resp.ok) {
+          throw new Error('Не вдалося оновити статус');
+        }
+        if (cachedStats && cachedStats.feedback) {
+          const item = cachedStats.feedback.find(x => x.id === feedbackId);
+          if (item) item.status = newStatus;
+          const newCnt = cachedStats.feedback.filter(x => (x.status || 'new') === 'new').length;
+          cachedStats.new_feedback_count = newCnt;
+          const badge = document.getElementById('sidebarFeedbackBadge');
+          if (badge) {
+            badge.textContent = newCnt;
+            badge.classList.toggle('hidden', newCnt <= 0);
+          }
+        }
+        renderFeedbackView();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function deleteFeedbackItem(feedbackId) {
+      if (!confirm('Ви дійсно бажаєте видалити це повідомлення?')) return;
+      if (!adminToken) return;
+      try {
+        const resp = await fetch(`/api/admin/feedback/${feedbackId}`, {
+          method: 'DELETE',
+          headers: { 'X-Admin-Token': adminToken }
+        });
+        if (!resp.ok) {
+          throw new Error('Не вдалося видалити повідомлення');
+        }
+        if (cachedStats && cachedStats.feedback) {
+          cachedStats.feedback = cachedStats.feedback.filter(x => x.id !== feedbackId);
+          const newCnt = cachedStats.feedback.filter(x => (x.status || 'new') === 'new').length;
+          cachedStats.new_feedback_count = newCnt;
+          const badge = document.getElementById('sidebarFeedbackBadge');
+          if (badge) {
+            badge.textContent = newCnt;
+            badge.classList.toggle('hidden', newCnt <= 0);
+          }
+        }
+        renderFeedbackView();
+      } catch (err) {
+        alert(err.message);
+      }
     }
 
     // ==================== SETTINGS ACTIONS ====================
