@@ -783,9 +783,10 @@
             <div>
               <div class="flex items-center gap-2.5">
                 <h1 class="text-xl sm:text-2xl font-extrabold mw-text-primary tracking-tight">
-                  Результати пошуку <span id="catalogTotalBadge" class="text-[#00AE42]">0</span>
+                  Результати пошуку
                 </h1>
-                <span id="elapsedTimeBadge" class="hidden text-xs font-bold text-[#00AE42] bg-[#00AE42]/10 border border-[#00AE42]/25 px-2.5 py-0.5 rounded-full"></span>
+                <span id="catalogTotalBadge" class="hidden"></span>
+                <span id="elapsedTimeBadge" class="hidden"></span>
               </div>
               <p class="text-xs mw-text-secondary mt-0.5">
                 <span id="catalogMetaModelsCount">0 моделей</span> • за запитом <strong id="catalogMetaQuery" class="mw-text-primary font-semibold"></strong>
@@ -1626,12 +1627,6 @@
         });
 
         // Stage 2: Fetch the remaining 5 sites in the background without blocking the UI
-        const isDebug = new URLSearchParams(window.location.search).has('debug') || Boolean(localStorage.getItem('stlhub_admin_token'));
-        const elapsedEl = document.getElementById('elapsedTimeBadge');
-        if (elapsedEl && isDebug) {
-          elapsedEl.textContent = `⏳ Довантажуємо ще 5 сайтів...`;
-          elapsedEl.classList.remove('hidden');
-        }
         const url2 = new URL('/api/search', window.location.origin);
         url2.searchParams.set('q', data.search.query);
         if (data.secondary_queries && data.secondary_queries.length) {
@@ -1811,16 +1806,6 @@
       const metaCountEl = document.getElementById('catalogMetaModelsCount');
       if (metaCountEl) metaCountEl.textContent = `${totalCount} моделей`;
 
-      const isDebug = new URLSearchParams(window.location.search).has('debug') || Boolean(localStorage.getItem('stlhub_admin_token'));
-      const elapsedEl = document.getElementById('elapsedTimeBadge');
-      if (elapsedEl && searchObj.elapsed_seconds) {
-        elapsedEl.textContent = `⚡ ${searchObj.elapsed_seconds} сек`;
-        if (isDebug) {
-          elapsedEl.classList.remove('hidden');
-        } else {
-          elapsedEl.classList.add('hidden');
-        }
-      }
       if (searchObj.elapsed_seconds) {
         console.info(`[STL-HUB Stats] Час пошуку: ${searchObj.elapsed_seconds} сек | Моделей: ${totalCount} | Запит: "${currentQuery}"`);
       }
