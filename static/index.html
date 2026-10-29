@@ -1656,6 +1656,10 @@
       document.getElementById('searchBarPhotoChip').classList.remove('flex');
       document.getElementById('uploadEmptyState').classList.remove('hidden');
       document.getElementById('uploadPreviewState').classList.add('hidden');
+      if (!currentResults || currentResults.length === 0) {
+        const hero = document.getElementById('heroUploadSection');
+        if (hero) hero.classList.remove('hidden');
+      }
     }
 
     // Interactive Google Lens-Style Image Cropper

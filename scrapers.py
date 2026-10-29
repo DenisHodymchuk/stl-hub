@@ -11,8 +11,8 @@ from curl_cffi import requests
 from bs4 import BeautifulSoup
 from PIL import Image
 
-# Global reusable worker pool for parallel site queries (avoids spawning nested threads per request)
-_SEARCH_EXECUTOR = concurrent.futures.ThreadPoolExecutor(max_workers=20)
+# Global reusable worker pool for parallel site queries (sized to 8 for CloudLinux NPROC safety)
+_SEARCH_EXECUTOR = concurrent.futures.ThreadPoolExecutor(max_workers=8)
 
 _thread_local = threading.local()
 
