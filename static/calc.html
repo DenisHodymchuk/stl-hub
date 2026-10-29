@@ -9,13 +9,17 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+  <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
   
-  <!-- Three.js + Loaders for 3D STL/OBJ Visualization -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
+  <!-- Three.js + Loaders for 3D STL/OBJ Visualization (deferred for non-blocking 60fps load) -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
 
   <script>
     tailwind.config = {
@@ -75,15 +79,87 @@
     .mw-text-muted { color: var(--text-muted); }
     .mw-border { border-color: var(--border-color); }
 
-    /* Custom range slider */
+    /* Disable default native OS/browser spinners on number inputs */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none !important;
+      margin: 0 !important;
+    }
+    input[type=number] {
+      -moz-appearance: textfield !important;
+      appearance: textfield !important;
+    }
+
+    /* Custom range slider styling */
     input[type=range] {
-      accent-color: #00AE42;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--bg-elevated);
+      height: 8px;
+      border-radius: 9999px;
+      border: 1px solid var(--border-color);
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #00AE42;
+      border: 2px solid #FFFFFF;
+      box-shadow: 0 2px 8px rgba(0, 174, 66, 0.45);
+      cursor: pointer;
+      transition: transform 0.15s ease, background-color 0.15s ease;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+      background: #00993A;
+    }
+    input[type=range]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #00AE42;
+      border: 2px solid #FFFFFF;
+      box-shadow: 0 2px 8px rgba(0, 174, 66, 0.45);
+      cursor: pointer;
+    }
+
+    /* Custom Stepper Components in STLHUB brand style */
+    .hub-stepper {
+      background-color: var(--bg-elevated);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+    .hub-stepper:focus-within {
+      border-color: #00AE42 !important;
+      box-shadow: 0 0 0 3px rgba(0, 174, 66, 0.18);
+    }
+    .hub-stepper-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+      background: transparent;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+    .hub-stepper-btn:hover {
+      background-color: #00AE42;
+      color: #FFFFFF;
+    }
+    .hub-stepper-btn:active {
+      background-color: #00993A;
+      transform: scale(0.92);
     }
 
     /* Print styles for quotation */
     @media print {
       body { background: white !important; color: black !important; }
-      header, footer, #dropzoneContainer, #viewControls, #modeSelector, #actionButtonsRow, .no-print { display: none !important; }
+      header, footer, #dropzoneContainer, #viewControls, #modeSelector, #actionButtonsRow, .no-print, #toastNotification { display: none !important; }
       #summaryCard { box-shadow: none !important; border: 1px solid #ddd !important; width: 100% !important; max-width: 100% !important; }
       .print-only { display: block !important; }
     }
@@ -297,29 +373,33 @@
           <!-- Material Price & Density Details -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
             <div>
-              <label class="block text-xs font-semibold mw-text-secondary mb-1">Вартість котушки (грн/кг):</label>
-              <div class="relative">
+              <label class="block text-xs font-semibold mw-text-secondary mb-1.5">Вартість котушки (грн/кг):</label>
+              <div class="relative flex items-center rounded-xl mw-elevated border border-[var(--border-color)] focus-within:border-[#00AE42] focus-within:ring-2 focus-within:ring-[#00AE42]/20 transition-all h-10">
                 <input id="inputSpoolPrice" type="number" min="1" step="10" oninput="calculateCost()"
-                       class="w-full px-3 py-2 rounded-xl mw-elevated border text-xs mw-text-primary font-mono focus:outline-none focus:border-[#00AE42]" />
-                <span class="absolute right-3 top-2 text-xs mw-text-muted pointer-events-none">₴/кг</span>
+                       class="w-full bg-transparent pl-3 pr-16 text-xs sm:text-sm mw-text-primary font-mono font-bold focus:outline-none" />
+                <span class="absolute right-2 px-2 py-0.5 rounded-md text-[11px] font-semibold mw-text-muted bg-black/10 dark:bg-white/5 border border-black/5 dark:border-white/5 pointer-events-none select-none">₴/кг</span>
               </div>
             </div>
 
             <div>
-              <label class="block text-xs font-semibold mw-text-secondary mb-1">Густина (г/см³):</label>
-              <div class="relative">
+              <label class="block text-xs font-semibold mw-text-secondary mb-1.5">Густина (г/см³):</label>
+              <div class="relative flex items-center rounded-xl mw-elevated border border-[var(--border-color)] focus-within:border-[#00AE42] focus-within:ring-2 focus-within:ring-[#00AE42]/20 transition-all h-10">
                 <input id="inputDensity" type="number" min="0.5" max="3" step="0.01" oninput="calculateCost()"
-                       class="w-full px-3 py-2 rounded-xl mw-elevated border text-xs mw-text-primary font-mono focus:outline-none focus:border-[#00AE42]" />
-                <span class="absolute right-3 top-2 text-xs mw-text-muted pointer-events-none">г/см³</span>
+                       class="w-full bg-transparent pl-3 pr-16 text-xs sm:text-sm mw-text-primary font-mono font-bold focus:outline-none" />
+                <span class="absolute right-2 px-2 py-0.5 rounded-md text-[11px] font-semibold mw-text-muted bg-black/10 dark:bg-white/5 border border-black/5 dark:border-white/5 pointer-events-none select-none">г/см³</span>
               </div>
             </div>
 
             <div>
-              <label class="block text-xs font-semibold mw-text-secondary mb-1">Кількість копій (тираж):</label>
-              <div class="relative">
-                <input id="inputQuantity" type="number" min="1" max="1000" step="1" value="1" oninput="calculateCost()"
-                       class="w-full px-3 py-2 rounded-xl mw-elevated border text-xs mw-text-primary font-mono focus:outline-none focus:border-[#00AE42]" />
-                <span class="absolute right-3 top-2 text-xs mw-text-muted pointer-events-none">шт</span>
+              <label class="block text-xs font-semibold mw-text-secondary mb-1.5">Кількість копій (тираж):</label>
+              <div class="hub-stepper flex items-stretch h-10 overflow-hidden">
+                <button type="button" onclick="stepNumberInput('inputQuantity', -1)" class="hub-stepper-btn w-9 border-r mw-border text-sm font-bold" title="Зменшити тираж">−</button>
+                <div class="relative flex-1 flex items-center min-w-0 px-2">
+                  <input id="inputQuantity" type="number" min="1" max="1000" step="1" value="1" oninput="calculateCost()"
+                         class="w-full text-center bg-transparent text-xs sm:text-sm mw-text-primary font-mono font-bold focus:outline-none" />
+                  <span class="text-[11px] font-semibold mw-text-muted shrink-0 ml-1 select-none pointer-events-none">шт</span>
+                </div>
+                <button type="button" onclick="stepNumberInput('inputQuantity', 1)" class="hub-stepper-btn w-9 border-l mw-border text-sm font-bold" title="Збільшити тираж">+</button>
               </div>
             </div>
           </div>
@@ -331,45 +411,59 @@
               <span id="infillPercentLabel" class="font-bold text-[#00AE42] font-mono text-sm">20%</span>
             </div>
             <input id="inputInfill" type="range" min="0" max="100" step="5" value="20" oninput="updateInfillLabel(this.value); calculateCost();"
-                   class="w-full h-2 rounded-lg bg-neutral-700 cursor-pointer" />
-            <div class="flex justify-between text-[10px] mw-text-muted">
-              <span>0% (Пустотіле)</span>
-              <span>15% (Стандарт)</span>
-              <span>25% (Міцне)</span>
-              <span>50% (Технічне)</span>
-              <span>100% (Моноліт)</span>
+                   class="w-full cursor-pointer" />
+            <div class="flex justify-between text-[10px] mw-text-muted flex-wrap gap-1">
+              <button type="button" onclick="setInfillPreset(0)" class="hover:text-[#00AE42] hover:underline cursor-pointer transition">0% (Пустотіле)</button>
+              <button type="button" onclick="setInfillPreset(15)" class="hover:text-[#00AE42] hover:underline cursor-pointer transition">15% (Стандарт)</button>
+              <button type="button" onclick="setInfillPreset(25)" class="hover:text-[#00AE42] hover:underline cursor-pointer transition">25% (Міцне)</button>
+              <button type="button" onclick="setInfillPreset(50)" class="hover:text-[#00AE42] hover:underline cursor-pointer transition">50% (Технічне)</button>
+              <button type="button" onclick="setInfillPreset(100)" class="hover:text-[#00AE42] hover:underline cursor-pointer transition">100% (Моноліт)</button>
             </div>
           </div>
 
-          <!-- Manual Weight & Time Inputs (Available in both modes, auto-filled in file mode) -->
+          <!-- Manual Weight & Time Inputs -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t mw-border">
             <div>
-              <div class="flex items-center justify-between mb-1">
-                <label class="text-xs font-semibold mw-text-secondary">Вага моделі (г):</label>
-                <span id="autoWeightHint" class="text-[10px] text-[#00AE42] font-semibold hidden">Розраховано з 3D</span>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="text-xs font-semibold mw-text-secondary">Вага моделі (грам):</label>
+                <span id="autoWeightHint" class="text-[10px] text-[#00AE42] font-semibold hidden">✓ Розраховано з 3D</span>
               </div>
-              <div class="relative">
-                <input id="inputWeightGrams" type="number" min="0.1" step="0.5" value="45" oninput="calculateCost(false)"
-                       class="w-full px-3 py-2.5 rounded-xl mw-elevated border text-sm mw-text-primary font-mono font-bold focus:outline-none focus:border-[#00AE42]" />
-                <span class="absolute right-3 top-2.5 text-xs mw-text-muted pointer-events-none">грам</span>
+              <div class="hub-stepper flex items-stretch h-11 overflow-hidden">
+                <button type="button" onclick="stepNumberInput('inputWeightGrams', -5)" class="hub-stepper-btn w-10 border-r mw-border text-base font-bold" title="Зменшити на 5 г">−</button>
+                <div class="relative flex-1 flex items-center min-w-0 px-2">
+                  <input id="inputWeightGrams" type="number" min="0.1" step="0.5" value="45" oninput="calculateCost(false)"
+                         class="w-full text-center bg-transparent text-sm sm:text-base mw-text-primary font-mono font-bold focus:outline-none" />
+                  <span class="text-[11px] font-semibold mw-text-muted shrink-0 ml-1 select-none pointer-events-none">грам</span>
+                </div>
+                <button type="button" onclick="stepNumberInput('inputWeightGrams', 5)" class="hub-stepper-btn w-10 border-l mw-border text-base font-bold" title="Збільшити на 5 г">+</button>
               </div>
             </div>
 
             <div>
-              <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center justify-between mb-1.5">
                 <label class="text-xs font-semibold mw-text-secondary">Час друку (години і хвилини):</label>
-                <span id="autoTimeHint" class="text-[10px] text-[#00AE42] font-semibold hidden">Орієнтовний час</span>
+                <span id="autoTimeHint" class="text-[10px] text-[#00AE42] font-semibold hidden">✓ Орієнтовний час</span>
               </div>
               <div class="grid grid-cols-2 gap-2">
-                <div class="relative">
-                  <input id="inputHours" type="number" min="0" max="999" step="1" value="2" oninput="calculateCost(false)"
-                         class="w-full px-3 py-2.5 rounded-xl mw-elevated border text-sm mw-text-primary font-mono font-bold focus:outline-none focus:border-[#00AE42]" />
-                  <span class="absolute right-3 top-2.5 text-xs mw-text-muted pointer-events-none">год</span>
+                <!-- Hours Stepper -->
+                <div class="hub-stepper flex items-stretch h-11 overflow-hidden">
+                  <button type="button" onclick="stepNumberInput('inputHours', -1)" class="hub-stepper-btn w-8 sm:w-9 border-r mw-border text-base font-bold" title="Зменшити на 1 годину">−</button>
+                  <div class="relative flex-1 flex items-center min-w-0 px-1">
+                    <input id="inputHours" type="number" min="0" max="999" step="1" value="2" oninput="calculateCost(false)"
+                           class="w-full text-center bg-transparent text-sm sm:text-base mw-text-primary font-mono font-bold focus:outline-none" />
+                    <span class="text-[11px] font-semibold mw-text-muted shrink-0 mr-1 select-none pointer-events-none">год</span>
+                  </div>
+                  <button type="button" onclick="stepNumberInput('inputHours', 1)" class="hub-stepper-btn w-8 sm:w-9 border-l mw-border text-base font-bold" title="Збільшити на 1 годину">+</button>
                 </div>
-                <div class="relative">
-                  <input id="inputMinutes" type="number" min="0" max="59" step="5" value="15" oninput="calculateCost(false)"
-                         class="w-full px-3 py-2.5 rounded-xl mw-elevated border text-sm mw-text-primary font-mono font-bold focus:outline-none focus:border-[#00AE42]" />
-                  <span class="absolute right-3 top-2.5 text-xs mw-text-muted pointer-events-none">хв</span>
+                <!-- Minutes Stepper -->
+                <div class="hub-stepper flex items-stretch h-11 overflow-hidden">
+                  <button type="button" onclick="stepNumberInput('inputMinutes', -5)" class="hub-stepper-btn w-8 sm:w-9 border-r mw-border text-base font-bold" title="Зменшити на 5 хв">−</button>
+                  <div class="relative flex-1 flex items-center min-w-0 px-1">
+                    <input id="inputMinutes" type="number" min="0" max="59" step="5" value="15" oninput="calculateCost(false)"
+                           class="w-full text-center bg-transparent text-sm sm:text-base mw-text-primary font-mono font-bold focus:outline-none" />
+                    <span class="text-[11px] font-semibold mw-text-muted shrink-0 mr-1 select-none pointer-events-none">хв</span>
+                  </div>
+                  <button type="button" onclick="stepNumberInput('inputMinutes', 5)" class="hub-stepper-btn w-8 sm:w-9 border-l mw-border text-base font-bold" title="Збільшити на 5 хв">+</button>
                 </div>
               </div>
             </div>
@@ -396,28 +490,28 @@
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label class="block text-xs font-semibold mw-text-secondary mb-1">Тариф електрики (грн/кВт·год):</label>
-                <div class="relative">
+                <div class="relative flex items-center rounded-xl mw-elevated border border-[var(--border-color)] focus-within:border-[#00AE42] focus-within:ring-2 focus-within:ring-[#00AE42]/20 transition-all h-9">
                   <input id="ratePowerKwh" type="number" min="0" step="0.1" value="4.32" oninput="saveAndCalculateRates()"
-                         class="w-full px-3 py-2 rounded-xl mw-elevated border text-xs mw-text-primary font-mono focus:outline-none focus:border-[#00AE42]" />
-                  <span class="absolute right-3 top-2 text-xs mw-text-muted pointer-events-none">₴/кВт</span>
+                         class="w-full bg-transparent pl-3 pr-14 text-xs mw-text-primary font-mono font-semibold focus:outline-none" />
+                  <span class="absolute right-2 px-1.5 py-0.5 rounded text-[10px] font-semibold mw-text-muted bg-black/10 dark:bg-white/5 border border-black/5 dark:border-white/5 pointer-events-none select-none">₴/кВт</span>
                 </div>
               </div>
 
               <div>
                 <label class="block text-xs font-semibold mw-text-secondary mb-1">Потужність принтера (Вт):</label>
-                <div class="relative">
+                <div class="relative flex items-center rounded-xl mw-elevated border border-[var(--border-color)] focus-within:border-[#00AE42] focus-within:ring-2 focus-within:ring-[#00AE42]/20 transition-all h-9">
                   <input id="ratePrinterWatts" type="number" min="50" max="1000" step="10" value="180" oninput="saveAndCalculateRates()"
-                         class="w-full px-3 py-2 rounded-xl mw-elevated border text-xs mw-text-primary font-mono focus:outline-none focus:border-[#00AE42]" />
-                  <span class="absolute right-3 top-2 text-xs mw-text-muted pointer-events-none">Вт</span>
+                         class="w-full bg-transparent pl-3 pr-12 text-xs mw-text-primary font-mono font-semibold focus:outline-none" />
+                  <span class="absolute right-2 px-1.5 py-0.5 rounded text-[10px] font-semibold mw-text-muted bg-black/10 dark:bg-white/5 border border-black/5 dark:border-white/5 pointer-events-none select-none">Вт</span>
                 </div>
               </div>
 
               <div>
                 <label class="block text-xs font-semibold mw-text-secondary mb-1">Амортизація (грн/год друку):</label>
-                <div class="relative">
+                <div class="relative flex items-center rounded-xl mw-elevated border border-[var(--border-color)] focus-within:border-[#00AE42] focus-within:ring-2 focus-within:ring-[#00AE42]/20 transition-all h-9">
                   <input id="rateDepreciation" type="number" min="0" step="5" value="20" oninput="saveAndCalculateRates()"
-                         class="w-full px-3 py-2 rounded-xl mw-elevated border text-xs mw-text-primary font-mono focus:outline-none focus:border-[#00AE42]" />
-                  <span class="absolute right-3 top-2 text-xs mw-text-muted pointer-events-none">₴/год</span>
+                         class="w-full bg-transparent pl-3 pr-14 text-xs mw-text-primary font-mono font-semibold focus:outline-none" />
+                  <span class="absolute right-2 px-1.5 py-0.5 rounded text-[10px] font-semibold mw-text-muted bg-black/10 dark:bg-white/5 border border-black/5 dark:border-white/5 pointer-events-none select-none">₴/год</span>
                 </div>
               </div>
             </div>
@@ -425,19 +519,19 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
               <div>
                 <label class="block text-xs font-semibold mw-text-secondary mb-1">Підготовка та зняття зі столу (грн):</label>
-                <div class="relative">
+                <div class="relative flex items-center rounded-xl mw-elevated border border-[var(--border-color)] focus-within:border-[#00AE42] focus-within:ring-2 focus-within:ring-[#00AE42]/20 transition-all h-9">
                   <input id="ratePrepFee" type="number" min="0" step="5" value="20" oninput="saveAndCalculateRates()"
-                         class="w-full px-3 py-2 rounded-xl mw-elevated border text-xs mw-text-primary font-mono focus:outline-none focus:border-[#00AE42]" />
-                  <span class="absolute right-3 top-2 text-xs mw-text-muted pointer-events-none">₴</span>
+                         class="w-full bg-transparent pl-3 pr-10 text-xs mw-text-primary font-mono font-semibold focus:outline-none" />
+                  <span class="absolute right-2 px-1.5 py-0.5 rounded text-[10px] font-semibold mw-text-muted bg-black/10 dark:bg-white/5 border border-black/5 dark:border-white/5 pointer-events-none select-none">₴</span>
                 </div>
               </div>
 
               <div>
                 <label class="block text-xs font-semibold mw-text-secondary mb-1">Ризик браку / підтримки (%):</label>
-                <div class="relative">
+                <div class="relative flex items-center rounded-xl mw-elevated border border-[var(--border-color)] focus-within:border-[#00AE42] focus-within:ring-2 focus-within:ring-[#00AE42]/20 transition-all h-9">
                   <input id="rateFailureRisk" type="number" min="0" max="50" step="1" value="5" oninput="saveAndCalculateRates()"
-                         class="w-full px-3 py-2 rounded-xl mw-elevated border text-xs mw-text-primary font-mono focus:outline-none focus:border-[#00AE42]" />
-                  <span class="absolute right-3 top-2 text-xs mw-text-muted pointer-events-none">%</span>
+                         class="w-full bg-transparent pl-3 pr-10 text-xs mw-text-primary font-mono font-semibold focus:outline-none" />
+                  <span class="absolute right-2 px-1.5 py-0.5 rounded text-[10px] font-semibold mw-text-muted bg-black/10 dark:bg-white/5 border border-black/5 dark:border-white/5 pointer-events-none select-none">%</span>
                 </div>
               </div>
             </div>
@@ -508,10 +602,10 @@
 
             <!-- Custom Markup Input (hidden unless selected) -->
             <div id="customMarkupRow" class="hidden pt-2">
-              <div class="relative">
+              <div class="relative flex items-center rounded-xl mw-elevated border border-[var(--border-color)] focus-within:border-[#00AE42] focus-within:ring-2 focus-within:ring-[#00AE42]/20 transition-all h-9">
                 <input id="customMarkupInput" type="number" min="0" max="1000" step="5" value="75" oninput="calculateCost()"
-                       class="w-full px-3 py-2 rounded-xl mw-elevated border text-xs mw-text-primary font-mono focus:outline-none focus:border-[#00AE42]" />
-                <span class="absolute right-3 top-2 text-xs mw-text-muted pointer-events-none">% маржі</span>
+                       class="w-full bg-transparent pl-3 pr-20 text-xs mw-text-primary font-mono font-semibold focus:outline-none" />
+                <span class="absolute right-2 px-1.5 py-0.5 rounded text-[10px] font-semibold mw-text-muted bg-black/10 dark:bg-white/5 border border-black/5 dark:border-white/5 pointer-events-none select-none">% маржі</span>
               </div>
             </div>
           </div>
@@ -740,6 +834,51 @@
 
     function updateInfillLabel(val) {
       document.getElementById('infillPercentLabel').textContent = `${val}%`;
+    }
+
+    function setInfillPreset(val) {
+      const slider = document.getElementById('inputInfill');
+      if (!slider) return;
+      slider.value = val;
+      updateInfillLabel(val);
+      calculateCost();
+    }
+
+    // ==================== STEPPER / COUNTER HELPER ====================
+    function stepNumberInput(id, delta) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const min = el.min !== '' ? parseFloat(el.min) : -Infinity;
+      const max = el.max !== '' ? parseFloat(el.max) : Infinity;
+      const step = el.step !== '' && el.step !== 'any' ? parseFloat(el.step) : (Math.abs(delta) || 1);
+      let cur = parseFloat(el.value);
+      if (isNaN(cur)) cur = min !== -Infinity ? min : 0;
+
+      let next = cur + delta;
+      if (next < min) next = min;
+      if (next > max) next = max;
+
+      if (Number.isInteger(step) && Number.isInteger(delta)) {
+        el.value = Math.round(next);
+      } else {
+        const decimals = (step.toString().split('.')[1] || '').length;
+        el.value = parseFloat(next.toFixed(Math.max(decimals, 1)));
+      }
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastNotification');
+      const text = document.getElementById('toastMessage');
+      if (!toast || !text) return;
+      text.textContent = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 3500);
     }
 
     function setMarkupMode(mode) {
@@ -1250,11 +1389,17 @@ ${dimsLine}🧵 Матеріал: ${mat.name}
 Для підтвердження замовлення просто напишіть у відповідь! 🤝`;
 
       navigator.clipboard.writeText(offerText).then(() => {
-        alert('✅ Комерційну пропозицію скопійовано в буфер обміну! Можете надіслати клієнту в Telegram або Viber.');
+        showToast('Комерційну пропозицію скопійовано в буфер обміну! Можна надсилати клієнту.');
       }).catch(() => {
-        alert('Текст:\n\n' + offerText);
+        showToast('КП сформовано, скопіюйте вручну.');
       });
     }
   </script>
+
+  <!-- Floating Toast Notification in STLHUB style -->
+  <div id="toastNotification" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-3 px-4 py-3 rounded-2xl bg-[#1C1C1E]/95 text-white border border-[#00AE42] shadow-2xl backdrop-blur-md">
+    <div class="w-6 h-6 rounded-full bg-[#00AE42]/20 text-[#00AE42] flex items-center justify-center text-xs font-bold">✓</div>
+    <span id="toastMessage" class="text-xs font-semibold"></span>
+  </div>
 </body>
 </html>

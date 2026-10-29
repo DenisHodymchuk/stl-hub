@@ -25,12 +25,34 @@ from analytics import (
     remove_heartbeat,
 )
 from scrapers import search_all_sites, search_makerworld_by_image, create_session, _SEARCH_EXECUTOR
+from starlette.middleware.gzip import GZipMiddleware
 
 app = FastAPI(title="STL-HUB — Візуальний пошук 3D моделей по фото на 6 сайтах")
+
+# Ultra-fast automatic GZIP compression for HTML, JSON API and assets over 1KB
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 os.makedirs(STATIC_DIR, exist_ok=True)
+
+# In-memory RAM cache for HTML templates with mtime auto-invalidation
+_TEMPLATE_CACHE: dict = {}
+
+def get_template_content(filename: str) -> str:
+    path = os.path.join(STATIC_DIR, filename)
+    try:
+        mtime = os.path.getmtime(path)
+        cached = _TEMPLATE_CACHE.get(filename)
+        if cached and cached[0] == mtime:
+            return cached[1]
+        with open(path, "r", encoding="utf-8") as f:
+            content = f.read()
+        _TEMPLATE_CACHE[filename] = (mtime, content)
+        return content
+    except Exception:
+        with open(path, "r", encoding="utf-8") as f:
+            return f.read()
 
 MAX_IMAGE_CACHE_ITEMS = 150
 MAX_RESULT_CACHE_ITEMS = 300
@@ -108,20 +130,16 @@ async def index(request: Request):
         request.headers.get("user-agent", ""),
         request.headers.get("referer", ""),
     )
-    index_path = os.path.join(STATIC_DIR, "index.html")
-    with open(index_path, "r", encoding="utf-8") as f:
-        content = f.read()
+    content = get_template_content("index.html")
     return HTMLResponse(
         content=content,
-        headers={"Cache-Control": "no-cache, must-revalidate"},
+        headers={"Cache-Control": "public, max-age=0, must-revalidate"},
     )
 
 
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_page():
-    admin_path = os.path.join(STATIC_DIR, "admin.html")
-    with open(admin_path, "r", encoding="utf-8") as f:
-        content = f.read()
+    content = get_template_content("admin.html")
     return HTMLResponse(
         content=content,
         headers={
@@ -140,16 +158,10 @@ async def calc_page(request: Request):
         request.headers.get("user-agent", ""),
         request.headers.get("referer", ""),
     )
-    calc_path = os.path.join(STATIC_DIR, "calc.html")
-    with open(calc_path, "r", encoding="utf-8") as f:
-        content = f.read()
+    content = get_template_content("calc.html")
     return HTMLResponse(
         content=content,
-        headers={
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-            "Pragma": "no-cache",
-            "Expires": "0",
-        },
+        headers={"Cache-Control": "public, max-age=0, must-revalidate"},
     )
 
 
@@ -161,7 +173,7 @@ async def favicon():
         return Response(
             content=f.read(),
             media_type="image/svg+xml",
-            headers={"Cache-Control": "public, max-age=86400"},
+            headers={"Cache-Control": "public, max-age=604800, stale-while-revalidate=86400"},
         )
 
 
