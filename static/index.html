@@ -52,10 +52,18 @@
       --card-hover-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
     }
 
+    html {
+      height: 100%;
+    }
+
     body {
       background-color: var(--bg-base);
       color: var(--text-primary);
+      min-height: 100%;
       min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
     }
 
     .mw-surface {
@@ -368,7 +376,7 @@
     }
   </style>
 </head>
-<body class="antialiased selection:bg-[#00AE42] selection:text-white">
+<body class="antialiased selection:bg-[#00AE42] selection:text-white flex flex-col min-h-screen">
 
   <!-- MakerWorld-Style Top Header -->
   <header class="sticky top-0 z-40 mw-surface border-b">
@@ -515,7 +523,7 @@
   </header>
 
   <!-- Main Content Container (Wide 1600px MakerWorld Layout) -->
-  <main class="max-w-[1850px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <main class="max-w-[1850px] mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1">
 
     <!-- Recent Searches Bar (Hidden if empty) -->
     <div id="recentHistoryBar" class="hidden mw-surface border rounded-xl px-4 py-2.5 mb-5 flex items-center justify-between gap-3">
@@ -855,7 +863,7 @@
   </main>
 
   <!-- Modern Sleek Floating Footer (Matching reference) -->
-  <footer class="max-w-[1850px] mx-auto px-4 sm:px-6 lg:px-8 mt-14 mb-8">
+  <footer class="w-full max-w-[1850px] mx-auto px-4 sm:px-6 lg:px-8 mt-auto pt-6 pb-6 shrink-0">
     <div class="mw-surface border mw-border rounded-2xl px-6 py-4 shadow-xl flex flex-col md:flex-row items-center justify-between gap-5">
       
       <!-- Left: Logo & Copyright -->
