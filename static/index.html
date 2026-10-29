@@ -2207,6 +2207,29 @@
         runTextSearch(extQuery);
       }
     })();
+
+    // Real-time live presence heartbeat (every 20s while active tab)
+    (function initHeartbeat() {
+      function sendPing() {
+        if (document.visibilityState === 'visible') {
+          try {
+            fetch('/api/heartbeat', { method: 'POST', keepalive: true }).catch(() => {});
+          } catch (e) {}
+        }
+      }
+      setTimeout(sendPing, 800);
+      setInterval(sendPing, 20000);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') sendPing();
+      });
+      window.addEventListener('beforeunload', () => {
+        try {
+          if (navigator.sendBeacon) {
+            navigator.sendBeacon('/api/heartbeat/leave');
+          }
+        } catch (e) {}
+      });
+    })();
   </script>
 </body>
 </html>

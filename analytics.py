@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import hashlib
 import os
+import random
 import sqlite3
 import threading
 import time
@@ -71,6 +72,14 @@ def init_db() -> None:
                     status TEXT DEFAULT 'new'
                 );
                 CREATE INDEX IF NOT EXISTS idx_fb_ts ON feedback(ts);
+
+                CREATE TABLE IF NOT EXISTS online_heartbeats (
+                    visitor_hash TEXT PRIMARY KEY,
+                    ts INTEGER NOT NULL,
+                    device TEXT NOT NULL,
+                    ip_masked TEXT
+                );
+                CREATE INDEX IF NOT EXISTS idx_hb_ts ON online_heartbeats(ts);
                 """
             )
             # Automatic schema migration for existing databases
@@ -97,6 +106,44 @@ def make_visitor_info(ip: str, user_agent: str) -> tuple[str, str, str]:
     return v_hash, ip_masked, device
 
 
+def record_heartbeat(ip: str, user_agent: str) -> None:
+    try:
+        now = int(time.time())
+        v_hash, ip_masked, device = make_visitor_info(ip, user_agent)
+        with _DB_LOCK:
+            conn = _get_conn()
+            try:
+                conn.execute(
+                    """
+                    INSERT INTO online_heartbeats (visitor_hash, ts, device, ip_masked)
+                    VALUES (?, ?, ?, ?)
+                    ON CONFLICT(visitor_hash) DO UPDATE SET ts = excluded.ts, device = excluded.device
+                    """,
+                    (v_hash, now, device, ip_masked),
+                )
+                if random.random() < 0.05:
+                    conn.execute("DELETE FROM online_heartbeats WHERE ts < ?", (now - 600,))
+                conn.commit()
+            finally:
+                conn.close()
+    except Exception as e:
+        print(f"[Analytics Heartbeat Error] {e}")
+
+
+def remove_heartbeat(ip: str, user_agent: str) -> None:
+    try:
+        v_hash, _, _ = make_visitor_info(ip, user_agent)
+        with _DB_LOCK:
+            conn = _get_conn()
+            try:
+                conn.execute("DELETE FROM online_heartbeats WHERE visitor_hash = ?", (v_hash,))
+                conn.commit()
+            finally:
+                conn.close()
+    except Exception:
+        pass
+
+
 def log_page_view(ip: str, user_agent: str, referrer: str = "") -> None:
     try:
         now = int(time.time())
@@ -108,6 +155,14 @@ def log_page_view(ip: str, user_agent: str, referrer: str = "") -> None:
                 conn.execute(
                     "INSERT INTO page_views (ts, date_str, visitor_hash, ip_masked, device, referrer) VALUES (?, ?, ?, ?, ?, ?)",
                     (now, date_str, v_hash, ip_masked, device, (referrer or "")[:200]),
+                )
+                conn.execute(
+                    """
+                    INSERT INTO online_heartbeats (visitor_hash, ts, device, ip_masked)
+                    VALUES (?, ?, ?, ?)
+                    ON CONFLICT(visitor_hash) DO UPDATE SET ts = excluded.ts, device = excluded.device
+                    """,
+                    (v_hash, now, device, ip_masked),
                 )
                 conn.commit()
             finally:
@@ -232,23 +287,29 @@ def delete_feedback(feedback_id: int) -> bool:
 def get_dashboard_stats(days: int = 14) -> Dict[str, Any]:
     now = int(time.time())
     today_str = datetime.now().strftime("%Y-%m-%d")
-    online_cutoff = now - 900  # last 15 minutes
     week_cutoff = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
 
     conn = _get_conn()
     try:
-        # 1. Online users (active in page_views or searches in last 15 mins)
-        online_row = conn.execute(
+        # 1. Real-time online visitors (active in last 45 seconds via heartbeats)
+        cutoff_live = now - 45
+        hb_row = conn.execute(
             """
-            SELECT COUNT(DISTINCT visitor_hash) AS cnt FROM (
-                SELECT visitor_hash FROM page_views WHERE ts >= ?
-                UNION
-                SELECT visitor_hash FROM searches WHERE ts >= ?
-            )
+            SELECT 
+                COUNT(*) AS cnt,
+                COALESCE(SUM(CASE WHEN device = '💻 ПК' THEN 1 ELSE 0 END), 0) AS pc,
+                COALESCE(SUM(CASE WHEN device = '📱 Мобільний' THEN 1 ELSE 0 END), 0) AS mob
+            FROM online_heartbeats 
+            WHERE ts >= ?
             """,
-            (online_cutoff, online_cutoff),
+            (cutoff_live,),
         ).fetchone()
-        online_now = online_row["cnt"] if online_row else 0
+
+        online_now = hb_row["cnt"] if hb_row and hb_row["cnt"] is not None else 0
+        live_devices = {
+            "💻 ПК": int(hb_row["pc"] if hb_row and hb_row["pc"] is not None else 0),
+            "📱 Мобільний": int(hb_row["mob"] if hb_row and hb_row["mob"] is not None else 0),
+        }
 
         # 2. Visitors & Views Today / 7d / All time
         pv_today = conn.execute(
@@ -429,6 +490,7 @@ def get_dashboard_stats(days: int = 14) -> Dict[str, Any]:
             "recent_searches": recent_searches,
             "recent_clicks": recent_clicks,
             "devices": devices,
+            "live_devices": live_devices,
             "feedback": feedback_list,
             "new_feedback_count": new_feedback_count,
         }

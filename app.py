@@ -21,6 +21,8 @@ from analytics import (
     log_feedback,
     update_feedback_status,
     delete_feedback,
+    record_heartbeat,
+    remove_heartbeat,
 )
 from scrapers import search_all_sites, search_makerworld_by_image, create_session, _SEARCH_EXECUTOR
 
@@ -440,6 +442,22 @@ async def admin_delete_feedback(
     if not ok:
         raise HTTPException(status_code=404, detail="Повідомлення не знайдено")
     return {"status": "ok", "deleted_id": feedback_id}
+
+
+@app.post("/api/heartbeat")
+async def api_heartbeat(request: Request):
+    client_ip = _get_client_ip(request)
+    ua = request.headers.get("user-agent", "")
+    _SEARCH_EXECUTOR.submit(record_heartbeat, client_ip, ua)
+    return {"status": "ok"}
+
+
+@app.post("/api/heartbeat/leave")
+async def api_heartbeat_leave(request: Request):
+    client_ip = _get_client_ip(request)
+    ua = request.headers.get("user-agent", "")
+    _SEARCH_EXECUTOR.submit(remove_heartbeat, client_ip, ua)
+    return {"status": "ok"}
 
 
 @app.get("/api/proxy-image")

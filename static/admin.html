@@ -200,7 +200,7 @@
         <div class="flex items-center gap-3">
           <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg mw-elevated border text-xs mw-text-muted">
             <span class="w-2 h-2 rounded-full bg-[#00AE42] animate-pulse"></span>
-            <span>Автооновлення: <strong class="mw-text-primary">15с</strong></span>
+            <span>Автооновлення: <strong class="mw-text-primary">5с</strong></span>
           </div>
           <button onclick="loadStats()" class="px-3.5 py-1.5 rounded-xl mw-elevated border hover:border-[#00AE42] text-xs font-semibold flex items-center gap-2 transition cursor-pointer">
             <span>🔄</span>
@@ -218,15 +218,15 @@
           <!-- Top 5 KPI Cards -->
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             
-            <!-- Online Now -->
+            <!-- Online Now (Real-Time Live) -->
             <div class="mw-surface border rounded-2xl p-5 flex flex-col justify-between shadow-sm">
               <div class="flex items-center justify-between">
-                <span class="text-xs font-semibold mw-text-secondary">Зараз на сайті (15 хв)</span>
-                <span class="w-2.5 h-2.5 rounded-full bg-[#00AE42] animate-ping"></span>
+                <span class="text-xs font-semibold mw-text-secondary">Зараз на сайті (Live)</span>
+                <span class="w-2.5 h-2.5 rounded-full bg-[#00AE42] animate-ping" title="Активно прямо зараз"></span>
               </div>
               <div class="mt-3 flex items-baseline gap-2">
                 <span id="kpiOnline" class="text-3xl font-extrabold text-[#00AE42]">0</span>
-                <span class="text-xs mw-text-muted">активних</span>
+                <span class="text-xs mw-text-muted">онлайн зараз</span>
               </div>
               <p id="kpiDevices" class="text-[11px] mw-text-muted mt-2">💻 ПК: 0 • 📱 Моб: 0</p>
             </div>
@@ -615,7 +615,7 @@
       switchTab('stats');
       loadStats();
       if (refreshTimer) clearInterval(refreshTimer);
-      refreshTimer = setInterval(loadStats, 15000);
+      refreshTimer = setInterval(loadStats, 5000);
     }
 
     async function loadStats() {
@@ -639,8 +639,12 @@
     function renderDashboard(s) {
       // 1. KPI Numbers
       document.getElementById('kpiOnline').textContent = s.online_now || 0;
-      const pcCount = (s.devices && s.devices['💻 ПК']) || 0;
-      const mobCount = (s.devices && s.devices['📱 Мобільний']) || 0;
+      const pcCount = (s.live_devices && s.live_devices['💻 ПК'] !== undefined)
+        ? s.live_devices['💻 ПК']
+        : ((s.devices && s.devices['💻 ПК']) || 0);
+      const mobCount = (s.live_devices && s.live_devices['📱 Мобільний'] !== undefined)
+        ? s.live_devices['📱 Мобільний']
+        : ((s.devices && s.devices['📱 Мобільний']) || 0);
       document.getElementById('kpiDevices').textContent = `💻 ПК: ${pcCount} • 📱 Моб: ${mobCount}`;
 
       document.getElementById('kpiTodayUniq').textContent = s.today.unique_visitors;
