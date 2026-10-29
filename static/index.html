@@ -1464,8 +1464,9 @@
         });
 
         // Stage 2: Fetch the remaining 5 sites in the background without blocking the UI
+        const isDebug = new URLSearchParams(window.location.search).has('debug') || Boolean(localStorage.getItem('stlhub_admin_token'));
         const elapsedEl = document.getElementById('elapsedTimeBadge');
-        if (elapsedEl) {
+        if (elapsedEl && isDebug) {
           elapsedEl.textContent = `⏳ Довантажуємо ще 5 сайтів...`;
           elapsedEl.classList.remove('hidden');
         }
@@ -1648,10 +1649,18 @@
       const metaCountEl = document.getElementById('catalogMetaModelsCount');
       if (metaCountEl) metaCountEl.textContent = `${totalCount} моделей`;
 
+      const isDebug = new URLSearchParams(window.location.search).has('debug') || Boolean(localStorage.getItem('stlhub_admin_token'));
       const elapsedEl = document.getElementById('elapsedTimeBadge');
       if (elapsedEl && searchObj.elapsed_seconds) {
         elapsedEl.textContent = `⚡ ${searchObj.elapsed_seconds} сек`;
-        elapsedEl.classList.remove('hidden');
+        if (isDebug) {
+          elapsedEl.classList.remove('hidden');
+        } else {
+          elapsedEl.classList.add('hidden');
+        }
+      }
+      if (searchObj.elapsed_seconds) {
+        console.info(`[STL-HUB Stats] Час пошуку: ${searchObj.elapsed_seconds} сек | Моделей: ${totalCount} | Запит: "${currentQuery}"`);
       }
       document.getElementById('resultsSection').classList.remove('hidden');
 
