@@ -59,6 +59,17 @@ def init_db() -> None:
                     model_url TEXT
                 );
                 CREATE INDEX IF NOT EXISTS idx_clk_date ON outbound_clicks(date_str);
+
+                CREATE TABLE IF NOT EXISTS feedback (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    ts INTEGER NOT NULL,
+                    date_str TEXT NOT NULL,
+                    visitor_hash TEXT NOT NULL,
+                    sender_contact TEXT,
+                    message TEXT NOT NULL,
+                    ip_masked TEXT
+                );
+                CREATE INDEX IF NOT EXISTS idx_fb_ts ON feedback(ts);
                 """
             )
             conn.commit()
@@ -158,6 +169,32 @@ def log_click_event(ip: str, user_agent: str, site_id: str, model_title: str = "
                 conn.close()
     except Exception as e:
         print(f"[Analytics Click Error] {e}")
+
+
+def log_feedback(ip: str, user_agent: str, message: str, contact: str = "") -> None:
+    try:
+        now = int(time.time())
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        v_hash, ip_masked, _ = make_visitor_info(ip, user_agent)
+        with _DB_LOCK:
+            conn = _get_conn()
+            try:
+                conn.execute(
+                    "INSERT INTO feedback (ts, date_str, visitor_hash, sender_contact, message, ip_masked) VALUES (?, ?, ?, ?, ?, ?)",
+                    (
+                        now,
+                        date_str,
+                        v_hash,
+                        (contact or "").strip()[:100],
+                        (message or "").strip()[:2000],
+                        ip_masked,
+                    ),
+                )
+                conn.commit()
+            finally:
+                conn.close()
+    except Exception as e:
+        print(f"[Analytics Feedback Error] {e}")
 
 
 def get_dashboard_stats(days: int = 14) -> Dict[str, Any]:
@@ -308,6 +345,27 @@ def get_dashboard_stats(days: int = 14) -> Dict[str, Any]:
         ).fetchall()
         devices = {r["device"] or "💻 ПК": r["cnt"] for r in dev_rows}
 
+        # 10. Feedback Messages (last 50)
+        feedback_rows = conn.execute(
+            """
+            SELECT id, ts, date_str, visitor_hash, sender_contact, message, ip_masked
+            FROM feedback
+            ORDER BY id DESC
+            LIMIT 50
+            """
+        ).fetchall()
+        feedback_list = [
+            {
+                "id": r["id"],
+                "time_str": datetime.fromtimestamp(r["ts"]).strftime("%d.%m.%Y %H:%M"),
+                "contact": r["sender_contact"] or "Анонімно",
+                "message": r["message"],
+                "ip": r["ip_masked"] or "",
+                "visitor": r["visitor_hash"][:6],
+            }
+            for r in feedback_rows
+        ]
+
         return {
             "online_now": online_now,
             "today": {
@@ -337,6 +395,7 @@ def get_dashboard_stats(days: int = 14) -> Dict[str, Any]:
             "recent_searches": recent_searches,
             "recent_clicks": recent_clicks,
             "devices": devices,
+            "feedback": feedback_list,
         }
     finally:
         conn.close()

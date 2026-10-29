@@ -854,101 +854,159 @@
 
   </main>
 
-  <!-- Site Footer -->
-  <footer class="mw-surface border-t mw-border mt-16 pt-12 pb-10">
-    <div class="max-w-[1850px] mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12 pb-10 border-b mw-border">
-        
-        <!-- Col 1: Brand & Creation Info (4 cols) -->
-        <div class="lg:col-span-4 space-y-4">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00C853] to-[#008C35] flex items-center justify-center text-white shadow-md shadow-[#00AE42]/20">
-              <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 8V5C3 3.89543 3.89543 3 5 3H8" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
-                <path d="M20 3H23C24.1046 3 25 3.89543 25 5V8" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
-                <path d="M25 20V23C25 24.1046 24.1046 25 23 25H20" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
-                <path d="M8 25H5C3.89543 25 3 24.1046 3 23V20" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
-                <path d="M14 7.5L20 11V17L14 20.5L8 17V11L14 7.5Z" fill="white" fill-opacity="0.22" stroke="white" stroke-width="1.8" stroke-linejoin="round"/>
-                <path d="M8 11L14 14.5L20 11" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <div>
-              <span class="font-extrabold text-lg mw-text-primary tracking-tight">STL<span class="text-[#00AE42]">-HUB</span></span>
-              <span class="block text-[11px] mw-text-muted leading-tight">Розумний мультипошук 3D-моделей</span>
-            </div>
-          </div>
-          <p class="text-xs mw-text-secondary leading-relaxed">
-            Єдиний пошуковий хаб для 3D-друкарів України: миттєвий пошук по фото виробу та паралельне сканування баз <strong>MakerWorld, Printables, Thingiverse, Cults3D, Thangs та MyMiniFactory</strong>.
-          </p>
-          <div class="text-[12px] mw-text-muted space-y-1">
-            <p>🗓️ <strong>Рік заснування:</strong> 2024 рік</p>
-            <p>⚡ <strong>Версія:</strong> 2.0 Pro Catalog</p>
-          </div>
-        </div>
-
-        <!-- Col 2: Legal & Copyright Disclaimers (4 cols) -->
-        <div class="lg:col-span-4 space-y-3">
-          <h4 class="text-xs font-bold uppercase tracking-wider mw-text-primary flex items-center gap-2">
-            <span>⚖️ Права та інтелектуальна власність</span>
-          </h4>
-          <p class="text-xs mw-text-secondary leading-relaxed">
-            <strong>STL-HUB</strong> є некомерційним пошуковим каталогом та індексатором відкритих даних. Усі права на 3D-моделі, назви, прев’ю та цифрові файли належать їхнім авторам та відповідним майданчикам.
-          </p>
-          <p class="text-xs mw-text-secondary leading-relaxed">
-            Комерційні та некомерційні умови використання визначаються ліцензіями авторів (Creative Commons, Standard Digital File License тощо) безпосередньо на сторінках першоджерел.
-          </p>
-          <div class="text-[11px] mw-text-muted pt-1">
-            © 2024–2026 STL-HUB. Усі права на програмний код агрегатора захищено.
-          </div>
-        </div>
-
-        <!-- Col 3: Donation & Support (4 cols) -->
-        <div class="lg:col-span-4 space-y-3.5">
-          <div class="p-4 rounded-2xl bg-gradient-to-br from-[#00AE42]/10 via-transparent to-emerald-950/20 border border-[#00AE42]/30 space-y-3">
-            <div class="flex items-center justify-between">
-              <h4 class="text-xs font-extrabold uppercase tracking-wider text-[#00AE42] flex items-center gap-1.5">
-                <span>☕ Підтримка проєкту</span>
-              </h4>
-              <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> На сервери
-              </span>
-            </div>
-            <p class="text-xs mw-text-secondary leading-relaxed">
-              Сервери, Gemini AI та швидкі парсери фінансуються розробниками. Ваш донат на банку допоможе оплачувати хостинг і тримати сервіс безкоштовним та швидким.
-            </p>
-            <div class="pt-1">
-              <a id="donateJarLink" href="https://send.monobank.ua/" target="_blank" rel="noopener noreferrer"
-                 class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#18181B] to-[#27272A] hover:from-[#00AE42] hover:to-[#008C35] text-white text-xs font-extrabold border border-white/10 hover:border-transparent transition-all shadow-lg flex items-center justify-center gap-2 group cursor-pointer">
-                <span class="text-base group-hover:scale-110 transition-transform">🐾</span>
-                <span>Підтримати на Банку Monobank</span>
-                <span class="text-xs opacity-70 group-hover:opacity-100">↗</span>
-              </a>
-            </div>
-            <p class="text-[10px] mw-text-muted text-center">
-              Кожна гривня йде на розвиток українського пошукача 3D-моделей 🇺🇦
-            </p>
-          </div>
-        </div>
-
+  <!-- Modern Sleek Floating Footer (Matching reference) -->
+  <footer class="max-w-[1850px] mx-auto px-4 sm:px-6 lg:px-8 mt-14 mb-8">
+    <div class="mw-surface border mw-border rounded-2xl px-6 py-4 shadow-xl flex flex-col md:flex-row items-center justify-between gap-5">
+      
+      <!-- Left: Logo & Copyright -->
+      <div class="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-4 text-center sm:text-left">
+        <a href="/" class="font-extrabold text-xl tracking-tight mw-text-primary hover:opacity-90 transition inline-block">
+          STL<span class="text-[#00AE42]">-HUB</span>
+        </a>
+        <span class="text-xs mw-text-muted select-none">
+          © 2024–2026 • Україна <span class="uppercase">UA</span>
+        </span>
       </div>
 
-      <!-- Bottom Credits Bar -->
-      <div class="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs mw-text-muted">
-        <div>
-          <span>© 2024–2026 STL-HUB. Зроблено з любов’ю для 3D-мейкерів України 🇺🇦</span>
-        </div>
-        <div class="flex items-center gap-4">
-          <button onclick="openSettingsModal()" class="hover:mw-text-primary transition">
-            ⚙️ Gemini API
-          </button>
-          <span>•</span>
-          <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;" class="hover:text-[#00AE42] transition">
-            Вгору ↑
-          </a>
-        </div>
+      <!-- Center: Navigation Links -->
+      <div class="flex flex-wrap items-center justify-center gap-6 sm:gap-8 text-xs sm:text-sm font-semibold mw-text-secondary">
+        <button type="button" onclick="openAboutModal()" class="hover:mw-text-primary hover:text-[#00AE42] transition cursor-pointer">
+          Про проєкт
+        </button>
+        <button type="button" onclick="openCopyrightModal()" class="hover:mw-text-primary hover:text-[#00AE42] transition cursor-pointer">
+          Авторські права
+        </button>
+        <button type="button" onclick="openFeedbackModal()" class="hover:mw-text-primary hover:text-[#00AE42] transition cursor-pointer">
+          Зворотний зв'язок
+        </button>
       </div>
+
+      <!-- Right: Donate Button & Back to Top -->
+      <div class="flex items-center gap-4">
+        <a id="footerDonateBtn" href="https://send.monobank.ua/" target="_blank" rel="noopener noreferrer"
+           class="px-4 py-2 rounded-xl border border-[#00AE42] bg-[#00AE42]/10 hover:bg-[#00AE42]/20 text-[#00AE42] hover:text-[#00E65B] text-xs sm:text-sm font-bold flex items-center gap-2 transition shadow-sm cursor-pointer">
+          <span class="text-base leading-none">♡</span>
+          <span>Підтримати</span>
+        </a>
+        <button type="button" onclick="window.scrollTo({top: 0, behavior: 'smooth'})"
+                class="text-xs sm:text-sm font-medium mw-text-muted hover:mw-text-primary transition flex items-center gap-1 cursor-pointer">
+          <span>↑</span>
+          <span>Нагору</span>
+        </button>
+      </div>
+
     </div>
   </footer>
+
+  <!-- Feedback Modal -->
+  <div id="feedbackModal" class="hidden fixed inset-0 z-50 bg-black/75 flex items-center justify-center p-4">
+    <div class="mw-surface border rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
+      <div class="flex items-center justify-between pb-3 border-b mw-border mb-4">
+        <h3 class="text-base font-extrabold mw-text-primary flex items-center gap-2">
+          <span>💬 Зворотний зв'язок</span>
+        </h3>
+        <button type="button" onclick="closeFeedbackModal()" class="mw-text-muted hover:mw-text-primary text-lg font-bold px-2">✕</button>
+      </div>
+
+      <form id="feedbackForm" onsubmit="submitFeedbackForm(event)" class="space-y-4">
+        <p class="text-xs mw-text-secondary leading-relaxed">
+          Знайшли помилку, маєте ідею щодо покращення чи хочете додати майданчик? Напишіть нам — ми обов'язково переглянемо ваше повідомлення!
+        </p>
+        
+        <div>
+          <label class="block text-xs font-semibold mw-text-secondary mb-1">
+            Ваше повідомлення <span class="text-red-400">*</span>
+          </label>
+          <textarea id="feedbackMessageInput" required rows="4" placeholder="Опишіть вашу ідею, проблему або запитання..."
+                    class="w-full px-3.5 py-2.5 rounded-xl mw-elevated border text-sm mw-text-primary focus:outline-none focus:border-[#00AE42] resize-none"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold mw-text-secondary mb-1">
+            Контакт для зв'язку <span class="mw-text-muted font-normal">(Telegram або Email, необов'язково)</span>:
+          </label>
+          <input id="feedbackContactInput" type="text" placeholder="@username або email@example.com"
+                 class="w-full px-3.5 py-2.5 rounded-xl mw-elevated border text-sm mw-text-primary focus:outline-none focus:border-[#00AE42]" />
+        </div>
+
+        <div id="feedbackStatusMsg" class="hidden text-xs font-semibold py-1"></div>
+
+        <div class="flex items-center justify-end gap-2.5 pt-2">
+          <button type="button" onclick="closeFeedbackModal()" class="px-4 py-2 rounded-xl mw-elevated border text-xs font-semibold mw-text-secondary hover:mw-text-primary transition">
+            Скасувати
+          </button>
+          <button type="submit" id="feedbackSubmitBtn" class="px-5 py-2 rounded-xl bg-[#00AE42] hover:bg-[#00993A] text-white text-xs font-bold shadow transition flex items-center gap-1.5 cursor-pointer">
+            <span>Надіслати</span>
+            <span>↗</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- About Project Modal -->
+  <div id="aboutModal" class="hidden fixed inset-0 z-50 bg-black/75 flex items-center justify-center p-4">
+    <div class="mw-surface border rounded-2xl max-w-lg w-full p-6 shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b mw-border mb-4">
+        <h3 class="text-base font-extrabold mw-text-primary flex items-center gap-2">
+          <span>🚀 Про проєкт STL-HUB</span>
+        </h3>
+        <button type="button" onclick="closeAboutModal()" class="mw-text-muted hover:mw-text-primary text-lg font-bold px-2">✕</button>
+      </div>
+      <div class="space-y-3.5 text-xs mw-text-secondary leading-relaxed">
+        <p>
+          <strong class="mw-text-primary">STL-HUB</strong> — це перший розумний український мультипошукач 3D-моделей. Ми об'єднали каталоги найбільших світових майданчиків в єдиний швидкий та зручний інтерфейс.
+        </p>
+        <div class="p-3 rounded-xl mw-elevated border space-y-1.5">
+          <p class="font-bold mw-text-primary text-xs">✦ Наші ключові можливості:</p>
+          <ul class="list-disc list-inside space-y-1 mw-text-muted">
+            <li><strong>Пошук по фото:</strong> розпізнавання готового виробу за допомогою Google Gemini та візуального пошуку.</li>
+            <li><strong>6 платформ паралельно:</strong> MakerWorld, Printables, Thingiverse, Cults3D, Thangs, MyMiniFactory.</li>
+            <li><strong>Фільтр комерційного друку:</strong> миттєвий відбір моделей, дозволених для продажу 3D-друку.</li>
+          </ul>
+        </div>
+        <p class="text-[11px] mw-text-muted">
+          🗓️ Засновано: 2024–2026 рік • Створено для спільноти 3D-мейкерів України 🇺🇦
+        </p>
+      </div>
+      <div class="flex justify-end pt-4">
+        <button type="button" onclick="closeAboutModal()" class="px-4 py-2 rounded-xl bg-[#00AE42] text-white text-xs font-bold hover:bg-[#00993A] transition">
+          Зрозуміло
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Copyright Modal -->
+  <div id="copyrightModal" class="hidden fixed inset-0 z-50 bg-black/75 flex items-center justify-center p-4">
+    <div class="mw-surface border rounded-2xl max-w-lg w-full p-6 shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b mw-border mb-4">
+        <h3 class="text-base font-extrabold mw-text-primary flex items-center gap-2">
+          <span>⚖️ Авторські права та ліцензії</span>
+        </h3>
+        <button type="button" onclick="closeCopyrightModal()" class="mw-text-muted hover:mw-text-primary text-lg font-bold px-2">✕</button>
+      </div>
+      <div class="space-y-3.5 text-xs mw-text-secondary leading-relaxed">
+        <p>
+          <strong>STL-HUB</strong> є виключно некомерційним пошуковим каталогом та індексатором відкритих даних і не зберігає оригінальні 3D-файли на своїх серверах.
+        </p>
+        <p>
+          Усі права на 3D-моделі, назви, прев’ю-рендери та торгові марки належать їхнім безпосереднім авторам та відповідним майданчикам (MakerWorld, Printables, Thingiverse, Cults3D, MyMiniFactory, Thangs).
+        </p>
+        <p>
+          Умови комерційного та некомерційного використання регулюються ліцензіями авторів (Creative Commons, Standard Digital File License тощо) на первинних веб-сторінках.
+        </p>
+        <p class="text-[11px] mw-text-muted pt-1">
+          © 2024–2026 STL-HUB. Усі права на програмний код та інтерфейс пошукача захищено.
+        </p>
+      </div>
+      <div class="flex justify-end pt-4">
+        <button type="button" onclick="closeCopyrightModal()" class="px-4 py-2 rounded-xl bg-[#00AE42] text-white text-xs font-bold hover:bg-[#00993A] transition">
+          Закрити
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Interactive Google Lens-Style Image Cropper Modal -->
   <div id="cropModal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
@@ -2053,6 +2111,76 @@
         .replace(/'/g, "\\'")
         .replace(/"/g, '&quot;')
         .replace(/\n/g, ' ');
+    }
+
+    // Footer Modals & Feedback Submission
+    function openFeedbackModal() {
+      document.getElementById('feedbackForm').reset();
+      const statusMsg = document.getElementById('feedbackStatusMsg');
+      statusMsg.className = 'hidden text-xs font-semibold py-1';
+      statusMsg.textContent = '';
+      document.getElementById('feedbackModal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('feedbackMessageInput').focus(), 50);
+    }
+    function closeFeedbackModal() {
+      document.getElementById('feedbackModal').classList.add('hidden');
+    }
+
+    function openAboutModal() {
+      document.getElementById('aboutModal').classList.remove('hidden');
+    }
+    function closeAboutModal() {
+      document.getElementById('aboutModal').classList.add('hidden');
+    }
+
+    function openCopyrightModal() {
+      document.getElementById('copyrightModal').classList.remove('hidden');
+    }
+    function closeCopyrightModal() {
+      document.getElementById('copyrightModal').classList.add('hidden');
+    }
+
+    async function submitFeedbackForm(e) {
+      e.preventDefault();
+      const msgInput = document.getElementById('feedbackMessageInput');
+      const contactInput = document.getElementById('feedbackContactInput');
+      const btn = document.getElementById('feedbackSubmitBtn');
+      const statusMsg = document.getElementById('feedbackStatusMsg');
+
+      const message = (msgInput.value || '').trim();
+      const contact = (contactInput.value || '').trim();
+      if (!message) return;
+
+      btn.disabled = true;
+      btn.classList.add('opacity-50');
+      statusMsg.className = 'text-xs text-sky-400 font-semibold py-1';
+      statusMsg.textContent = 'Надсилаємо повідомлення...';
+      statusMsg.classList.remove('hidden');
+
+      try {
+        const resp = await fetch('/api/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message, contact })
+        });
+        const data = await resp.json();
+        if (!resp.ok) {
+          throw new Error(data.detail || 'Помилка надсилання');
+        }
+        statusMsg.className = 'text-xs text-[#00AE42] font-bold py-1';
+        statusMsg.textContent = '✓ Дякуємо! Ваше повідомлення успішно надіслано адміністраторам.';
+        msgInput.value = '';
+        contactInput.value = '';
+        setTimeout(() => {
+          closeFeedbackModal();
+        }, 1600);
+      } catch (err) {
+        statusMsg.className = 'text-xs text-red-400 font-semibold py-1';
+        statusMsg.textContent = `Помилка: ${err.message}`;
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('opacity-50');
+      }
     }
 
     // Initialize Favorites, History & URL Params (for Chrome Extension integration)

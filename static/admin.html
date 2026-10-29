@@ -236,6 +236,32 @@
           </table>
         </div>
       </div>
+
+      <!-- Feedback Messages Section -->
+      <div class="mw-surface border rounded-2xl p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="text-sm font-bold mw-text-primary flex items-center gap-2">
+              <span>💬 Повідомлення зворотного зв'язку</span>
+              <span id="feedbackCountBadge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#00AE42]/15 text-[#00AE42] border border-[#00AE42]/30">0</span>
+            </h3>
+            <p class="text-xs mw-text-muted">Повідомлення та пропозиції відвідувачів сайту, надіслані через форму у футері</p>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="border-b mw-border mw-text-muted">
+                <th class="py-2 pr-3 font-semibold w-36">Час</th>
+                <th class="py-2 px-3 font-semibold w-48">Контакт для зв'язку</th>
+                <th class="py-2 px-3 font-semibold">Повідомлення</th>
+                <th class="py-2 pl-3 font-semibold w-24">Користувач</th>
+              </tr>
+            </thead>
+            <tbody id="feedbackTable" class="divide-y divide-[#2E2E32]"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
   </main>
@@ -445,6 +471,25 @@
           <td class="py-2.5 pl-3 mw-text-muted font-mono">#${escapeHtml(r.visitor)}</td>
         </tr>
       `).join('') : `<tr><td colspan="6" class="py-6 text-center mw-text-muted">Ще немає записів</td></tr>`;
+
+      // Render Feedback Messages Table
+      const fbList = s.feedback || [];
+      const fbCountBadge = document.getElementById('feedbackCountBadge');
+      if (fbCountBadge) fbCountBadge.textContent = fbList.length;
+      document.getElementById('feedbackTable').innerHTML = fbList.length ? fbList.map(f => `
+        <tr class="hover:bg-white/[0.02]">
+          <td class="py-2.5 pr-3 mw-text-muted whitespace-nowrap">${escapeHtml(f.time_str)}</td>
+          <td class="py-2.5 px-3">
+            <span class="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-bold border border-emerald-500/30 whitespace-nowrap">
+              ${escapeHtml(f.contact)}
+            </span>
+          </td>
+          <td class="py-2.5 px-3 font-medium mw-text-primary leading-relaxed break-words max-w-xl">
+            ${escapeHtml(f.message)}
+          </td>
+          <td class="py-2.5 pl-3 mw-text-muted font-mono">#${escapeHtml(f.visitor)}</td>
+        </tr>
+      `).join('') : `<tr><td colspan="4" class="py-6 text-center mw-text-muted">Поки немає повідомлень від користувачів</td></tr>`;
     }
 
     function openPasswordModal() {

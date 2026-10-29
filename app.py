@@ -13,7 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from ai_vision import analyze_image_with_gemini, load_config, save_config, CONFIG_PATH
-from analytics import log_page_view, log_search_event, log_click_event, get_dashboard_stats
+from analytics import log_page_view, log_search_event, log_click_event, get_dashboard_stats, log_feedback
 from scrapers import search_all_sites, search_makerworld_by_image, create_session, _SEARCH_EXECUTOR
 
 app = FastAPI(title="STL-HUB — Візуальний пошук 3D моделей по фото на 6 сайтах")
@@ -56,6 +56,11 @@ class ClickTrackPayload(BaseModel):
     site_id: str
     title: Optional[str] = ""
     url: Optional[str] = ""
+
+
+class FeedbackPayload(BaseModel):
+    message: str
+    contact: Optional[str] = ""
 
 
 def _get_client_ip(request: Request) -> str:
@@ -346,6 +351,20 @@ async def track_click(request: Request, payload: ClickTrackPayload):
         payload.url or "",
     )
     return {"status": "ok"}
+
+
+@app.post("/api/feedback")
+async def submit_feedback(request: Request, payload: FeedbackPayload):
+    msg = (payload.message or "").strip()
+    if not msg:
+        raise HTTPException(status_code=400, detail="Повідомлення не може бути порожнім")
+    if len(msg) > 2000:
+        raise HTTPException(status_code=400, detail="Повідомлення занадто довге (максимум 2000 символів)")
+    contact = (payload.contact or "").strip()[:100]
+    client_ip = _get_client_ip(request)
+    ua = request.headers.get("user-agent", "")
+    _SEARCH_EXECUTOR.submit(log_feedback, client_ip, ua, msg, contact)
+    return {"status": "ok", "message": "Дякуємо! Ваше повідомлення успішно надіслано."}
 
 
 @app.post("/api/admin/login")
