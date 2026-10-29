@@ -88,15 +88,113 @@
     html.theme-fallback-anim body,
     html.theme-fallback-anim .mw-surface,
     html.theme-fallback-anim .mw-elevated,
-    html.theme-fallback-anim .mw-card {
+    html.theme-fallback-anim .mw-card,
+    html.theme-fallback-anim .pro-card {
       transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease !important;
+    }
+
+    /* Pro Catalog Design Styles */
+    .hub-checkbox {
+      appearance: none;
+      width: 17px;
+      height: 17px;
+      border: 1.5px solid #3F3F46;
+      border-radius: 5px;
+      background-color: var(--bg-surface);
+      cursor: pointer;
+      display: inline-grid;
+      place-content: center;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+    .hub-checkbox:hover {
+      border-color: #00AE42;
+    }
+    .hub-checkbox:checked {
+      background-color: #00AE42;
+      border-color: #00AE42;
+    }
+    .hub-checkbox:checked::before {
+      content: "";
+      width: 9px;
+      height: 5px;
+      border-left: 2px solid white;
+      border-bottom: 2px solid white;
+      transform: rotate(-45deg) translate(0.5px, -0.5px);
+    }
+
+    .pro-sidebar {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      box-shadow: var(--card-shadow);
+    }
+
+    .pro-card {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      box-shadow: var(--card-shadow);
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+      contain: layout paint style;
+      transform: translateZ(0);
+    }
+    .pro-card:hover {
+      transform: translateY(-3px) translateZ(0);
+      border-color: #00AE42;
+      box-shadow: 0 10px 28px rgba(0, 174, 66, 0.14);
+    }
+
+    .tab-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      height: 36px;
+      padding: 0 13px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      background-color: var(--bg-elevated);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      transition: all 0.15s ease;
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .tab-pill:hover:not(:disabled) {
+      color: var(--text-primary);
+      border-color: #00AE42;
+      transform: translateY(-1px);
+    }
+    .tab-pill.active {
+      background-color: #00AE42;
+      color: #FFFFFF;
+      border-color: #00AE42;
+      box-shadow: 0 2px 12px rgba(0, 174, 66, 0.32);
+    }
+    .tab-pill.active .pill-num {
+      background-color: rgba(0,0,0,0.25);
+      color: #FFFFFF;
+    }
+    .tab-pill.is-zero {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+    .pill-num {
+      padding: 1px 6px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      background-color: rgba(128, 128, 128, 0.16);
+      color: inherit;
     }
 
     /* MakerWorld Card Style — GPU optimized for 120fps scrolling */
     .mw-card {
       background-color: var(--bg-surface);
       border: 1px solid var(--border-color);
-      border-radius: 10px;
+      border-radius: 14px;
       box-shadow: var(--card-shadow);
       transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
       contain: layout paint style;
@@ -129,20 +227,20 @@
     .hub-filter-pill {
       display: inline-flex;
       align-items: center;
-      gap: 7px;
+      gap: 6px;
       height: 36px;
-      padding: 0 13px;
-      border-radius: 10px;
+      padding: 0 12px;
+      border-radius: 9px;
       font-size: 13px;
       font-weight: 600;
       color: var(--text-secondary);
       background-color: var(--bg-elevated);
       border: 1px solid var(--border-color);
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
       white-space: nowrap;
       cursor: pointer;
     }
-    .hub-filter-pill:hover {
+    .hub-filter-pill:hover:not(:disabled) {
       color: var(--text-primary);
       border-color: #00AE42;
       transform: translateY(-1px);
@@ -159,8 +257,24 @@
       border-color: #E11D48;
       box-shadow: 0 3px 12px rgba(225, 29, 72, 0.30);
     }
+    .hub-filter-pill.active-comm {
+      background-color: #059669;
+      color: #FFFFFF;
+      border-color: #059669;
+      box-shadow: 0 3px 12px rgba(5, 150, 105, 0.35);
+    }
+    .hub-filter-pill.active-free {
+      background-color: #2563EB;
+      color: #FFFFFF;
+      border-color: #2563EB;
+      box-shadow: 0 3px 12px rgba(37, 99, 235, 0.32);
+    }
+    .hub-filter-pill.is-zero {
+      opacity: 0.35;
+      filter: grayscale(0.6);
+    }
     .hub-filter-count {
-      padding: 1px 7px;
+      padding: 1px 6px;
       border-radius: 6px;
       font-size: 11px;
       font-weight: 700;
@@ -168,7 +282,9 @@
       color: inherit;
     }
     .hub-filter-pill.active .hub-filter-count,
-    .hub-filter-pill.active-fav .hub-filter-count {
+    .hub-filter-pill.active-fav .hub-filter-count,
+    .hub-filter-pill.active-comm .hub-filter-count,
+    .hub-filter-pill.active-free .hub-filter-count {
       background-color: rgba(0, 0, 0, 0.26);
       color: #FFFFFF;
     }
@@ -301,7 +417,7 @@
 
   <!-- MakerWorld-Style Top Header -->
   <header class="sticky top-0 z-40 mw-surface border-b">
-    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-[68px] flex items-center justify-between gap-4">
+    <div class="max-w-[1850px] mx-auto px-4 sm:px-6 lg:px-8 h-[68px] flex items-center justify-between gap-4">
 
       <!-- Left: STL-HUB Custom Original Brand Logo (3D Isometric Wireframe Cube inside Camera Viewfinder Brackets) -->
       <a href="/" class="flex items-center gap-3 shrink-0 group">
@@ -429,14 +545,8 @@
         </div>
       </div>
 
-      <!-- Right Controls: Favorites Counter + Theme Switcher -->
+      <!-- Right Controls: Theme Switcher -->
       <div class="flex items-center gap-2 shrink-0">
-        <button onclick="openFavoritesView()" class="px-3 py-2 rounded-lg mw-elevated border hover:border-rose-500 transition flex items-center gap-1.5 text-xs font-bold mw-text-primary" title="Збережені моделі (Обране)">
-          <span class="text-rose-500 text-sm">❤️</span>
-          <span class="hidden sm:inline">Обране</span>
-          <span id="headerFavCount" class="px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-500 text-[11px] font-extrabold">0</span>
-        </button>
-
         <button onclick="toggleTheme()" class="p-2 rounded-lg mw-elevated border hover:border-[#00AE42] transition relative overflow-hidden" title="Перемкнути Світлу / Темну тему">
           <svg id="themeIconSun" class="w-4 h-4 text-amber-400 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -450,7 +560,7 @@
   </header>
 
   <!-- Main Content Container (Wide 1600px MakerWorld Layout) -->
-  <main class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <main class="max-w-[1850px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
     <!-- Recent Searches Bar (Hidden if empty) -->
     <div id="recentHistoryBar" class="hidden mw-surface border rounded-xl px-4 py-2.5 mb-5 flex items-center justify-between gap-3">
@@ -578,175 +688,255 @@
       </div>
     </div>
 
-    <!-- Results Section (MakerWorld 5-Column Grid + Tabs) -->
-    <section id="resultsSection" class="hidden space-y-5">
+    <!-- Results Section (Pro 2-Column Catalog Layout with Sidebar) -->
+    <section id="resultsSection" class="hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-      <!-- Clean Structured 2-Row Filter & Control Toolbar -->
-      <div class="mw-surface border rounded-2xl p-4 sm:px-5 sm:py-4 flex flex-col gap-3.5 shadow-sm">
-
-        <!-- Row 1: Platform Filter Pills Left + Favorites Right -->
-        <div class="flex flex-wrap items-center justify-between gap-2" id="siteFilterButtons">
-          <div class="flex flex-wrap items-center gap-2">
-            <button onclick="setSiteFilter('all')" data-site="all" class="hub-filter-pill active">
-              <span>Усі моделі</span>
-              <span id="count-all" class="hub-filter-count">0</span>
+        <!-- ================= LEFT SIDEBAR (Фільтри) ================= -->
+        <aside class="lg:col-span-3 xl:col-span-2 pro-sidebar p-5 space-y-6 sticky top-24">
+          <!-- Sidebar Header -->
+          <div class="flex items-center justify-between pb-3 border-b mw-border">
+            <h2 class="text-base font-extrabold mw-text-primary flex items-center gap-2">
+              <span>Фільтри</span>
+            </h2>
+            <button type="button" onclick="resetAllSidebarFilters()" class="text-xs font-bold text-[#00AE42] hover:text-[#00C853] transition cursor-pointer">
+              Скинути всі
             </button>
-            <button onclick="setSiteFilter('makerworld')" data-site="makerworld" class="hub-filter-pill">
+          </div>
+
+          <!-- Section 1: ТИП МОДЕЛІ -->
+          <div class="space-y-3">
+            <h3 class="text-[11px] font-extrabold uppercase tracking-wider mw-text-muted">
+              Тип моделі
+            </h3>
+            <div class="space-y-2.5 text-xs">
+              <label class="flex items-center justify-between cursor-pointer group">
+                <div class="flex items-center gap-2.5">
+                  <input type="checkbox" id="sidebarCommercialChk" onchange="onSidebarFilterChange()" class="hub-checkbox">
+                  <span class="mw-text-secondary group-hover:mw-text-primary font-medium">Для продажу</span>
+                </div>
+                <span id="sideCountCommercial" class="mw-text-muted font-mono text-[11px]">0</span>
+              </label>
+
+              <label class="flex items-center justify-between cursor-pointer group">
+                <div class="flex items-center gap-2.5">
+                  <input type="checkbox" id="sidebarFreeChk" onchange="onSidebarFilterChange()" class="hub-checkbox">
+                  <span class="mw-text-secondary group-hover:mw-text-primary font-medium">Безкоштовні</span>
+                </div>
+                <span id="sideCountFree" class="mw-text-muted font-mono text-[11px]">0</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Section 2: ПЛАТФОРМИ -->
+          <div class="space-y-3 pt-2 border-t mw-border">
+            <h3 class="text-[11px] font-extrabold uppercase tracking-wider mw-text-muted">
+              Платформи
+            </h3>
+            <div class="space-y-2.5 text-xs">
+              <label class="flex items-center justify-between cursor-pointer group">
+                <div class="flex items-center gap-2.5">
+                  <input type="checkbox" id="sideSiteChk-makerworld" checked onchange="onSidebarFilterChange()" class="hub-checkbox side-site-chk" data-site="makerworld">
+                  <span class="w-2 h-2 rounded-full bg-[#00AE42]"></span>
+                  <span class="mw-text-secondary group-hover:mw-text-primary font-medium">MakerWorld</span>
+                </div>
+                <span id="sideCount-makerworld" class="mw-text-muted font-mono text-[11px]">0</span>
+              </label>
+
+              <label class="flex items-center justify-between cursor-pointer group">
+                <div class="flex items-center gap-2.5">
+                  <input type="checkbox" id="sideSiteChk-printables" checked onchange="onSidebarFilterChange()" class="hub-checkbox side-site-chk" data-site="printables">
+                  <span class="w-2 h-2 rounded-full bg-[#FA6831]"></span>
+                  <span class="mw-text-secondary group-hover:mw-text-primary font-medium">Printables</span>
+                </div>
+                <span id="sideCount-printables" class="mw-text-muted font-mono text-[11px]">0</span>
+              </label>
+
+              <label class="flex items-center justify-between cursor-pointer group">
+                <div class="flex items-center gap-2.5">
+                  <input type="checkbox" id="sideSiteChk-thingiverse" checked onchange="onSidebarFilterChange()" class="hub-checkbox side-site-chk" data-site="thingiverse">
+                  <span class="w-2 h-2 rounded-full bg-[#2563EB]"></span>
+                  <span class="mw-text-secondary group-hover:mw-text-primary font-medium">Thingiverse</span>
+                </div>
+                <span id="sideCount-thingiverse" class="mw-text-muted font-mono text-[11px]">0</span>
+              </label>
+
+              <label class="flex items-center justify-between cursor-pointer group">
+                <div class="flex items-center gap-2.5">
+                  <input type="checkbox" id="sideSiteChk-cults3d" checked onchange="onSidebarFilterChange()" class="hub-checkbox side-site-chk" data-site="cults3d">
+                  <span class="w-2 h-2 rounded-full bg-[#8224E3]"></span>
+                  <span class="mw-text-secondary group-hover:mw-text-primary font-medium">Cults3D</span>
+                </div>
+                <span id="sideCount-cults3d" class="mw-text-muted font-mono text-[11px]">0</span>
+              </label>
+
+              <label class="flex items-center justify-between cursor-pointer group">
+                <div class="flex items-center gap-2.5">
+                  <input type="checkbox" id="sideSiteChk-myminifactory" checked onchange="onSidebarFilterChange()" class="hub-checkbox side-site-chk" data-site="myminifactory">
+                  <span class="w-2 h-2 rounded-full bg-[#059669]"></span>
+                  <span class="mw-text-secondary group-hover:mw-text-primary font-medium">MyMiniFactory</span>
+                </div>
+                <span id="sideCount-myminifactory" class="mw-text-muted font-mono text-[11px]">0</span>
+              </label>
+
+              <label id="sideSiteRow-thangs" class="flex items-center justify-between cursor-pointer group">
+                <div class="flex items-center gap-2.5">
+                  <input type="checkbox" id="sideSiteChk-thangs" checked onchange="onSidebarFilterChange()" class="hub-checkbox side-site-chk" data-site="thangs">
+                  <span class="w-2 h-2 rounded-full bg-[#0891B2]"></span>
+                  <span class="mw-text-secondary group-hover:mw-text-primary font-medium">Thangs</span>
+                </div>
+                <span id="sideCount-thangs" class="mw-text-muted font-mono text-[11px]">0</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Section 3: МОЇ МОДЕЛІ -->
+          <div class="space-y-3 pt-2 border-t mw-border">
+            <h3 class="text-[11px] font-extrabold uppercase tracking-wider mw-text-muted">
+              Мої моделі
+            </h3>
+            <label class="flex items-center justify-between cursor-pointer group text-xs">
+              <div class="flex items-center gap-2.5">
+                <input type="checkbox" id="sidebarFavChk" onchange="onSidebarFilterChange()" class="hub-checkbox">
+                <span class="mw-text-secondary group-hover:mw-text-primary font-medium flex items-center gap-1.5">
+                  <span class="text-rose-400">♡</span> Лише обрані
+                </span>
+              </div>
+              <span id="sideCountFavorites" class="mw-text-muted font-mono text-[11px]">0</span>
+            </label>
+          </div>
+
+          <!-- Footer Hint -->
+          <div class="pt-3 border-t mw-border text-[11px] mw-text-muted leading-relaxed">
+            Можна обрати кілька платформ і типів моделей одночасно. Зміни застосовуються відразу.
+          </div>
+        </aside>
+
+        <!-- ================= RIGHT CATALOG CONTENT ================= -->
+        <div class="lg:col-span-9 xl:col-span-10 space-y-4">
+          
+          <!-- Top Header: Title Left + Sort/Limit Controls Right -->
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div class="flex items-center gap-2">
+                <h1 class="text-xl sm:text-2xl font-extrabold mw-text-primary tracking-tight">
+                  Результати пошуку <span id="catalogTotalBadge" class="text-[#00AE42]">0</span>
+                </h1>
+              </div>
+              <p class="text-xs mw-text-secondary mt-0.5">
+                <span id="catalogMetaModelsCount">0 моделей</span> • <span id="catalogMetaPlatforms">усі платформи</span> • за запитом <strong id="catalogMetaQuery" class="mw-text-primary font-semibold"></strong>
+              </p>
+            </div>
+
+            <!-- Controls Right: Sort Mode & Per Page -->
+            <div class="flex items-center gap-2">
+              <!-- Custom Dropdown: Sort Mode -->
+              <div class="relative" id="sortDropdown">
+                <input type="hidden" id="sortSelect" value="similarity" />
+                <button type="button" onclick="toggleCustomDropdown('sortMenu', this)" class="hub-dropdown-btn">
+                  <span class="mw-text-muted font-normal">Сортування:</span>
+                  <span id="sortLabel">За схожістю</span>
+                  <svg class="w-3.5 h-3.5 mw-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                <div id="sortMenu" class="hub-dropdown-menu hidden">
+                  <button type="button" onclick="selectSortMode('similarity', 'За схожістю', this)" class="hub-dropdown-item selected">
+                    <span>За візуальною схожістю</span><span class="check-icon">✓</span>
+                  </button>
+                  <button type="button" onclick="selectSortMode('popular', 'За популярністю', this)" class="hub-dropdown-item">
+                    <span>За популярністю (лайки)</span><span class="check-icon hidden">✓</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Custom Dropdown: Per Page -->
+              <div class="relative" id="perPageDropdown">
+                <input type="hidden" id="perPageSelect" value="24" />
+                <button type="button" onclick="toggleCustomDropdown('perPageMenu', this)" class="hub-dropdown-btn">
+                  <span class="mw-text-muted font-normal">Показ:</span>
+                  <span id="perPageLabel">По 24</span>
+                  <svg class="w-3.5 h-3.5 mw-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                <div id="perPageMenu" class="hub-dropdown-menu hidden">
+                  <button type="button" onclick="selectPerPage('24', 'По 24', this)" class="hub-dropdown-item selected">
+                    <span>По 24 моделі</span><span class="check-icon">✓</span>
+                  </button>
+                  <button type="button" onclick="selectPerPage('48', 'По 48', this)" class="hub-dropdown-item">
+                    <span>По 48 моделей</span><span class="check-icon hidden">✓</span>
+                  </button>
+                  <button type="button" onclick="selectPerPage('96', 'По 96', this)" class="hub-dropdown-item">
+                    <span>По 96 моделей</span><span class="check-icon hidden">✓</span>
+                  </button>
+                  <button type="button" onclick="selectPerPage('999', 'Усі одразу', this)" class="hub-dropdown-item">
+                    <span>Усі одразу</span><span class="check-icon hidden">✓</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Top Row of Quick Platform Filter Pills -->
+          <div class="flex flex-wrap items-center gap-2 pt-1" id="topPlatformPills">
+            <button onclick="setTopPlatformFilter('all')" data-site="all" class="tab-pill active">
+              <span>✦ Усі джерела</span>
+              <span id="topCount-all" class="pill-num">0</span>
+            </button>
+            <button onclick="setTopPlatformFilter('makerworld')" data-site="makerworld" class="tab-pill">
               <span class="w-2 h-2 rounded-full bg-[#00AE42]"></span>
               <span>MakerWorld</span>
-              <span id="count-makerworld" class="hub-filter-count">0</span>
+              <span id="topCount-makerworld" class="pill-num">0</span>
             </button>
-            <button onclick="setSiteFilter('printables')" data-site="printables" class="hub-filter-pill">
-              <span class="w-2 h-2 rounded-full bg-orange-500"></span>
+            <button onclick="setTopPlatformFilter('printables')" data-site="printables" class="tab-pill">
+              <span class="w-2 h-2 rounded-full bg-[#FA6831]"></span>
               <span>Printables</span>
-              <span id="count-printables" class="hub-filter-count">0</span>
+              <span id="topCount-printables" class="pill-num">0</span>
             </button>
-            <button onclick="setSiteFilter('thangs')" data-site="thangs" class="hub-filter-pill">
-              <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
-              <span>Thangs</span>
-              <span id="count-thangs" class="hub-filter-count">0</span>
-            </button>
-            <button onclick="setSiteFilter('cults3d')" data-site="cults3d" class="hub-filter-pill">
-              <span class="w-2 h-2 rounded-full bg-purple-500"></span>
-              <span>Cults3D</span>
-              <span id="count-cults3d" class="hub-filter-count">0</span>
-            </button>
-            <button onclick="setSiteFilter('myminifactory')" data-site="myminifactory" class="hub-filter-pill">
-              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-              <span>MyMiniFactory</span>
-              <span id="count-myminifactory" class="hub-filter-count">0</span>
-            </button>
-            <button onclick="setSiteFilter('thingiverse')" data-site="thingiverse" class="hub-filter-pill">
-              <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+            <button onclick="setTopPlatformFilter('thingiverse')" data-site="thingiverse" class="tab-pill">
+              <span class="w-2 h-2 rounded-full bg-[#2563EB]"></span>
               <span>Thingiverse</span>
-              <span id="count-thingiverse" class="hub-filter-count">0</span>
+              <span id="topCount-thingiverse" class="pill-num">0</span>
+            </button>
+            <button onclick="setTopPlatformFilter('cults3d')" data-site="cults3d" class="tab-pill">
+              <span class="w-2 h-2 rounded-full bg-[#8224E3]"></span>
+              <span>Cults3D</span>
+              <span id="topCount-cults3d" class="pill-num">0</span>
+            </button>
+            <button onclick="setTopPlatformFilter('myminifactory')" data-site="myminifactory" class="tab-pill">
+              <span class="w-2 h-2 rounded-full bg-[#059669]"></span>
+              <span>MyMiniFactory</span>
+              <span id="topCount-myminifactory" class="pill-num">0</span>
+            </button>
+            <button onclick="setTopPlatformFilter('thangs')" data-site="thangs" class="tab-pill" id="topPill-thangs">
+              <span class="w-2 h-2 rounded-full bg-[#0891B2]"></span>
+              <span>Thangs</span>
+              <span id="topCount-thangs" class="pill-num">0</span>
             </button>
           </div>
 
-          <button onclick="setSiteFilter('favorites')" data-site="favorites" class="hub-filter-pill">
-            <span>❤️ Обране</span>
-            <span id="count-favorites" class="hub-filter-count">0</span>
-          </button>
-        </div>
-
-        <!-- Row 2: Search Status Badge Left + Single-Line Controls & Compact Page Stepper Right -->
-        <div class="pt-3 border-t mw-border flex flex-col xl:flex-row xl:items-center justify-between gap-3">
-          <!-- Left Status Pill -->
-          <div class="flex flex-wrap items-center gap-2 text-xs">
-            <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg mw-elevated border">
-              <span class="mw-text-muted">Запит:</span>
-              <strong id="activeQueryLabel" class="mw-text-primary font-bold"></strong>
-            </div>
-            <span id="elapsedTimeBadge" class="hidden px-2.5 py-1.5 rounded-lg bg-[#00AE42]/15 text-[#00AE42] font-bold text-xs"></span>
-            <span id="pageRangeLabel" class="mw-text-secondary font-medium pl-1"></span>
+          <!-- Helper subtext -->
+          <div class="flex items-center justify-between text-[11px] mw-text-muted">
+            <span>Усі результати • Оберіть фільтри у меню ліворуч, щоб звузити пошук</span>
+            <span id="elapsedTimeBadge" class="hidden font-bold text-[#00AE42]"></span>
           </div>
 
-          <!-- Right Controls (Strictly 1 horizontal row on desktop, never wraps pagination underneath!) -->
-          <div class="flex flex-wrap items-center gap-2">
-            <!-- Modern Toggle Switch: Free Only -->
-            <label class="hub-dropdown-btn" title="Показувати лише безкоштовні 3D-моделі">
-              <input id="freeOnlyCheckbox" type="checkbox" onchange="onFilterOrSortChange()" class="sr-only" />
-              <div class="hub-switch-track">
-                <div class="hub-switch-thumb"></div>
-              </div>
-              <span>Тільки безкоштовні</span>
-            </label>
+          <!-- Product Cards Grid: Exactly 4 columns on large screens! -->
+          <div id="resultsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 pt-1"></div>
 
-            <!-- Custom Dropdown: License / Commercial Use Filter -->
-            <div class="relative" id="licenseDropdown">
-              <input type="hidden" id="licenseSelect" value="all" />
-              <button type="button" onclick="toggleCustomDropdown('licenseMenu', this)" class="hub-dropdown-btn" id="licenseDropdownBtn" title="Фільтр за ліцензією: чи дозволено продавати надруковані вироби">
-                <span class="mw-text-muted font-normal">Ліцензія:</span>
-                <span id="licenseLabel">Усі ліцензії</span>
-                <span id="commercialCountPill" class="hidden px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[11px] font-bold">0</span>
-                <svg class="w-3.5 h-3.5 mw-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              <div id="licenseMenu" class="hub-dropdown-menu hidden !min-w-[275px]">
-                <button type="button" onclick="selectLicenseFilter('all', 'Усі ліцензії', this)" class="hub-dropdown-item selected">
-                  <div class="flex flex-col">
-                    <span>Усі ліцензії</span>
-                    <span class="text-[11px] mw-text-muted font-normal">Без обмежень за типом прав</span>
-                  </div>
-                  <span class="check-icon">✓</span>
-                </button>
-                <button type="button" onclick="selectLicenseFilter('commercial_allowed', '💼 Дозволено продаж', this)" class="hub-dropdown-item">
-                  <div class="flex flex-col">
-                    <span class="text-emerald-400 font-semibold">💼 Дозволено продаж друку</span>
-                    <span class="text-[11px] mw-text-muted font-normal">Тільки підтверджені: CC0, CC BY, CC BY-SA, GPL</span>
-                  </div>
-                  <span class="check-icon hidden">✓</span>
-                </button>
-                <button type="button" onclick="selectLicenseFilter('hide_noncommercial', '🛡️ Сховати некомерційні (NC)', this)" class="hub-dropdown-item">
-                  <div class="flex flex-col">
-                    <span>🛡️ Сховати заборонені (NC)</span>
-                    <span class="text-[11px] mw-text-muted font-normal">Дозволені + сайти де треба перевірити вручну</span>
-                  </div>
-                  <span class="check-icon hidden">✓</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Custom Dropdown: Per Page -->
-            <div class="relative" id="perPageDropdown">
-              <input type="hidden" id="perPageSelect" value="25" />
-              <button type="button" onclick="toggleCustomDropdown('perPageMenu', this)" class="hub-dropdown-btn">
-                <span class="mw-text-muted font-normal">Показ:</span>
-                <span id="perPageLabel">По 25</span>
-                <svg class="w-3.5 h-3.5 mw-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              <div id="perPageMenu" class="hub-dropdown-menu hidden">
-                <button type="button" onclick="selectPerPage('25', 'По 25', this)" class="hub-dropdown-item selected">
-                  <span>По 25 моделей</span><span class="check-icon">✓</span>
-                </button>
-                <button type="button" onclick="selectPerPage('50', 'По 50', this)" class="hub-dropdown-item">
-                  <span>По 50 моделей</span><span class="check-icon hidden">✓</span>
-                </button>
-                <button type="button" onclick="selectPerPage('100', 'По 100', this)" class="hub-dropdown-item">
-                  <span>По 100 моделей</span><span class="check-icon hidden">✓</span>
-                </button>
-                <button type="button" onclick="selectPerPage('999', 'Усі одразу', this)" class="hub-dropdown-item">
-                  <span>Усі одразу</span><span class="check-icon hidden">✓</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Custom Dropdown: Sort Mode -->
-            <div class="relative" id="sortDropdown">
-              <input type="hidden" id="sortSelect" value="similarity" />
-              <button type="button" onclick="toggleCustomDropdown('sortMenu', this)" class="hub-dropdown-btn">
-                <span class="mw-text-muted font-normal">Сортування:</span>
-                <span id="sortLabel">За схожістю</span>
-                <svg class="w-3.5 h-3.5 mw-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              <div id="sortMenu" class="hub-dropdown-menu hidden">
-                <button type="button" onclick="selectSortMode('similarity', 'За схожістю', this)" class="hub-dropdown-item selected">
-                  <span>За візуальною схожістю</span><span class="check-icon">✓</span>
-                </button>
-                <button type="button" onclick="selectSortMode('popular', 'За популярністю', this)" class="hub-dropdown-item">
-                  <span>За популярністю (лайки)</span><span class="check-icon hidden">✓</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- Top Compact Page Stepper -->
-            <div id="paginationTop" class="flex items-center"></div>
+          <!-- "Показати ще ↓" Button + Bottom info -->
+          <div id="loadMoreSection" class="pt-8 pb-4 flex flex-col items-center justify-center gap-2">
+            <button id="loadMoreBtn" onclick="loadMoreCards()"
+                    class="px-8 py-3 rounded-xl bg-[#00AE42]/10 hover:bg-[#00AE42]/20 border border-[#00AE42]/40 text-[#00AE42] hover:text-[#00E65B] font-bold text-sm transition shadow-lg flex items-center gap-2 cursor-pointer">
+              <span>Показати ще</span>
+              <span class="text-xs">↓</span>
+            </button>
+            <span id="pageRangeLabelBottom" class="text-xs mw-text-muted mt-1"></span>
           </div>
+
         </div>
-      </div>
 
-      <!-- MakerWorld 5-Column Cards Grid -->
-      <div id="resultsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"></div>
-
-      <!-- Bottom Pagination Bar -->
-      <div class="mw-surface border rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <span id="pageRangeLabelBottom" class="text-xs mw-text-secondary"></span>
-        <div id="paginationBottom" class="flex flex-wrap items-center justify-center gap-1.5"></div>
       </div>
     </section>
 
@@ -818,9 +1008,9 @@
     let currentImageId = null;
     let currentResults = [];
     let currentCounts = {};
-    let currentSiteFilter = 'all';
     let currentQuery = '';
     let currentPage = 1;
+    let visibleCount = 24;
 
     // Favorites & Search History in localStorage
     let favoriteMap = {};
@@ -835,6 +1025,15 @@
       cults3d: { bg: 'bg-[#8224E3]', text: 'text-white', label: 'Cults3D' },
       myminifactory: { bg: 'bg-[#059669]', text: 'text-white', label: 'MyMiniFactory' },
       thingiverse: { bg: 'bg-[#2563EB]', text: 'text-white', label: 'Thingiverse' },
+    };
+
+    const SITE_DOT_COLORS = {
+      makerworld: 'bg-[#00AE42]',
+      printables: 'bg-[#FA6831]',
+      thingiverse: 'bg-[#2563EB]',
+      cults3d: 'bg-[#8224E3]',
+      myminifactory: 'bg-[#059669]',
+      thangs: 'bg-[#0891B2]'
     };
 
     // Theme Switcher with smooth View Transition + Sun/Moon icon sync
@@ -894,8 +1093,10 @@
       const count = Object.keys(favoriteMap).length;
       const hEl = document.getElementById('headerFavCount');
       const fEl = document.getElementById('count-favorites');
+      const sfEl = document.getElementById('sideCountFavorites');
       if (hEl) hEl.textContent = count;
       if (fEl) fEl.textContent = count;
+      if (sfEl) sfEl.textContent = count;
     }
 
     function toggleFavoriteById(event, itemId) {
@@ -910,7 +1111,8 @@
         }
       }
       saveFavorites();
-      if (currentSiteFilter === 'favorites') {
+      const favChk = document.getElementById('sidebarFavChk');
+      if (favChk && favChk.checked) {
         renderResults();
       } else {
         const cachedNode = cardNodeCache.get(itemId);
@@ -924,14 +1126,18 @@
       const btn = cardEl.querySelector('.fav-toggle-btn');
       if (!btn) return;
       btn.title = isFav ? 'Прибрати з Обраного' : 'Додати в Обране';
-      btn.className = `fav-toggle-btn w-6 h-6 rounded-full flex items-center justify-center text-xs transition shadow ${isFav ? 'bg-rose-500 text-white' : 'bg-black/70 text-white/80 hover:bg-rose-500 hover:text-white'}`;
       btn.textContent = isFav ? '♥' : '♡';
+      btn.className = `fav-toggle-btn absolute top-2.5 right-2.5 w-7 h-7 rounded-lg backdrop-blur-sm flex items-center justify-center text-xs transition border border-white/10 ${isFav ? 'bg-rose-500 text-white' : 'bg-black/60 hover:bg-rose-500 hover:text-white text-zinc-400'}`;
     }
 
     function openFavoritesView() {
       document.getElementById('heroUploadSection').classList.add('hidden');
       document.getElementById('resultsSection').classList.remove('hidden');
-      setSiteFilter('favorites');
+      const favChk = document.getElementById('sidebarFavChk');
+      if (favChk) {
+        favChk.checked = true;
+        onSidebarFilterChange();
+      }
     }
 
     // Recent Searches History Management
@@ -1334,7 +1540,8 @@
         currentImageId = data.image_id;
         document.getElementById('heroUploadSection').classList.add('hidden');
         displayAiAnalysis(data.ai_analysis, data.search.query);
-        if (currentSiteFilter === 'favorites') currentSiteFilter = 'all';
+        const favChk = document.getElementById('sidebarFavChk');
+        if (favChk) favChk.checked = false;
         updateSearchResults(data.search);
         hideLoading();
 
@@ -1393,7 +1600,8 @@
         }
         document.getElementById('heroUploadSection').classList.add('hidden');
         highlightActiveQueryButton(cleanQ);
-        if (currentSiteFilter === 'favorites') currentSiteFilter = 'all';
+        const favChk = document.getElementById('sidebarFavChk');
+        if (favChk) favChk.checked = false;
         updateSearchResults(data.search);
 
         addSearchHistoryEntry({
@@ -1474,26 +1682,10 @@
     }
 
     document.addEventListener('click', e => {
-      if (!e.target.closest('#perPageDropdown') && !e.target.closest('#sortDropdown') && !e.target.closest('#licenseDropdown')) {
+      if (!e.target.closest('#perPageDropdown') && !e.target.closest('#sortDropdown')) {
         closeAllCustomDropdowns();
       }
     });
-
-    function selectLicenseFilter(val, labelText, itemEl) {
-      document.getElementById('licenseSelect').value = val;
-      document.getElementById('licenseLabel').textContent = labelText;
-      const btn = document.getElementById('licenseDropdownBtn');
-      if (btn) {
-        btn.classList.toggle('border-[#00AE42]', val !== 'all');
-      }
-      const menu = document.getElementById('licenseMenu');
-      menu.querySelectorAll('.hub-dropdown-item').forEach(b => {
-        b.classList.toggle('selected', b === itemEl);
-        b.querySelector('.check-icon').classList.toggle('hidden', b !== itemEl);
-      });
-      closeAllCustomDropdowns();
-      onFilterOrSortChange();
-    }
 
     function selectPerPage(val, labelText, itemEl) {
       document.getElementById('perPageSelect').value = val;
@@ -1504,7 +1696,8 @@
         btn.querySelector('.check-icon').classList.toggle('hidden', btn !== itemEl);
       });
       closeAllCustomDropdowns();
-      onFilterOrSortChange();
+      visibleCount = parseInt(val, 10);
+      requestAnimationFrame(() => renderResults());
     }
 
     function selectSortMode(val, labelText, itemEl) {
@@ -1516,15 +1709,18 @@
         btn.querySelector('.check-icon').classList.toggle('hidden', btn !== itemEl);
       });
       closeAllCustomDropdowns();
-      onFilterOrSortChange();
+      requestAnimationFrame(() => renderResults());
     }
 
     function updateSearchResults(searchObj) {
       currentQuery = searchObj.query || '';
       currentResults = searchObj.results || [];
       currentCounts = searchObj.counts_by_site || {};
-      currentPage = 1;
-      // Keep existing cached nodes for items with matching IDs (e.g. Phase 1 -> Phase 2) and update their similarity badge if needed
+      
+      const perPage = parseInt(document.getElementById('perPageSelect').value || '24', 10);
+      visibleCount = perPage;
+
+      // Keep existing cached nodes for items with matching IDs
       const nextIds = new Set(currentResults.map(x => x.id));
       for (const cachedId of cardNodeCache.keys()) {
         if (!nextIds.has(cachedId) && !favoriteMap[cachedId]) {
@@ -1532,7 +1728,14 @@
         }
       }
 
-      document.getElementById('activeQueryLabel').textContent = currentQuery;
+      const totalCount = currentResults.length;
+      const metaQueryEl = document.getElementById('catalogMetaQuery');
+      if (metaQueryEl) metaQueryEl.textContent = `«${currentQuery}»`;
+      const badgeEl = document.getElementById('catalogTotalBadge');
+      if (badgeEl) badgeEl.textContent = totalCount;
+      const metaCountEl = document.getElementById('catalogMetaModelsCount');
+      if (metaCountEl) metaCountEl.textContent = `${totalCount} моделей`;
+
       const elapsedEl = document.getElementById('elapsedTimeBadge');
       if (elapsedEl && searchObj.elapsed_seconds) {
         elapsedEl.textContent = `⚡ ${searchObj.elapsed_seconds} сек`;
@@ -1540,107 +1743,95 @@
       }
       document.getElementById('resultsSection').classList.remove('hidden');
 
-      document.getElementById('count-all').textContent = currentResults.length;
-      ['printables', 'thingiverse', 'makerworld', 'cults3d', 'thangs', 'myminifactory'].forEach(siteKey => {
-        const el = document.getElementById(`count-${siteKey}`);
-        if (el) el.textContent = currentCounts[siteKey] || 0;
-      });
+      // Update sidebar counts
       const commCount = currentResults.filter(x => x.commercial_allowed === true).length;
-      const commPill = document.getElementById('commercialCountPill');
-      if (commPill) {
-        commPill.textContent = commCount;
-        commPill.classList.toggle('hidden', commCount === 0);
-      }
-      updateFavoritesBadges();
+      const freeCount = currentResults.filter(x => x.is_free !== false).length;
+      const sideComm = document.getElementById('sideCountCommercial');
+      if (sideComm) sideComm.textContent = commCount;
+      const sideFree = document.getElementById('sideCountFree');
+      if (sideFree) sideFree.textContent = freeCount;
 
+      ['makerworld', 'printables', 'thingiverse', 'cults3d', 'myminifactory', 'thangs'].forEach(siteKey => {
+        const c = currentCounts[siteKey] || 0;
+        const sEl = document.getElementById(`sideCount-${siteKey}`);
+        if (sEl) sEl.textContent = c;
+        const tEl = document.getElementById(`topCount-${siteKey}`);
+        if (tEl) tEl.textContent = c;
+
+        const topBtn = document.querySelector(`#topPlatformPills [data-site="${siteKey}"]`);
+        if (topBtn) topBtn.classList.toggle('is-zero', c === 0);
+      });
+
+      const topAllEl = document.getElementById('topCount-all');
+      if (topAllEl) topAllEl.textContent = totalCount;
+
+      updateFavoritesBadges();
       renderResults();
     }
 
-    function setSiteFilter(site) {
-      currentSiteFilter = site;
-      currentPage = 1;
-      document.querySelectorAll('.hub-filter-pill').forEach(btn => {
-        const isTarget = btn.dataset.site === site;
-        btn.classList.remove('active', 'active-fav');
-        if (isTarget) {
-          btn.classList.add(site === 'favorites' ? 'active-fav' : 'active');
-        }
+    function onSidebarFilterChange() {
+      const siteCheckboxes = Array.from(document.querySelectorAll('.side-site-chk'));
+      const checkedSites = siteCheckboxes.filter(cb => cb.checked).map(cb => cb.dataset.site);
+
+      document.querySelectorAll('#topPlatformPills .tab-pill').forEach(btn => {
+        btn.classList.remove('active');
       });
-      requestAnimationFrame(() => renderResults());
-    }
 
-    function onFilterOrSortChange() {
-      currentPage = 1;
-      requestAnimationFrame(() => renderResults());
-    }
-
-    function goToPage(page, shouldScroll = true) {
-      currentPage = page;
-      requestAnimationFrame(() => {
-        renderResults();
-        if (shouldScroll) {
-          document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      });
-    }
-
-    function buildTopStepperHtml(totalPages, activePage) {
-      if (totalPages <= 1) return '';
-      const prevDisabled = activePage <= 1;
-      const nextDisabled = activePage >= totalPages;
-      return `
-        <div class="hub-page-stepper">
-          <button ${prevDisabled ? 'disabled' : `onclick="goToPage(${activePage - 1}, false)"`}
-                  class="hub-page-step-btn" title="Попередня сторінка">
-            ‹
-          </button>
-          <span class="px-2 text-xs font-bold mw-text-primary select-none whitespace-nowrap">
-            ${activePage} <span class="mw-text-muted font-normal">/ ${totalPages}</span>
-          </span>
-          <button ${nextDisabled ? 'disabled' : `onclick="goToPage(${activePage + 1}, false)"`}
-                  class="hub-page-step-btn" title="Наступна сторінка">
-            ›
-          </button>
-        </div>
-      `;
-    }
-
-    function buildPaginationHtml(totalPages, activePage) {
-      if (totalPages <= 1) return '';
-      let html = '';
-
-      const prevDisabled = activePage <= 1;
-      html += `
-        <button ${prevDisabled ? 'disabled' : `onclick="goToPage(${activePage - 1})"`}
-                class="px-2.5 py-1 rounded-md text-xs font-semibold border transition ${prevDisabled ? 'opacity-40 cursor-not-allowed mw-elevated' : 'mw-elevated hover:border-[#00AE42]'}">
-          «
-        </button>
-      `;
-
-      for (let p = 1; p <= totalPages; p++) {
-        if (totalPages > 8 && p > 2 && p < totalPages - 1 && Math.abs(p - activePage) > 2) {
-          if (p === 3 || p === totalPages - 2) {
-            html += `<span class="px-1 text-xs mw-text-muted">...</span>`;
-          }
-          continue;
-        }
-        const isCurrent = p === activePage;
-        html += `
-          <button onclick="goToPage(${p})"
-                  class="w-7 h-7 rounded-md text-xs font-bold border transition ${isCurrent ? 'bg-[#00AE42] text-white border-[#00AE42]' : 'mw-elevated hover:border-[#00AE42] mw-text-primary'}">
-            ${p}
-          </button>
-        `;
+      if (checkedSites.length === siteCheckboxes.length) {
+        const allPill = document.querySelector('#topPlatformPills [data-site="all"]');
+        if (allPill) allPill.classList.add('active');
+      } else if (checkedSites.length === 1) {
+        const singlePill = document.querySelector(`#topPlatformPills [data-site="${checkedSites[0]}"]`);
+        if (singlePill) singlePill.classList.add('active');
       }
 
-      const nextDisabled = activePage >= totalPages;
-      html += `
-        <button ${nextDisabled ? 'disabled' : `onclick="goToPage(${activePage + 1})"`}
-                class="px-2.5 py-1 rounded-md text-xs font-semibold border transition ${nextDisabled ? 'opacity-40 cursor-not-allowed mw-elevated' : 'mw-elevated hover:border-[#00AE42]'}">
-          »
-        </button>
-      `;
-      return html;
+      const perPage = parseInt(document.getElementById('perPageSelect').value || '24', 10);
+      visibleCount = perPage;
+      requestAnimationFrame(() => renderResults());
+    }
+
+    function setTopPlatformFilter(siteId) {
+      document.querySelectorAll('#topPlatformPills .tab-pill').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.site === siteId);
+      });
+
+      const siteCheckboxes = Array.from(document.querySelectorAll('.side-site-chk'));
+      if (siteId === 'all') {
+        siteCheckboxes.forEach(cb => { cb.checked = true; });
+      } else {
+        siteCheckboxes.forEach(cb => {
+          cb.checked = (cb.dataset.site === siteId);
+        });
+      }
+
+      const perPage = parseInt(document.getElementById('perPageSelect').value || '24', 10);
+      visibleCount = perPage;
+      requestAnimationFrame(() => renderResults());
+    }
+
+    function resetAllSidebarFilters() {
+      const commChk = document.getElementById('sidebarCommercialChk');
+      if (commChk) commChk.checked = false;
+      const freeChk = document.getElementById('sidebarFreeChk');
+      if (freeChk) freeChk.checked = false;
+      const favChk = document.getElementById('sidebarFavChk');
+      if (favChk) favChk.checked = false;
+
+      document.querySelectorAll('.side-site-chk').forEach(cb => { cb.checked = true; });
+
+      document.querySelectorAll('#topPlatformPills .tab-pill').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.site === 'all');
+      });
+
+      const perPage = parseInt(document.getElementById('perPageSelect').value || '24', 10);
+      visibleCount = perPage;
+      requestAnimationFrame(() => renderResults());
+    }
+
+    function loadMoreCards() {
+      const perPage = parseInt(document.getElementById('perPageSelect').value || '24', 10);
+      visibleCount += perPage;
+      renderResults();
     }
 
     function getOrCreateCardNode(item) {
@@ -1648,7 +1839,6 @@
       const isFav = Boolean(favoriteMap[item.id]);
       let cardEl = cardNodeCache.get(item.id);
       if (cardEl) {
-        // Update dynamic similarity badge & favorite state without touching <img>!
         const simEl = cardEl.querySelector('.sim-badge');
         if (simEl) {
           simEl.textContent = item.is_visual_match ? '📷 ' + sim + '%' : sim + '%';
@@ -1657,45 +1847,48 @@
         return cardEl;
       }
 
-      const badge = SITE_BADGES[item.site_id] || { bg: 'bg-neutral-700', text: 'text-white', label: item.site };
       const rawImg = item.thumbnail || item.image || '';
       const proxyImg = rawImg ? `/api/proxy-image?url=${encodeURIComponent(rawImg)}` : '';
-      const authorInitial = (item.author || 'U').trim().charAt(0).toUpperCase();
+      const dotColor = SITE_DOT_COLORS[item.site_id] || 'bg-neutral-500';
+
+      let statusBadgeText = 'Безкоштовно';
+      if (item.commercial_allowed === true) {
+        statusBadgeText = 'Для продажу';
+      } else if (item.price && item.price !== 'Безкоштовно' && item.price !== 'Див. на сайті') {
+        statusBadgeText = item.price;
+      } else if (item.is_free === false) {
+        statusBadgeText = 'Платна модель';
+      }
 
       const tpl = document.createElement('template');
       tpl.innerHTML = `
         <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer"
            onclick="trackModelClick('${escapeJsString(item.site_id)}', '${escapeJsString(item.title)}', '${escapeJsString(item.url)}')"
-           class="mw-card overflow-hidden flex flex-col justify-between group">
+           class="pro-card p-3.5 flex flex-col justify-between group cursor-pointer">
           <div>
-            <!-- 4:3 MakerWorld Aspect Image Box -->
-            <div class="relative aspect-[4/3] bg-neutral-900 overflow-hidden flex items-center justify-center">
+            <!-- 4:3 Aspect Image Box with Floating Badges -->
+            <div class="relative aspect-[4/3] bg-gradient-to-b from-[#1C1C20] to-[#121215] rounded-xl overflow-hidden flex items-center justify-center">
               <img src="${escapeHtml(rawImg)}"
                    onerror="if(this.src !== '${proxyImg}') this.src='${proxyImg}'; else this.style.display='none';"
                    alt="${escapeHtml(item.title)}"
                    loading="lazy"
                    decoding="async"
-                   class="w-full h-full object-cover" />
+                   class="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105" />
 
-              <!-- Platform Pill (Top Left) -->
-              <span class="absolute top-2 left-2 px-2 py-0.5 rounded text-[11px] font-bold shadow-sm ${badge.bg} ${badge.text}">
-                ${escapeHtml(badge.label)}
+              <!-- Top Left Floating Status Badge -->
+              <span class="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-black/75 text-zinc-200 backdrop-blur-sm border border-white/10 shadow-sm">
+                ${escapeHtml(statusBadgeText)}
               </span>
 
-              <!-- Match Badge + Heart Favorite Button (Top Right) -->
-              <div class="absolute top-2 right-2 flex items-center gap-1.5">
-                <span class="sim-badge px-2 py-0.5 rounded text-[11px] font-bold bg-black/75 text-white">
-                  ${item.is_visual_match ? '📷 ' + sim + '%' : sim + '%'}
-                </span>
-                <button type="button"
-                        onclick="toggleFavoriteById(event, '${escapeJsString(item.id)}')"
-                        title="${isFav ? 'Прибрати з Обраного' : 'Додати в Обране'}"
-                        class="fav-toggle-btn w-6 h-6 rounded-full flex items-center justify-center text-xs transition shadow ${isFav ? 'bg-rose-500 text-white' : 'bg-black/70 text-white/80 hover:bg-rose-500 hover:text-white'}">
-                  ${isFav ? '♥' : '♡'}
-                </button>
-              </div>
+              <!-- Top Right Heart Favorite Button -->
+              <button type="button"
+                      onclick="toggleFavoriteById(event, '${escapeJsString(item.id)}')"
+                      title="${isFav ? 'Прибрати з Обраного' : 'Додати в Обране'}"
+                      class="fav-toggle-btn absolute top-2.5 right-2.5 w-7 h-7 rounded-lg backdrop-blur-sm flex items-center justify-center text-xs transition border border-white/10 ${isFav ? 'bg-rose-500 text-white' : 'bg-black/60 hover:bg-rose-500 hover:text-white text-zinc-400'}">
+                ${isFav ? '♥' : '♡'}
+              </button>
 
-              <!-- Bottom Left: "📷 Схожі" Visual Search Button (Finds free/similar alternatives to this card!) -->
+              <!-- Bottom Left: "📷 Схожі" Visual Search Button on Hover -->
               ${rawImg ? `
                 <button type="button"
                         onclick="findSimilarToCard(event, '${escapeJsString(rawImg)}', '${escapeJsString(item.title)}')"
@@ -1705,71 +1898,45 @@
                 </button>
               ` : ''}
 
-              <!-- Bottom Right: Price Badge -->
-              ${item.price && item.price !== 'Безкоштовно' && item.price !== 'Див. на сайті' ? `
-                <span class="absolute bottom-2 right-2 px-2 py-0.5 rounded text-[11px] font-bold bg-black/80 text-amber-300">
-                  ${escapeHtml(item.price)}
+              <!-- Bottom Right: Match score if visual match -->
+              ${item.is_visual_match ? `
+                <span class="sim-badge absolute bottom-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-black/80 text-white">
+                  📷 ${sim}%
                 </span>
-              ` : (item.is_free === true ? `
-                <span class="absolute bottom-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-black/65 text-[#00E65B]">
-                  FREE
-                </span>
-              ` : '')}
+              ` : ''}
             </div>
 
-            <!-- Title + Commercial License Status Pill -->
-            <div class="px-3 pt-2.5 pb-1">
-              <h4 class="font-bold text-[13.5px] mw-text-primary line-clamp-2 group-hover:text-[#00AE42] transition-colors leading-snug">
-                ${escapeHtml(item.title)}
-              </h4>
-              <div class="mt-1.5 flex flex-wrap items-center gap-1">
-                ${item.commercial_allowed === true ? `
-                  <span title="${escapeHtml(item.license_label || 'Комерційний продаж друку дозволено')}"
-                        class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10.5px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                    <span>✓</span><span>Продаж дозволено • ${escapeHtml(item.license_code || 'CC BY')}</span>
-                  </span>
-                ` : (item.commercial_allowed === false ? `
-                  <span title="${escapeHtml(item.license_label || 'Комерційний продаж друку заборонено')}"
-                        class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10.5px] font-semibold bg-neutral-500/10 mw-text-muted border mw-border">
-                    <span>🔒</span><span>Не для продажу • ${escapeHtml(item.license_code || 'Personal')}</span>
-                  </span>
-                ` : `
-                  <span title="${escapeHtml(item.license_label || 'Перевірте ліцензію на сторінці сайту')}"
-                        class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10.5px] font-medium bg-amber-500/10 text-amber-400/90 border border-amber-500/25">
-                    <span>⚖️</span><span>Перевірте ліцензію на сайті</span>
-                  </span>
-                `)}
-              </div>
-            </div>
+            <!-- Title -->
+            <h3 class="font-bold text-[13.5px] mw-text-primary mt-3 line-clamp-1 group-hover:text-[#00AE42] transition leading-snug" title="${escapeHtml(item.title)}">
+              ${escapeHtml(item.title)}
+            </h3>
           </div>
 
-          <!-- MakerWorld Style Card Footer: Avatar + Author Left, Downloads & Likes Right -->
-          <div class="px-3 pb-2.5 pt-1.5 flex items-center justify-between text-xs mw-text-muted">
-            <div class="flex items-center gap-1.5 min-w-0 pr-2">
-              <span class="w-5 h-5 rounded-full mw-elevated border flex items-center justify-center text-[10px] font-bold mw-text-primary shrink-0">
-                ${escapeHtml(authorInitial)}
+          <!-- Card Bottom Meta Info -->
+          <div class="space-y-2.5 mt-3 pt-2.5 border-t mw-border text-xs">
+            <div class="flex items-center justify-between mw-text-secondary">
+              <span class="flex items-center gap-1.5 font-medium">
+                <span class="w-2 h-2 rounded-full ${dotColor}"></span>
+                <span class="truncate max-w-[120px]">${escapeHtml(item.site || item.site_id)}</span>
               </span>
-              <span class="truncate text-[12px] mw-text-secondary">${escapeHtml(item.author || 'Creator')}</span>
+              <span class="mw-text-muted font-mono text-[11px]">
+                ${item.downloads ? `↓ ${formatNum(item.downloads)}` : (item.likes ? `♥ ${formatNum(item.likes)}` : '')}
+              </span>
             </div>
 
-            <div class="flex items-center gap-2.5 shrink-0 text-[12px]">
-              ${item.downloads ? `
-                <span class="flex items-center gap-0.5" title="Завантаження">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                  </svg>
-                  ${formatNum(item.downloads)}
+            <div class="flex items-center justify-between">
+              ${item.commercial_allowed === true ? `
+                <span class="text-[11px] font-semibold text-emerald-400 flex items-center gap-1">
+                  <span>✦</span> Комерційна модель
                 </span>
-              ` : ''}
-              ${item.likes ? `
-                <span class="flex items-center gap-0.5" title="Вподобання">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3zM7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/>
-                  </svg>
-                  ${formatNum(item.likes)}
+              ` : `
+                <span class="text-[11px] font-medium mw-text-muted flex items-center gap-1">
+                  <span>◎</span> Вільне завантаження
                 </span>
-              ` : ''}
-              ${(!item.downloads && !item.likes) ? `<span class="text-[#00AE42] font-semibold">Відкрити ↗</span>` : ''}
+              `}
+              <span class="text-[11px] font-bold text-[#00AE42] group-hover:underline flex items-center gap-1">
+                <span>Знайти</span><span>↗</span>
+              </span>
             </div>
           </div>
         </a>
@@ -1781,20 +1948,25 @@
 
     function renderResults() {
       const grid = document.getElementById('resultsGrid');
-      const freeOnly = document.getElementById('freeOnlyCheckbox').checked;
-      const licenseMode = (document.getElementById('licenseSelect') || {}).value || 'all';
-      const sortMode = document.getElementById('sortSelect').value;
-      const perPage = parseInt(document.getElementById('perPageSelect').value || '25', 10);
+      if (!grid) return;
 
-      const sourceList = currentSiteFilter === 'favorites'
+      const favOnly = Boolean(document.getElementById('sidebarFavChk')?.checked);
+      const commOnly = Boolean(document.getElementById('sidebarCommercialChk')?.checked);
+      const freeOnly = Boolean(document.getElementById('sidebarFreeChk')?.checked);
+      const sortMode = document.getElementById('sortSelect')?.value || 'similarity';
+
+      const activeSites = new Set(
+        Array.from(document.querySelectorAll('.side-site-chk:checked')).map(cb => cb.dataset.site)
+      );
+
+      const sourceList = favOnly
         ? Object.values(favoriteMap)
         : currentResults;
 
       let filtered = sourceList.filter(item => {
-        if (currentSiteFilter !== 'all' && currentSiteFilter !== 'favorites' && item.site_id !== currentSiteFilter) return false;
+        if (!activeSites.has(item.site_id)) return false;
+        if (commOnly && item.commercial_allowed !== true) return false;
         if (freeOnly && item.is_free === false) return false;
-        if (licenseMode === 'commercial_allowed' && item.commercial_allowed !== true) return false;
-        if (licenseMode === 'hide_noncommercial' && item.commercial_allowed === false) return false;
         return true;
       });
 
@@ -1805,35 +1977,37 @@
       }
 
       const totalFiltered = filtered.length;
-      const totalPages = Math.max(1, Math.ceil(totalFiltered / perPage));
-      if (currentPage > totalPages) currentPage = totalPages;
+      const pageItems = filtered.slice(0, visibleCount);
 
-      const startIndex = (currentPage - 1) * perPage;
-      const pageItems = filtered.slice(startIndex, startIndex + perPage);
+      const rangeLabelBottom = document.getElementById('pageRangeLabelBottom');
+      if (rangeLabelBottom) {
+        rangeLabelBottom.textContent = totalFiltered > 0
+          ? `Показано ${Math.min(visibleCount, totalFiltered)} із ${totalFiltered} моделей`
+          : 'Моделей не знайдено';
+      }
 
-      const topRangeText = totalFiltered > 0
-        ? `Показано ${startIndex + 1}–${Math.min(startIndex + perPage, totalFiltered)} із ${totalFiltered} моделей`
-        : 'Моделей не знайдено';
-      const bottomRangeText = totalFiltered > 0
-        ? `Показано ${startIndex + 1}–${Math.min(startIndex + perPage, totalFiltered)} із ${totalFiltered} моделей (Сторінка ${currentPage} з ${totalPages})`
-        : 'Моделей не знайдено';
-
-      document.getElementById('pageRangeLabel').textContent = topRangeText;
-      document.getElementById('pageRangeLabelBottom').textContent = bottomRangeText;
-
-      document.getElementById('paginationTop').innerHTML = buildTopStepperHtml(totalPages, currentPage);
-      document.getElementById('paginationBottom').innerHTML = buildPaginationHtml(totalPages, currentPage);
+      const loadMoreBtn = document.getElementById('loadMoreBtn');
+      if (loadMoreBtn) {
+        if (visibleCount >= totalFiltered || totalFiltered === 0) {
+          loadMoreBtn.classList.add('hidden');
+        } else {
+          loadMoreBtn.classList.remove('hidden');
+        }
+      }
 
       if (pageItems.length === 0) {
         const emptyEl = document.createElement('div');
         emptyEl.className = 'col-span-full mw-surface border rounded-xl p-12 text-center mw-text-secondary';
         emptyEl.innerHTML = `
           <p class="text-base font-bold mw-text-primary">
-            ${currentSiteFilter === 'favorites' ? 'У вас поки немає збережених моделей в Обраному' : 'За цим фільтром моделей не знайдено'}
+            ${favOnly ? 'У вас поки немає збережених моделей в Обраному' : 'За цими фільтрами моделей не знайдено'}
           </p>
-          <p class="text-xs mt-1">
-            ${currentSiteFilter === 'favorites' ? 'Натискайте ❤️ на будь-якій картці моделі, щоб зберегти її сюди.' : 'Оберіть вкладку "Усі моделі" або натисніть на інший тег вище.'}
+          <p class="text-xs mt-1.5 mw-text-muted">
+            ${favOnly ? 'Натискайте ♡ на будь-якій картці моделі, щоб зберегти її в Обране.' : 'Спробуйте увімкнути інші платформи або скинути фільтри ліворуч.'}
           </p>
+          <button onclick="resetAllSidebarFilters()" class="mt-4 px-4 py-2 rounded-lg bg-[#00AE42]/15 text-[#00AE42] font-bold text-xs hover:bg-[#00AE42] hover:text-white transition">
+            Скинути всі фільтри
+          </button>
         `;
         grid.replaceChildren(emptyEl);
         return;
