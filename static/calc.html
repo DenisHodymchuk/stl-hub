@@ -129,9 +129,6 @@
           <span>🔍</span>
           <span>Пошук моделей</span>
         </a>
-        <a href="/admin" class="hidden sm:inline-flex px-3 py-1.5 rounded-xl mw-elevated border hover:border-[#00AE42] text-xs font-semibold mw-text-muted hover:mw-text-primary transition">
-          Адмінка
-        </a>
         <!-- Theme Toggle -->
         <button onclick="toggleTheme()" class="p-2 rounded-xl mw-elevated border hover:border-[#00AE42] transition" title="Змінити тему">
           <svg id="themeIconSun" class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -615,9 +612,6 @@
         <a href="/calc" class="text-[#00AE42] font-bold">
           Калькулятор 3D-друку
         </a>
-        <a href="/admin" class="hover:mw-text-primary hover:text-[#00AE42] transition">
-          Адмінка
-        </a>
       </div>
 
       <!-- Right: Donate Button & Back to Top -->
@@ -870,13 +864,21 @@
       animate();
 
       window.addEventListener('resize', onWindowResize);
+
+      if (window.ResizeObserver) {
+        const ro = new ResizeObserver(() => {
+          onWindowResize();
+        });
+        ro.observe(container);
+      }
     }
 
     function onWindowResize() {
       const container = document.getElementById('threeCanvasContainer');
       if (!container || !renderer || !camera) return;
-      const width = container.clientWidth;
-      const height = container.clientHeight;
+      const width = container.clientWidth || container.parentElement?.clientWidth || 0;
+      const height = container.clientHeight || container.parentElement?.clientHeight || 0;
+      if (width === 0 || height === 0) return;
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
       renderer.setSize(width, height);
@@ -1049,6 +1051,13 @@
       document.getElementById('fileLoadedPill').classList.add('flex');
       document.getElementById('viewerWrapper').classList.remove('hidden');
       document.getElementById('dropzoneContainer').classList.add('hidden');
+
+      requestAnimationFrame(() => {
+        onWindowResize();
+      });
+      setTimeout(() => {
+        onWindowResize();
+      }, 50);
 
       document.getElementById('geoDims').textContent = `${sizeX} × ${sizeZ} × ${sizeY} мм`;
       document.getElementById('geoVolume').textContent = `${currentModelData.volumeCm3} см³`;
