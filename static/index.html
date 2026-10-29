@@ -543,132 +543,150 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-      <!-- ================= LEFT SIDEBAR: TOOLS & FILTERS (Always Visible on Desktop) ================= -->
-      <aside id="mainSidebar" class="hidden lg:block lg:col-span-4 xl:col-span-3 2xl:col-span-2 space-y-4 lg:sticky lg:top-24">
+      <!-- ================= LEFT SIDEBAR: EXACT MODERN DESIGN ================= -->
+      <aside id="mainSidebar" class="hidden lg:block lg:col-span-4 xl:col-span-3 2xl:col-span-2 lg:sticky lg:top-20">
+        <div class="pro-sidebar p-4 space-y-4 shadow-xl">
 
-        <!-- CARD 1: 🛠️ Інструменти 3D (Калькулятор, Пошук по фото, Збережені, Таблиця пластиків) -->
-        <div class="pro-sidebar p-4 space-y-3">
-          <div class="flex items-center justify-between pb-2 border-b mw-border">
-            <h2 class="text-xs font-extrabold uppercase tracking-wider mw-text-muted flex items-center gap-1.5">
-              <span>🛠️ Інструменти 3D</span>
-            </h2>
-            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#00AE42]/15 text-[#00AE42] border border-[#00AE42]/30">HUB</span>
+          <!-- Header with Hexagon Logo & BETA badge -->
+          <div class="flex items-center justify-between pb-1">
+            <a href="/" class="flex items-center gap-2.5 group">
+              <div class="w-8 h-8 rounded-xl bg-[#00AE42]/15 border border-[#00AE42]/30 flex items-center justify-center text-[#00AE42] group-hover:scale-105 transition">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2.5l7 4.04v8.08l-7 4.04-7-4.04V6.54L12 2.5z"/>
+                  <path d="M12 8a4 4 0 100 8 4 4 0 000-8z"/>
+                </svg>
+              </div>
+              <span class="text-lg font-extrabold tracking-tight mw-text-primary">STL<span class="text-[#00AE42]">HUB</span></span>
+            </a>
+            <span class="text-[10px] font-extrabold px-2 py-0.5 rounded border border-[#00AE42]/40 text-[#00AE42] bg-[#00AE42]/10 tracking-wider select-none">BETA</span>
           </div>
 
-          <div class="space-y-1.5">
-            <!-- 1. Калькулятор 3D-друку -->
-            <a href="/calc" class="group flex items-center justify-between p-2.5 rounded-xl mw-elevated border hover:border-[#00AE42] transition">
+          <!-- Section: РОБОЧИЙ ПРОСТІР -->
+          <div class="space-y-1.5 pt-1">
+            <div class="text-[10px] font-extrabold uppercase tracking-wider mw-text-muted mb-2">
+              Робочий простір
+            </div>
+
+            <!-- Item 1: Пошук моделей (Active style matching green badge in screenshot) -->
+            <button type="button" onclick="focusSearchInput()"
+                    class="w-full text-left flex items-center justify-between px-3 py-2 rounded-xl bg-[#00AE42]/15 text-[#00AE42] border border-[#00AE42]/35 font-bold transition group cursor-pointer shadow-sm">
               <div class="flex items-center gap-2.5 min-w-0">
-                <div class="w-8 h-8 rounded-lg bg-[#00AE42]/15 text-[#00AE42] flex items-center justify-center text-base shrink-0 group-hover:scale-105 transition">
-                  🧮
+                <div class="w-7 h-7 rounded-lg bg-[#00AE42] text-white flex items-center justify-center shrink-0 shadow-sm">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
                 </div>
-                <div class="min-w-0">
-                  <div class="text-xs font-bold mw-text-primary flex items-center gap-1.5">
-                    <span>Калькулятор друку</span>
-                    <span class="text-[9px] font-extrabold px-1 py-0.2 rounded bg-gradient-to-r from-emerald-500 to-teal-500 text-white leading-tight">NEW</span>
-                  </div>
-                  <p class="text-[10px] mw-text-muted truncate">Вага, вартість, прайс STL</p>
-                </div>
+                <span class="text-xs mw-text-primary font-bold group-hover:text-[#00AE42] transition truncate">Пошук моделей</span>
               </div>
-              <span class="text-xs mw-text-muted group-hover:text-[#00AE42] transition">→</span>
+              <span class="text-xs mw-text-muted group-hover:text-[#00AE42] transition">↗</span>
+            </button>
+
+            <!-- Item 2: Мої збережені -->
+            <button type="button" onclick="openFavoritesView()"
+                    class="w-full text-left flex items-center justify-between px-3 py-2 rounded-xl mw-elevated hover:bg-black/5 dark:hover:bg-white/5 border border-transparent hover:border-black/10 dark:hover:border-white/10 transition group cursor-pointer">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-7 h-7 rounded-lg bg-black/5 dark:bg-white/5 mw-text-muted group-hover:text-rose-500 flex items-center justify-center shrink-0 transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                  </svg>
+                </div>
+                <span class="text-xs font-medium mw-text-secondary group-hover:mw-text-primary transition truncate">Мої збережені</span>
+              </div>
+              <span id="toolsFavCount" class="text-xs font-mono mw-text-muted">0</span>
+            </button>
+          </div>
+
+          <!-- Section: ІНСТРУМЕНТИ 3D -->
+          <div class="space-y-1.5 pt-1">
+            <div class="text-[10px] font-extrabold uppercase tracking-wider mw-text-muted mb-2">
+              Інструменти 3D
+            </div>
+
+            <!-- Item 1: Калькулятор друку -->
+            <a href="/calc"
+               class="flex items-center justify-between px-3 py-2 rounded-xl mw-elevated hover:bg-black/5 dark:hover:bg-white/5 border border-transparent hover:border-black/10 dark:hover:border-white/10 transition group">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-7 h-7 rounded-lg bg-black/5 dark:bg-white/5 mw-text-muted group-hover:text-[#00AE42] flex items-center justify-center shrink-0 transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm3 3h2m-2 4h2m-2 4h2m4-8h4m-4 4h4m-4 4h4"/>
+                  </svg>
+                </div>
+                <span class="text-xs font-medium mw-text-secondary group-hover:mw-text-primary transition truncate">Калькулятор друку</span>
+              </div>
+              <span class="text-xs mw-text-muted group-hover:text-[#00AE42] transition">↗</span>
             </a>
 
-            <!-- 2. Пошук по фото / скріншоту -->
-            <button type="button" onclick="toggleUploadPopover(true)" class="w-full text-left group flex items-center justify-between p-2.5 rounded-xl mw-elevated border hover:border-[#00AE42] transition cursor-pointer">
+            <!-- Item 2: Пошук за фото -->
+            <button type="button" onclick="toggleUploadPopover(true)"
+                    class="w-full text-left flex items-center justify-between px-3 py-2 rounded-xl mw-elevated hover:bg-black/5 dark:hover:bg-white/5 border border-transparent hover:border-black/10 dark:hover:border-white/10 transition group cursor-pointer">
               <div class="flex items-center gap-2.5 min-w-0">
-                <div class="w-8 h-8 rounded-lg bg-sky-500/15 text-sky-400 flex items-center justify-center text-base shrink-0 group-hover:scale-105 transition">
-                  📷
+                <div class="w-7 h-7 rounded-lg bg-black/5 dark:bg-white/5 mw-text-muted group-hover:text-sky-400 flex items-center justify-center shrink-0 transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  </svg>
                 </div>
-                <div class="min-w-0">
-                  <div class="text-xs font-bold mw-text-primary">
-                    Пошук по фото
-                  </div>
-                  <p class="text-[10px] mw-text-muted truncate">Завантажити файл або Ctrl+V</p>
-                </div>
+                <span class="text-xs font-medium mw-text-secondary group-hover:mw-text-primary transition truncate">Пошук за фото</span>
               </div>
-              <span class="text-xs mw-text-muted group-hover:text-[#00AE42] transition">↑</span>
-            </button>
-
-            <!-- 3. Збережені моделі -->
-            <button type="button" onclick="openFavoritesView()" class="w-full text-left group flex items-center justify-between p-2.5 rounded-xl mw-elevated border hover:border-rose-400 transition cursor-pointer">
-              <div class="flex items-center gap-2.5 min-w-0">
-                <div class="w-8 h-8 rounded-lg bg-rose-500/15 text-rose-400 flex items-center justify-center text-base shrink-0 group-hover:scale-105 transition">
-                  ⭐
-                </div>
-                <div class="min-w-0">
-                  <div class="text-xs font-bold mw-text-primary">
-                    Мої збережені
-                  </div>
-                  <p class="text-[10px] mw-text-muted truncate">Швидкий доступ до обраного</p>
-                </div>
-              </div>
-              <span id="toolsFavCount" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-500 border border-rose-500/30">0</span>
-            </button>
-
-            <!-- 4. Таблиця пластиків (шпаргалка температур) -->
-            <button type="button" onclick="openFilamentsModal()" class="w-full text-left group flex items-center justify-between p-2.5 rounded-xl mw-elevated border hover:border-amber-400 transition cursor-pointer">
-              <div class="flex items-center gap-2.5 min-w-0">
-                <div class="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-400 flex items-center justify-center text-base shrink-0 group-hover:scale-105 transition">
-                  🌡️
-                </div>
-                <div class="min-w-0">
-                  <div class="text-xs font-bold mw-text-primary">
-                    Таблиця пластиків
-                  </div>
-                  <p class="text-[10px] mw-text-muted truncate">Температури сопла й столу</p>
-                </div>
-              </div>
-              <span class="text-xs mw-text-muted group-hover:text-amber-400 transition">📋</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- CARD 2: ⚙️ Фільтри каталогу -->
-        <div class="pro-sidebar p-4 space-y-4">
-          <!-- Sidebar Header -->
-          <div class="flex items-center justify-between pb-2 border-b mw-border">
-            <h2 class="text-xs font-extrabold uppercase tracking-wider mw-text-muted flex items-center gap-1.5">
-              <span>⚙️ Фільтри каталогу</span>
-            </h2>
-            <button type="button" onclick="resetAllSidebarFilters()" class="text-[11px] font-bold text-[#00AE42] hover:text-[#00C853] transition cursor-pointer">
-              Скинути
+              <span class="text-xs mw-text-muted group-hover:text-[#00AE42] transition">↗</span>
             </button>
           </div>
 
-          <!-- Section 1: ТИП МОДЕЛІ -->
-          <div class="space-y-2">
-            <h3 class="text-[10px] font-extrabold uppercase tracking-wider mw-text-muted">
-              Ліцензія та доступ
-            </h3>
-            <div class="space-y-2 text-xs">
-              <label class="flex items-center justify-between cursor-pointer group">
-                <div class="flex items-center gap-2.5">
-                  <input type="checkbox" id="sidebarCommercialChk" onchange="onSidebarFilterChange()" class="hub-checkbox">
-                  <span class="mw-text-secondary group-hover:mw-text-primary font-medium">Для продажу</span>
-                </div>
-                <span id="sideCountCommercial" class="mw-text-muted font-mono text-[11px]">0</span>
-              </label>
+          <!-- Divider -->
+          <div class="border-t mw-border my-2"></div>
 
-              <label class="flex items-center justify-between cursor-pointer group">
-                <div class="flex items-center gap-2.5">
-                  <input type="checkbox" id="sidebarFreeChk" onchange="onSidebarFilterChange()" class="hub-checkbox">
-                  <span class="mw-text-secondary group-hover:mw-text-primary font-medium">Безкоштовні</span>
-                </div>
-                <span id="sideCountFree" class="mw-text-muted font-mono text-[11px]">0</span>
-              </label>
+          <!-- Section: ФІЛЬТРИ КАТАЛОГУ -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-extrabold mw-text-primary">
+                Фільтри каталогу
+              </h3>
+              <button type="button" onclick="resetAllSidebarFilters()" class="text-xs font-bold text-[#00AE42] hover:text-[#00C853] transition cursor-pointer">
+                Скинути
+              </button>
+            </div>
+
+            <!-- Subhead: ЛІЦЕНЗІЯ ТА ДОСТУП -->
+            <div class="space-y-2">
+              <div class="text-[10px] font-extrabold uppercase tracking-wider mw-text-muted">
+                Ліцензія та доступ
+              </div>
+              <div class="space-y-2 text-xs">
+                <label class="flex items-center justify-between cursor-pointer group">
+                  <div class="flex items-center gap-2.5">
+                    <input type="checkbox" id="sidebarCommercialChk" onchange="onSidebarFilterChange()" class="hub-checkbox">
+                    <span class="mw-text-secondary group-hover:mw-text-primary font-medium">Для комерційного використання</span>
+                  </div>
+                  <span id="sideCountCommercial" class="hidden">0</span>
+                </label>
+
+                <label class="flex items-center justify-between cursor-pointer group">
+                  <div class="flex items-center gap-2.5">
+                    <input type="checkbox" id="sidebarFreeChk" onchange="onSidebarFilterChange()" class="hub-checkbox">
+                    <span class="mw-text-secondary group-hover:mw-text-primary font-medium">Лише безкоштовні</span>
+                  </div>
+                  <span id="sideCountFree" class="hidden">0</span>
+                </label>
+              </div>
             </div>
           </div>
 
-          <!-- Section 2: ПЛАТФОРМИ -->
-          <div class="space-y-2 pt-2 border-t mw-border">
-            <h3 class="text-[10px] font-extrabold uppercase tracking-wider mw-text-muted">
-              Платформи (6 баз)
-            </h3>
+          <!-- Divider -->
+          <div class="border-t mw-border my-2"></div>
+
+          <!-- Section: ПЛАТФОРМИ -->
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-extrabold uppercase tracking-wider mw-text-muted">
+                Платформи
+              </span>
+              <span id="activePlatformsCount" class="text-[11px] font-mono mw-text-muted">6 із 6</span>
+            </div>
+
             <div class="space-y-2 text-xs">
               <label class="flex items-center justify-between cursor-pointer group">
                 <div class="flex items-center gap-2.5">
                   <input type="checkbox" id="sideSiteChk-makerworld" checked onchange="onSidebarFilterChange()" class="hub-checkbox side-site-chk" data-site="makerworld">
-                  <span class="w-2 h-2 rounded-full bg-[#00AE42]"></span>
+                  <span class="w-2 h-2 rounded-full bg-[#00AE42] shrink-0"></span>
                   <span class="mw-text-secondary group-hover:mw-text-primary font-medium">MakerWorld</span>
                 </div>
                 <span id="sideCount-makerworld" class="mw-text-muted font-mono text-[11px]">0</span>
@@ -677,7 +695,7 @@
               <label class="flex items-center justify-between cursor-pointer group">
                 <div class="flex items-center gap-2.5">
                   <input type="checkbox" id="sideSiteChk-printables" checked onchange="onSidebarFilterChange()" class="hub-checkbox side-site-chk" data-site="printables">
-                  <span class="w-2 h-2 rounded-full bg-[#FA6831]"></span>
+                  <span class="w-2 h-2 rounded-full bg-[#FA6831] shrink-0"></span>
                   <span class="mw-text-secondary group-hover:mw-text-primary font-medium">Printables</span>
                 </div>
                 <span id="sideCount-printables" class="mw-text-muted font-mono text-[11px]">0</span>
@@ -686,7 +704,7 @@
               <label class="flex items-center justify-between cursor-pointer group">
                 <div class="flex items-center gap-2.5">
                   <input type="checkbox" id="sideSiteChk-thingiverse" checked onchange="onSidebarFilterChange()" class="hub-checkbox side-site-chk" data-site="thingiverse">
-                  <span class="w-2 h-2 rounded-full bg-[#2563EB]"></span>
+                  <span class="w-2 h-2 rounded-full bg-[#2563EB] shrink-0"></span>
                   <span class="mw-text-secondary group-hover:mw-text-primary font-medium">Thingiverse</span>
                 </div>
                 <span id="sideCount-thingiverse" class="mw-text-muted font-mono text-[11px]">0</span>
@@ -695,7 +713,7 @@
               <label class="flex items-center justify-between cursor-pointer group">
                 <div class="flex items-center gap-2.5">
                   <input type="checkbox" id="sideSiteChk-cults3d" checked onchange="onSidebarFilterChange()" class="hub-checkbox side-site-chk" data-site="cults3d">
-                  <span class="w-2 h-2 rounded-full bg-[#8224E3]"></span>
+                  <span class="w-2 h-2 rounded-full bg-[#8224E3] shrink-0"></span>
                   <span class="mw-text-secondary group-hover:mw-text-primary font-medium">Cults3D</span>
                 </div>
                 <span id="sideCount-cults3d" class="mw-text-muted font-mono text-[11px]">0</span>
@@ -704,7 +722,7 @@
               <label class="flex items-center justify-between cursor-pointer group">
                 <div class="flex items-center gap-2.5">
                   <input type="checkbox" id="sideSiteChk-myminifactory" checked onchange="onSidebarFilterChange()" class="hub-checkbox side-site-chk" data-site="myminifactory">
-                  <span class="w-2 h-2 rounded-full bg-[#059669]"></span>
+                  <span class="w-2 h-2 rounded-full bg-[#059669] shrink-0"></span>
                   <span class="mw-text-secondary group-hover:mw-text-primary font-medium">MyMiniFactory</span>
                 </div>
                 <span id="sideCount-myminifactory" class="mw-text-muted font-mono text-[11px]">0</span>
@@ -713,7 +731,7 @@
               <label id="sideSiteRow-thangs" class="flex items-center justify-between cursor-pointer group">
                 <div class="flex items-center gap-2.5">
                   <input type="checkbox" id="sideSiteChk-thangs" checked onchange="onSidebarFilterChange()" class="hub-checkbox side-site-chk" data-site="thangs">
-                  <span class="w-2 h-2 rounded-full bg-[#0891B2]"></span>
+                  <span class="w-2 h-2 rounded-full bg-[#0891B2] shrink-0"></span>
                   <span class="mw-text-secondary group-hover:mw-text-primary font-medium">Thangs</span>
                 </div>
                 <span id="sideCount-thangs" class="mw-text-muted font-mono text-[11px]">0</span>
@@ -721,51 +739,26 @@
             </div>
           </div>
 
-          <!-- Section 3: МОЇ МОДЕЛІ -->
-          <div class="space-y-2 pt-2 border-t mw-border">
-            <h3 class="text-[10px] font-extrabold uppercase tracking-wider mw-text-muted">
-              Мої моделі
-            </h3>
+          <!-- Divider -->
+          <div class="border-t mw-border my-2"></div>
+
+          <!-- Section: МОЯ КОЛЕКЦІЯ -->
+          <div class="space-y-2">
+            <div class="text-[10px] font-extrabold uppercase tracking-wider mw-text-muted">
+              Моя колекція
+            </div>
             <label class="flex items-center justify-between cursor-pointer group text-xs">
               <div class="flex items-center gap-2.5">
                 <input type="checkbox" id="sidebarFavChk" onchange="onSidebarFilterChange()" class="hub-checkbox">
                 <span class="mw-text-secondary group-hover:mw-text-primary font-medium flex items-center gap-1.5">
-                  <span class="text-rose-400">♡</span> Лише обрані
+                  <span class="text-rose-400">♡</span> Лише збережені
                 </span>
               </div>
-              <span id="sideCountFavorites" class="mw-text-muted font-mono text-[11px]">0</span>
+              <span id="sideCountFavorites" class="hidden">0</span>
             </label>
           </div>
-        </div>
 
-        <!-- CARD 3: ♡ Підтримка & Зв'язок -->
-        <div class="pro-sidebar p-4 space-y-2.5">
-          <div class="flex items-center justify-between pb-2 border-b mw-border">
-            <span class="text-[10px] font-extrabold uppercase tracking-wider mw-text-muted">
-              Спільнота & Підтримка
-            </span>
-          </div>
-          <a href="https://send.monobank.ua/jar/4GhNpdNsbp" target="_blank" rel="noopener noreferrer"
-             class="group flex items-center justify-between p-2.5 rounded-xl border border-[#00AE42]/40 bg-[#00AE42]/10 hover:bg-[#00AE42]/20 text-[#00AE42] hover:text-[#00E65B] transition shadow-sm">
-            <div class="flex items-center gap-2 min-w-0">
-              <span class="text-base leading-none">♡</span>
-              <div class="min-w-0">
-                <div class="text-xs font-bold truncate">Банка Monobank</div>
-                <div class="text-[10px] opacity-80 truncate">Підтримати сервер</div>
-              </div>
-            </div>
-            <span class="text-xs font-bold">→</span>
-          </a>
-          <button type="button" onclick="openFeedbackModal()"
-                  class="w-full text-left p-2 rounded-xl mw-elevated border hover:border-[#00AE42] text-xs font-medium mw-text-secondary hover:mw-text-primary transition flex items-center justify-between cursor-pointer">
-            <span class="flex items-center gap-1.5">
-              <span>💬</span>
-              <span>Зворотний зв'язок</span>
-            </span>
-            <span class="text-[10px] mw-text-muted">Ідея/баг</span>
-          </button>
         </div>
-
       </aside>
 
       <!-- ================= RIGHT WORKSPACE ================= -->
@@ -2070,7 +2063,28 @@
       renderResults();
     }
 
+    function updateActivePlatformsBadge() {
+      const total = document.querySelectorAll('.side-site-chk').length || 6;
+      const checked = document.querySelectorAll('.side-site-chk:checked').length;
+      const badge = document.getElementById('activePlatformsCount');
+      if (badge) badge.textContent = `${checked} із ${total}`;
+    }
+
+    function focusSearchInput() {
+      const favChk = document.getElementById('sidebarFavChk');
+      if (favChk && favChk.checked) {
+        favChk.checked = false;
+        onSidebarFilterChange();
+      }
+      const inp = document.getElementById('manualQueryInput');
+      if (inp) {
+        inp.focus();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
     function onSidebarFilterChange() {
+      updateActivePlatformsBadge();
       const perPage = parseInt(document.getElementById('perPageSelect').value || '24', 10);
       visibleCount = perPage;
       requestAnimationFrame(() => renderResults());
@@ -2085,6 +2099,7 @@
       if (favChk) favChk.checked = false;
 
       document.querySelectorAll('.side-site-chk').forEach(cb => { cb.checked = true; });
+      updateActivePlatformsBadge();
 
       const perPage = parseInt(document.getElementById('perPageSelect').value || '24', 10);
       visibleCount = perPage;
@@ -2442,6 +2457,7 @@
     (function initApp() {
       loadFavorites();
       loadSearchHistory();
+      updateActivePlatformsBadge();
 
       const params = new URLSearchParams(window.location.search);
       const extImgUrl = params.get('image_url');
