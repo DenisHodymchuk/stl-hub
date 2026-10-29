@@ -145,51 +145,6 @@
       box-shadow: 0 10px 28px rgba(0, 174, 66, 0.14);
     }
 
-    .tab-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      height: 36px;
-      padding: 0 13px;
-      border-radius: 10px;
-      font-size: 13px;
-      font-weight: 600;
-      background-color: var(--bg-elevated);
-      border: 1px solid var(--border-color);
-      color: var(--text-secondary);
-      transition: all 0.15s ease;
-      cursor: pointer;
-      user-select: none;
-      white-space: nowrap;
-    }
-    .tab-pill:hover:not(:disabled) {
-      color: var(--text-primary);
-      border-color: #00AE42;
-      transform: translateY(-1px);
-    }
-    .tab-pill.active {
-      background-color: #00AE42;
-      color: #FFFFFF;
-      border-color: #00AE42;
-      box-shadow: 0 2px 12px rgba(0, 174, 66, 0.32);
-    }
-    .tab-pill.active .pill-num {
-      background-color: rgba(0,0,0,0.25);
-      color: #FFFFFF;
-    }
-    .tab-pill.is-zero {
-      opacity: 0.35;
-      cursor: not-allowed;
-    }
-    .pill-num {
-      padding: 1px 6px;
-      border-radius: 5px;
-      font-size: 11px;
-      font-weight: 700;
-      background-color: rgba(128, 128, 128, 0.16);
-      color: inherit;
-    }
-
     /* MakerWorld Card Style — GPU optimized for 120fps scrolling */
     .mw-card {
       background-color: var(--bg-surface);
@@ -816,15 +771,16 @@
         <div class="lg:col-span-9 xl:col-span-10 space-y-4">
           
           <!-- Top Header: Title Left + Sort/Limit Controls Right -->
-          <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex flex-wrap items-center justify-between gap-3 pb-1">
             <div>
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2.5">
                 <h1 class="text-xl sm:text-2xl font-extrabold mw-text-primary tracking-tight">
                   Результати пошуку <span id="catalogTotalBadge" class="text-[#00AE42]">0</span>
                 </h1>
+                <span id="elapsedTimeBadge" class="hidden text-xs font-bold text-[#00AE42] bg-[#00AE42]/10 border border-[#00AE42]/25 px-2.5 py-0.5 rounded-full"></span>
               </div>
               <p class="text-xs mw-text-secondary mt-0.5">
-                <span id="catalogMetaModelsCount">0 моделей</span> • <span id="catalogMetaPlatforms">усі платформи</span> • за запитом <strong id="catalogMetaQuery" class="mw-text-primary font-semibold"></strong>
+                <span id="catalogMetaModelsCount">0 моделей</span> • за запитом <strong id="catalogMetaQuery" class="mw-text-primary font-semibold"></strong>
               </p>
             </div>
 
@@ -876,50 +832,6 @@
                 </div>
               </div>
             </div>
-          </div>
-
-          <!-- Top Row of Quick Platform Filter Pills -->
-          <div class="flex flex-wrap items-center gap-2 pt-1" id="topPlatformPills">
-            <button onclick="setTopPlatformFilter('all')" data-site="all" class="tab-pill active">
-              <span>✦ Усі джерела</span>
-              <span id="topCount-all" class="pill-num">0</span>
-            </button>
-            <button onclick="setTopPlatformFilter('makerworld')" data-site="makerworld" class="tab-pill">
-              <span class="w-2 h-2 rounded-full bg-[#00AE42]"></span>
-              <span>MakerWorld</span>
-              <span id="topCount-makerworld" class="pill-num">0</span>
-            </button>
-            <button onclick="setTopPlatformFilter('printables')" data-site="printables" class="tab-pill">
-              <span class="w-2 h-2 rounded-full bg-[#FA6831]"></span>
-              <span>Printables</span>
-              <span id="topCount-printables" class="pill-num">0</span>
-            </button>
-            <button onclick="setTopPlatformFilter('thingiverse')" data-site="thingiverse" class="tab-pill">
-              <span class="w-2 h-2 rounded-full bg-[#2563EB]"></span>
-              <span>Thingiverse</span>
-              <span id="topCount-thingiverse" class="pill-num">0</span>
-            </button>
-            <button onclick="setTopPlatformFilter('cults3d')" data-site="cults3d" class="tab-pill">
-              <span class="w-2 h-2 rounded-full bg-[#8224E3]"></span>
-              <span>Cults3D</span>
-              <span id="topCount-cults3d" class="pill-num">0</span>
-            </button>
-            <button onclick="setTopPlatformFilter('myminifactory')" data-site="myminifactory" class="tab-pill">
-              <span class="w-2 h-2 rounded-full bg-[#059669]"></span>
-              <span>MyMiniFactory</span>
-              <span id="topCount-myminifactory" class="pill-num">0</span>
-            </button>
-            <button onclick="setTopPlatformFilter('thangs')" data-site="thangs" class="tab-pill" id="topPill-thangs">
-              <span class="w-2 h-2 rounded-full bg-[#0891B2]"></span>
-              <span>Thangs</span>
-              <span id="topCount-thangs" class="pill-num">0</span>
-            </button>
-          </div>
-
-          <!-- Helper subtext -->
-          <div class="flex items-center justify-between text-[11px] mw-text-muted">
-            <span>Усі результати • Оберіть фільтри у меню ліворуч, щоб звузити пошук</span>
-            <span id="elapsedTimeBadge" class="hidden font-bold text-[#00AE42]"></span>
           </div>
 
           <!-- Product Cards Grid: Exactly 4 columns on large screens! -->
@@ -1755,55 +1667,13 @@
         const c = currentCounts[siteKey] || 0;
         const sEl = document.getElementById(`sideCount-${siteKey}`);
         if (sEl) sEl.textContent = c;
-        const tEl = document.getElementById(`topCount-${siteKey}`);
-        if (tEl) tEl.textContent = c;
-
-        const topBtn = document.querySelector(`#topPlatformPills [data-site="${siteKey}"]`);
-        if (topBtn) topBtn.classList.toggle('is-zero', c === 0);
       });
-
-      const topAllEl = document.getElementById('topCount-all');
-      if (topAllEl) topAllEl.textContent = totalCount;
 
       updateFavoritesBadges();
       renderResults();
     }
 
     function onSidebarFilterChange() {
-      const siteCheckboxes = Array.from(document.querySelectorAll('.side-site-chk'));
-      const checkedSites = siteCheckboxes.filter(cb => cb.checked).map(cb => cb.dataset.site);
-
-      document.querySelectorAll('#topPlatformPills .tab-pill').forEach(btn => {
-        btn.classList.remove('active');
-      });
-
-      if (checkedSites.length === siteCheckboxes.length) {
-        const allPill = document.querySelector('#topPlatformPills [data-site="all"]');
-        if (allPill) allPill.classList.add('active');
-      } else if (checkedSites.length === 1) {
-        const singlePill = document.querySelector(`#topPlatformPills [data-site="${checkedSites[0]}"]`);
-        if (singlePill) singlePill.classList.add('active');
-      }
-
-      const perPage = parseInt(document.getElementById('perPageSelect').value || '24', 10);
-      visibleCount = perPage;
-      requestAnimationFrame(() => renderResults());
-    }
-
-    function setTopPlatformFilter(siteId) {
-      document.querySelectorAll('#topPlatformPills .tab-pill').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.site === siteId);
-      });
-
-      const siteCheckboxes = Array.from(document.querySelectorAll('.side-site-chk'));
-      if (siteId === 'all') {
-        siteCheckboxes.forEach(cb => { cb.checked = true; });
-      } else {
-        siteCheckboxes.forEach(cb => {
-          cb.checked = (cb.dataset.site === siteId);
-        });
-      }
-
       const perPage = parseInt(document.getElementById('perPageSelect').value || '24', 10);
       visibleCount = perPage;
       requestAnimationFrame(() => renderResults());
@@ -1818,10 +1688,6 @@
       if (favChk) favChk.checked = false;
 
       document.querySelectorAll('.side-site-chk').forEach(cb => { cb.checked = true; });
-
-      document.querySelectorAll('#topPlatformPills .tab-pill').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.site === 'all');
-      });
 
       const perPage = parseInt(document.getElementById('perPageSelect').value || '24', 10);
       visibleCount = perPage;
