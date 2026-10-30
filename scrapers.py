@@ -298,6 +298,7 @@ def search_printables(query: str, limit: int = 24) -> List[Dict[str, Any]]:
                 id
                 name
               }
+              weight
             }
           }
         }
@@ -335,6 +336,7 @@ def search_printables(query: str, limit: int = 24) -> List[Dict[str, Any]]:
                     "license_code": lic_info["license_code"],
                     "license_label": lic_info["license_label"],
                     "similarity": max(70, 93 - idx),
+                    "weight_g": float(item.get("weight") or 0) if item.get("weight") else None,
                 })
             _set_cached("printables", query, limit, results)
     except Exception as e:
@@ -382,6 +384,7 @@ def search_makerworld(query: str, limit: int = 24) -> List[Dict[str, Any]]:
                     "license_code": lic_info["license_code"],
                     "license_label": lic_info["license_label"],
                     "similarity": max(70, 93 - idx),
+                    "weight_g": float(item.get("weight") or 0) if item.get("weight") else None,
                 })
             _set_cached("makerworld", query, limit, results)
     except Exception as e:
@@ -965,3 +968,119 @@ def search_all_sites(
         "counts_by_site": counts_by_site,
         "results": all_items,
     }
+
+
+# ==============================================================================
+# Model Specs for Instant 3D Printing Cost Calculator
+# ==============================================================================
+_MODEL_SPECS_CACHE: Dict[str, tuple] = {}
+_SPECS_LOCK = threading.Lock()
+_SPECS_TTL = 3600  # 1 hour cache
+
+
+def get_model_specs(site: str, model_id: str) -> Dict[str, Any]:
+    """
+    Retrieves or calculates estimated 3D printing specs (filament weight, print time, material)
+    for a given 3D model to feed directly into the STL-HUB cost calculator.
+    """
+    site_key = (site or "").lower().strip()
+    mid = str(model_id or "").strip()
+    cache_key = f"{site_key}:{mid}"
+    now = time.time()
+
+    with _SPECS_LOCK:
+        if cache_key in _MODEL_SPECS_CACHE:
+            ts, cached_val = _MODEL_SPECS_CACHE[cache_key]
+            if now - ts < _SPECS_TTL:
+                return dict(cached_val)
+
+    res = _fetch_model_specs(site_key, mid)
+
+    with _SPECS_LOCK:
+        if len(_MODEL_SPECS_CACHE) > 500:
+            _MODEL_SPECS_CACHE.clear()
+        _MODEL_SPECS_CACHE[cache_key] = (now, dict(res))
+
+    return res
+
+
+def _fetch_model_specs(site_key: str, mid: str) -> Dict[str, Any]:
+    # 1. MakerWorld Sliced Profiles
+    if "makerworld" in site_key:
+        clean_id = mid.replace("makerworld_", "").split("-")[0]
+        if clean_id.isdigit():
+            try:
+                sess = create_session()
+                url = f"https://makerworld.com/api/v1/design-service/design/{clean_id}"
+                resp = sess.get(url, headers=_MW_HEADERS, timeout=5)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    instances = data.get("instances") or []
+                    if instances:
+                        inst = instances[0]
+                        weight = float(inst.get("weight") or 0)
+                        prediction_sec = int(inst.get("prediction") or 0)
+                        filaments = inst.get("instanceFilaments") or []
+                        mat_type = filaments[0].get("type") if filaments else "PLA"
+                        hours = prediction_sec // 3600
+                        minutes = (prediction_sec % 3600) // 60
+                        return {
+                            "status": "ok",
+                            "weight_g": round(weight, 1) if weight > 0 else 30.0,
+                            "print_hours": hours,
+                            "print_minutes": minutes,
+                            "material_type": (mat_type or "PLA").upper(),
+                            "is_estimate": False,
+                            "source": "MakerWorld Profile"
+                        }
+            except Exception as e:
+                print(f"[Model Specs MakerWorld Error] {e}")
+
+    # 2. Printables Sliced G-Codes
+    elif "printables" in site_key:
+        clean_id = mid.replace("printables_", "").split("-")[0]
+        if clean_id.isdigit():
+            try:
+                sess = create_session()
+                url = "https://api.printables.com/graphql/"
+                gql = """
+                query GetPrint($id: ID!) {
+                  print(id: $id) {
+                    weight
+                    gcodes { weight }
+                  }
+                }
+                """
+                resp = sess.post(url, json={"query": gql, "variables": {"id": clean_id}}, timeout=5)
+                if resp.status_code == 200:
+                    p = resp.json().get("data", {}).get("print") or {}
+                    weight_str = p.get("weight")
+                    weight = float(weight_str) if weight_str else 0.0
+                    gcodes = p.get("gcodes") or []
+                    if not weight and gcodes:
+                        weight = float(gcodes[0].get("weight") or 0.0)
+                    if weight > 0:
+                        total_mins = max(15, int(weight * 3))
+                        return {
+                            "status": "ok",
+                            "weight_g": round(weight, 1),
+                            "print_hours": total_mins // 60,
+                            "print_minutes": total_mins % 60,
+                            "material_type": "PLA",
+                            "is_estimate": False,
+                            "source": "Printables G-Code"
+                        }
+            except Exception as e:
+                print(f"[Model Specs Printables Error] {e}")
+
+    # 3. Intelligent default estimate for Thingiverse, Cults3D, etc.
+    return {
+        "status": "ok",
+        "weight_g": 35.0,
+        "print_hours": 1,
+        "print_minutes": 25,
+        "material_type": "PLA",
+        "is_estimate": True,
+        "source": "Базовий розрахунок STL-HUB"
+    }
+

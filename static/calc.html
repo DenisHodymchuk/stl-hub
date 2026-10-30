@@ -255,6 +255,46 @@
       </div>
     </div>
 
+    <!-- Model Context Banner (Shown when opened from 3D Model search) -->
+    <div id="modelContextBanner" class="hidden mb-6 mw-surface border border-[#00AE42]/40 rounded-2xl p-4 sm:p-5 shadow-sm relative overflow-hidden transition-all duration-300">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-4 min-w-0">
+          <div class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-neutral-900 border mw-border flex-shrink-0 flex items-center justify-center">
+            <img id="modelBannerImg" src="" alt="Model" class="w-full h-full object-cover" />
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 mb-1 flex-wrap">
+              <span id="modelBannerSiteBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#00AE42]/15 text-[#00AE42] uppercase tracking-wide">
+                MakerWorld
+              </span>
+              <span id="modelBannerStatusBadge" class="text-[11px] font-medium text-emerald-400 flex items-center gap-1">
+                <span>⚡</span>
+                <span id="modelBannerStatusText">Завантаження параметрів моделі...</span>
+              </span>
+            </div>
+            <h3 id="modelBannerTitle" class="text-sm sm:text-base font-extrabold mw-text-primary truncate" title="Модель">
+              Назва моделі
+            </h3>
+            <div class="flex items-center gap-3 mt-1 text-xs">
+              <a id="modelBannerUrl" href="#" target="_blank" rel="noopener noreferrer" class="text-[#00AE42] hover:underline font-semibold flex items-center gap-1">
+                <span>Відкрити сторінку моделі</span>
+                <span>↗</span>
+              </a>
+              <span class="mw-text-muted">•</span>
+              <span class="mw-text-secondary text-[11px]">
+                Параметри друку підтягнуто автоматично
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center justify-end gap-2 flex-shrink-0">
+          <button type="button" onclick="dismissModelBanner()" class="px-3 py-1.5 rounded-xl mw-elevated border mw-border hover:mw-text-primary mw-text-muted text-xs font-semibold transition cursor-pointer" title="Приховати">
+            ✕ Приховати
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Main Grid: Left Workspace (7 cols) + Right Summary Receipt (5 cols) -->
     <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
 
@@ -804,6 +844,7 @@
     let currentMode = 'file'; // 'file' | 'manual'
     let currentMarkupMode = 100; // 0 | 50 | 100 | 'custom'
     let currentModelData = null; // { volumeCm3, areaCm2, sizeX, sizeY, sizeZ, triangles, fileName }
+    let loadedCatalogModel = null; // { title, img, site, url, id, weight_g }
 
     // User & Filaments State
     let currentCalcUser = null;
@@ -870,13 +911,15 @@
         await loadCalcUserFilaments();
 
         // Check URL params for auto-loading
-        handleUrlParams();
+        await handleUrlParams();
       } else {
         authContainer.innerHTML = `
           <a href="/cabinet" class="px-3.5 py-1.5 rounded-xl mw-elevated border hover:border-[#00AE42] text-xs font-semibold mw-text-primary transition flex items-center shadow-sm">
             Увійти в кабінет
           </a>
         `;
+        // Also check URL params for unauthenticated visitors!
+        await handleUrlParams();
       }
     }
 
@@ -996,8 +1039,10 @@
       calculateCost(true);
     }
 
-    function handleUrlParams() {
+    async function handleUrlParams() {
       const params = new URLSearchParams(window.location.search);
+
+      // 1. Check for filament_id from Cabinet
       const filId = params.get('filament_id');
       if (filId) {
         const targetId = parseInt(filId);
@@ -1005,6 +1050,7 @@
         selectUserFilament(targetId);
       }
 
+      // 2. Check for saved calculation load_calc
       const loadCalcId = params.get('load_calc');
       if (loadCalcId) {
         fetch('/api/user/calculations')
@@ -1023,7 +1069,122 @@
             }
           })
           .catch(() => {});
+        return;
       }
+
+      // 3. Check for Model from Search / Catalog (model_id, title, img, site, url, weight)
+      const modelTitle = params.get('title');
+      const modelId = params.get('model_id') || params.get('id');
+      if (modelTitle || modelId) {
+        const title = modelTitle || '3D Модель';
+        const img = params.get('img') || '';
+        const site = params.get('site') || '3D Каталог';
+        const modelUrl = params.get('url') || '#';
+        const directWeight = parseFloat(params.get('weight')) || 0;
+
+        loadedCatalogModel = {
+          title: title,
+          img: img,
+          site: site,
+          url: modelUrl,
+          id: modelId,
+        };
+
+        // Switch to manual input mode
+        setMode('manual');
+
+        // Populate Model Context Banner
+        const banner = document.getElementById('modelContextBanner');
+        if (banner) {
+          banner.classList.remove('hidden');
+          const bannerImg = document.getElementById('modelBannerImg');
+          if (bannerImg) {
+            const proxyImg = img ? `/api/proxy-image?url=${encodeURIComponent(img)}` : '';
+            bannerImg.src = img || '';
+            bannerImg.onerror = function() {
+              if (proxyImg && this.src !== proxyImg) this.src = proxyImg;
+              else this.style.display = 'none';
+            };
+          }
+          const bannerSite = document.getElementById('modelBannerSiteBadge');
+          if (bannerSite) bannerSite.textContent = site;
+          const bannerTitle = document.getElementById('modelBannerTitle');
+          if (bannerTitle) {
+            bannerTitle.textContent = title;
+            bannerTitle.title = title;
+          }
+          const bannerUrl = document.getElementById('modelBannerUrl');
+          if (bannerUrl) {
+            bannerUrl.href = modelUrl;
+            if (modelUrl === '#') bannerUrl.classList.add('hidden');
+            else bannerUrl.classList.remove('hidden');
+          }
+          const bannerStatus = document.getElementById('modelBannerStatusText');
+          if (bannerStatus) bannerStatus.textContent = 'Синхронізація параметрів друку...';
+        }
+
+        // Apply direct weight if provided
+        if (directWeight > 0) {
+          document.getElementById('inputWeightGrams').value = directWeight;
+          const estMins = Math.max(15, Math.round(directWeight * 3));
+          document.getElementById('inputHours').value = Math.floor(estMins / 60);
+          document.getElementById('inputMinutes').value = estMins % 60;
+          calculateCost(true);
+        }
+
+        // Fetch detailed sliced specs from API if modelId and site exist
+        if (modelId) {
+          try {
+            const res = await fetch(`/api/model-specs?site=${encodeURIComponent(site)}&id=${encodeURIComponent(modelId)}`);
+            if (res.ok) {
+              const specs = await res.json();
+              if (specs && specs.status === 'ok') {
+                if (specs.weight_g) {
+                  document.getElementById('inputWeightGrams').value = specs.weight_g;
+                }
+                if (specs.print_hours !== undefined) {
+                  document.getElementById('inputHours').value = specs.print_hours;
+                }
+                if (specs.print_minutes !== undefined) {
+                  document.getElementById('inputMinutes').value = specs.print_minutes;
+                }
+                if (specs.material_type) {
+                  const mKey = specs.material_type.toLowerCase();
+                  if (MATERIALS[mKey]) {
+                    setMaterial(mKey);
+                  }
+                }
+
+                const bannerStatus = document.getElementById('modelBannerStatusText');
+                if (bannerStatus) {
+                  if (specs.is_estimate) {
+                    bannerStatus.textContent = '⚡ Орієнтовні параметри STL-HUB (можна змінити)';
+                  } else {
+                    bannerStatus.textContent = `✓ ${specs.source}: ${specs.weight_g} г • ${specs.print_hours}год ${specs.print_minutes}хв`;
+                  }
+                }
+                calculateCost(true);
+                showToast(`Завантажено параметри моделі "${title}"`);
+              }
+            }
+          } catch (e) {
+            console.warn('Failed to fetch model specs:', e);
+          }
+        } else {
+          // Fallback if only title passed without direct weight
+          if (directWeight <= 0) {
+            document.getElementById('inputWeightGrams').value = 35;
+            document.getElementById('inputHours').value = 1;
+            document.getElementById('inputMinutes').value = 25;
+            calculateCost(true);
+          }
+        }
+      }
+    }
+
+    function dismissModelBanner() {
+      const banner = document.getElementById('modelContextBanner');
+      if (banner) banner.classList.add('hidden');
     }
 
     // Mode Selector (File vs Manual)
@@ -1706,7 +1867,7 @@
       const singlePrice = (parseFloat(total) / parseInt(qty)).toFixed(2);
 
       let dimsLine = '';
-      let modelName = currentModelData ? currentModelData.fileName : '3D деталь';
+      let modelName = loadedCatalogModel ? loadedCatalogModel.title : (currentModelData ? currentModelData.fileName : '3D деталь');
       if (currentModelData) {
         dimsLine = `📐 Габарити: ${currentModelData.sizeX} × ${currentModelData.sizeZ} × ${currentModelData.sizeY} мм\n`;
       }
@@ -1749,7 +1910,7 @@ ${dimsLine}🧵 Матеріал: ${matName}
         return;
       }
 
-      let defaultName = currentModelData ? currentModelData.fileName : '3D деталь';
+      let defaultName = loadedCatalogModel ? loadedCatalogModel.title : (currentModelData ? currentModelData.fileName : '3D деталь');
       const title = await showConfirmDialog({
         title: 'Збереження розрахунку',
         message: 'Вкажіть назву для збереження розрахунку у ваш особистий кабінет:',
@@ -1799,6 +1960,9 @@ ${dimsLine}🧵 Матеріал: ${matName}
           spoolPrice: document.getElementById('inputSpoolPrice').value,
           density: document.getElementById('inputDensity').value,
           infill: document.getElementById('inputInfill').value,
+          catalog_source: loadedCatalogModel ? loadedCatalogModel.site : null,
+          catalog_url: loadedCatalogModel ? loadedCatalogModel.url : null,
+          catalog_img: loadedCatalogModel ? loadedCatalogModel.img : null,
         })
       };
 
