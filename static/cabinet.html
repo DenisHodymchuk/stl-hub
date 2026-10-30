@@ -506,6 +506,42 @@
     </div>
   </div>
 
+  <!-- ======================== MODAL: CUSTOM CONFIRMATION / PROMPT DIALOG ======================== -->
+  <div id="customConfirmModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm hidden">
+    <div class="mw-surface border mw-border rounded-3xl w-full max-w-sm p-6 shadow-2xl text-center transform transition-all animate-in fade-in zoom-in-95 duration-200">
+      
+      <!-- Icon Container -->
+      <div id="confirmModalIconBox" class="w-14 h-14 mx-auto mb-4 rounded-2xl flex items-center justify-center text-2xl transition">
+        <span id="confirmModalIcon">🚪</span>
+      </div>
+
+      <!-- Title & Message -->
+      <h3 id="confirmModalTitle" class="text-base sm:text-lg font-extrabold mw-text-primary tracking-tight">Вихід з акаунта</h3>
+      <p id="confirmModalMessage" class="text-xs sm:text-sm mw-text-secondary mt-2 mb-4 leading-relaxed">
+        Ви дійсно бажаєте вийти зі свого особистого кабінету?
+      </p>
+
+      <!-- Optional Input (for prompt dialogs) -->
+      <div id="confirmModalInputContainer" class="hidden mb-5">
+        <input id="confirmModalInput" type="text"
+               class="w-full bg-[var(--bg-elevated)] border mw-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm mw-text-primary focus:outline-none focus:border-[#00AE42] text-left" />
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center justify-center gap-3">
+        <button type="button" id="confirmModalCancelBtn"
+                class="flex-1 px-4 py-2.5 rounded-xl mw-elevated border mw-border text-xs font-semibold mw-text-secondary hover:mw-text-primary transition cursor-pointer">
+          Скасувати
+        </button>
+        <button type="button" id="confirmModalOkBtn"
+                class="flex-1 px-4 py-2.5 rounded-xl text-white text-xs font-bold shadow-md transition cursor-pointer">
+          Підтвердити
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Toast Notification -->
   <div id="toastNotification" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300">
     <div class="px-4 py-3 rounded-2xl bg-[#00AE42] text-white text-xs font-bold shadow-xl flex items-center gap-2">
@@ -573,15 +609,104 @@
       syncThemeIcon();
     }
 
-    function showToast(msg) {
+    function showToast(msg, isError = false) {
       const t = document.getElementById('toastNotification');
       const text = document.getElementById('toastMessage');
-      text.textContent = msg;
+      const inner = t ? t.firstElementChild : null;
+      if (text) text.textContent = msg;
+      if (inner) {
+        if (isError) {
+          inner.className = 'px-4 py-3 rounded-2xl bg-red-500 text-white text-xs font-bold shadow-xl flex items-center gap-2';
+          if (inner.firstElementChild) inner.firstElementChild.textContent = '✕';
+        } else {
+          inner.className = 'px-4 py-3 rounded-2xl bg-[#00AE42] text-white text-xs font-bold shadow-xl flex items-center gap-2';
+          if (inner.firstElementChild) inner.firstElementChild.textContent = '✓';
+        }
+      }
       t.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
       clearTimeout(window._toastTimer);
       window._toastTimer = setTimeout(() => {
         t.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
       }, 3000);
+    }
+
+    function showConfirmDialog({
+      title = 'Підтвердження',
+      message = 'Ви впевнені?',
+      confirmText = 'Підтвердити',
+      cancelText = 'Скасувати',
+      isDanger = false,
+      icon = '❓',
+      hasInput = false,
+      inputValue = '',
+      inputPlaceholder = ''
+    } = {}) {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('customConfirmModal');
+        if (!modal) {
+          resolve(window.confirm(message));
+          return;
+        }
+
+        const iconEl = document.getElementById('confirmModalIcon');
+        const iconBox = document.getElementById('confirmModalIconBox');
+        const titleEl = document.getElementById('confirmModalTitle');
+        const msgEl = document.getElementById('confirmModalMessage');
+        const inputContainer = document.getElementById('confirmModalInputContainer');
+        const inputEl = document.getElementById('confirmModalInput');
+        const okBtn = document.getElementById('confirmModalOkBtn');
+        const cancelBtn = document.getElementById('confirmModalCancelBtn');
+
+        if (iconEl) iconEl.textContent = icon;
+        if (titleEl) titleEl.textContent = title;
+        if (msgEl) msgEl.textContent = message;
+        if (okBtn) okBtn.textContent = confirmText;
+        if (cancelBtn) cancelBtn.textContent = cancelText;
+
+        if (hasInput && inputContainer && inputEl) {
+          inputContainer.classList.remove('hidden');
+          inputEl.value = inputValue;
+          inputEl.placeholder = inputPlaceholder;
+          setTimeout(() => { inputEl.focus(); inputEl.select(); }, 60);
+        } else if (inputContainer) {
+          inputContainer.classList.add('hidden');
+        }
+
+        if (iconBox) {
+          iconBox.className = isDanger
+            ? 'w-14 h-14 mx-auto mb-4 rounded-2xl bg-red-500/15 border border-red-500/30 text-red-500 flex items-center justify-center text-2xl'
+            : 'w-14 h-14 mx-auto mb-4 rounded-2xl bg-[#00AE42]/15 border border-[#00AE42]/30 text-[#00AE42] flex items-center justify-center text-2xl';
+        }
+
+        if (okBtn) {
+          okBtn.className = isDanger
+            ? 'flex-1 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-bold shadow-md shadow-red-500/25 transition cursor-pointer'
+            : 'flex-1 px-4 py-2.5 rounded-xl bg-[#00AE42] hover:bg-[#00993A] text-white text-xs font-bold shadow-md shadow-[#00AE42]/25 transition cursor-pointer';
+        }
+
+        const handleKey = (e) => {
+          if (e.key === 'Escape') cleanup(hasInput ? null : false);
+          if (e.key === 'Enter' && hasInput) cleanup(inputEl ? inputEl.value.trim() : '');
+        };
+
+        const cleanup = (val) => {
+          modal.classList.add('hidden');
+          okBtn.onclick = null;
+          cancelBtn.onclick = null;
+          modal.onclick = null;
+          window.removeEventListener('keydown', handleKey);
+          resolve(val);
+        };
+
+        okBtn.onclick = () => cleanup(hasInput ? (inputEl ? inputEl.value.trim() : '') : true);
+        cancelBtn.onclick = () => cleanup(hasInput ? null : false);
+        modal.onclick = (e) => {
+          if (e.target === modal) cleanup(hasInput ? null : false);
+        };
+        window.addEventListener('keydown', handleKey);
+
+        modal.classList.remove('hidden');
+      });
     }
 
     // ==================== AUTHENTICATION ====================
@@ -682,10 +807,10 @@
           showToast(`Вітаємо, ${currentUser.name}!`);
           setTimeout(() => window.location.reload(), 400);
         } else {
-          alert(data.detail || 'Помилка авторизації через Google');
+          showToast(data.detail || 'Помилка авторизації через Google', true);
         }
       } catch (err) {
-        alert('Помилка сервера при вході: ' + err);
+        showToast('Помилка сервера при вході', true);
       }
     }
 
@@ -698,15 +823,23 @@
           showToast(`Вхід виконано! Вітаємо, ${currentUser.name}!`);
           setTimeout(() => window.location.reload(), 400);
         } else {
-          alert('Помилка входу');
+          showToast('Помилка входу', true);
         }
       } catch (e) {
-        alert('Помилка сервера: ' + e);
+        showToast('Помилка сервера', true);
       }
     }
 
     async function logout() {
-      if (!confirm('Ви дійсно бажаєте вийти з акаунта?')) return;
+      const confirmed = await showConfirmDialog({
+        title: 'Вихід з акаунта',
+        message: 'Ви дійсно бажаєте вийти зі свого особистого кабінету?',
+        confirmText: 'Вийти',
+        cancelText: 'Залишитися',
+        isDanger: true,
+        icon: '🚪'
+      });
+      if (!confirmed) return;
       try {
         await fetch('/api/auth/logout', { method: 'POST' });
       } catch (e) {}
@@ -954,26 +1087,35 @@
           showToast(id ? 'Котушку оновлено!' : 'Котушку додано!');
           await loadFilaments();
         } else {
-          alert(data.detail || 'Помилка збереження');
+          showToast(data.detail || 'Помилка збереження', true);
         }
       } catch (err) {
-        alert('Помилка сервера: ' + err);
+        showToast('Помилка сервера при збереженні', true);
       }
     }
 
     async function deleteFilament(id) {
       const f = allFilaments.find(x => x.id === id);
-      if (!confirm(`Видалити котушку "${f ? f.name : ''}" зі свого складу?`)) return;
+      const name = f ? f.name : 'котушку';
+      const confirmed = await showConfirmDialog({
+        title: 'Видалити котушку?',
+        message: `Ви дійсно бажаєте видалити «${name}» зі свого списку котушок?`,
+        confirmText: 'Видалити',
+        cancelText: 'Скасувати',
+        isDanger: true,
+        icon: '🗑️'
+      });
+      if (!confirmed) return;
       try {
         const res = await fetch(`/api/user/filaments/${id}`, { method: 'DELETE' });
         if (res.ok) {
           showToast('Котушку видалено');
           await loadFilaments();
         } else {
-          alert('Помилка видалення');
+          showToast('Помилка видалення котушки', true);
         }
       } catch (e) {
-        alert('Помилка сервера: ' + e);
+        showToast('Помилка сервера', true);
       }
     }
 
@@ -1019,10 +1161,10 @@
           st.classList.remove('hidden');
           setTimeout(() => st.classList.add('hidden'), 3500);
         } else {
-          alert('Помилка збереження налаштувань');
+          showToast('Помилка збереження налаштувань', true);
         }
       } catch (e) {
-        alert('Помилка сервера: ' + e);
+        showToast('Помилка сервера', true);
       }
     }
 
@@ -1093,17 +1235,25 @@
     }
 
     async function deleteCalculation(id) {
-      if (!confirm('Видалити цей розрахунок?')) return;
+      const confirmed = await showConfirmDialog({
+        title: 'Видалити розрахунок?',
+        message: 'Ви дійсно бажаєте видалити цей збережений розрахунок?',
+        confirmText: 'Видалити',
+        cancelText: 'Скасувати',
+        isDanger: true,
+        icon: '🗑️'
+      });
+      if (!confirmed) return;
       try {
         const res = await fetch(`/api/user/calculations/${id}`, { method: 'DELETE' });
         if (res.ok) {
           showToast('Розрахунок видалено');
           await loadCalculations();
         } else {
-          alert('Помилка видалення');
+          showToast('Помилка видалення розрахунку', true);
         }
       } catch (e) {
-        alert('Помилка сервера: ' + e);
+        showToast('Помилка сервера', true);
       }
     }
   </script>
