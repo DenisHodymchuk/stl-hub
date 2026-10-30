@@ -464,5 +464,45 @@ def delete_user_calculation(user_id: int, calc_id: int) -> bool:
             conn.close()
 
 
+def get_all_users_analytics() -> Dict[str, Any]:
+    with _DB_LOCK:
+        conn = _get_conn()
+        try:
+            now = int(time.time())
+            day_ago = now - 86400
+            week_ago = now - 7 * 86400
+
+            rows = conn.execute(
+                """
+                SELECT 
+                    u.id, u.google_id, u.email, u.name, u.avatar_url, u.created_at, u.last_login_at,
+                    (SELECT COUNT(*) FROM user_filaments WHERE user_id = u.id) AS filaments_count,
+                    (SELECT COUNT(*) FROM user_saved_calculations WHERE user_id = u.id) AS calculations_count,
+                    (SELECT COUNT(*) FROM user_sessions WHERE user_id = u.id AND expires_at > ?) AS active_sessions_count
+                FROM users u
+                ORDER BY u.last_login_at DESC
+                """,
+                (now,),
+            ).fetchall()
+
+            users_list = [dict(r) for r in rows]
+            total_users = len(users_list)
+            active_today = sum(1 for u in users_list if (u.get("last_login_at") or 0) >= day_ago)
+            active_week = sum(1 for u in users_list if (u.get("last_login_at") or 0) >= week_ago)
+            total_filaments = sum(u.get("filaments_count", 0) for u in users_list)
+            total_calculations = sum(u.get("calculations_count", 0) for u in users_list)
+
+            return {
+                "total_users": total_users,
+                "active_today": active_today,
+                "active_week": active_week,
+                "total_filaments": total_filaments,
+                "total_calculations": total_calculations,
+                "users": users_list,
+            }
+        finally:
+            conn.close()
+
+
 # Initialize tables on load
 init_user_db()

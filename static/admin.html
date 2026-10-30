@@ -141,7 +141,19 @@
           <span class="text-[10px] mw-text-muted">Live</span>
         </button>
 
-        <!-- 2. Feedback Tab -->
+        <!-- 2. Users Tab -->
+        <button onclick="switchTab('users')" data-tab="users"
+                class="nav-tab-btn w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-semibold transition cursor-pointer text-left">
+          <div class="flex items-center gap-3">
+            <span class="text-base">👥</span>
+            <span>Користувачі</span>
+          </div>
+          <span id="sidebarUsersBadge" class="px-2 py-0.5 text-[11px] font-bold rounded-full bg-[#00AE42]/20 text-[#00AE42] border border-[#00AE42]/40">
+            0
+          </span>
+        </button>
+
+        <!-- 3. Feedback Tab -->
         <button onclick="switchTab('feedback')" data-tab="feedback"
                 class="nav-tab-btn w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-semibold transition cursor-pointer text-left">
           <div class="flex items-center gap-3">
@@ -153,7 +165,7 @@
           </span>
         </button>
 
-        <!-- 3. Settings Tab -->
+        <!-- 4. Settings Tab -->
         <button onclick="switchTab('settings')" data-tab="settings"
                 class="nav-tab-btn w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-semibold transition cursor-pointer text-left">
           <div class="flex items-center gap-3">
@@ -215,8 +227,8 @@
         <!-- ==================== TAB 1: СТАТИСТИКА ==================== -->
         <section id="viewStats" class="space-y-6">
 
-          <!-- Top 5 KPI Cards -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <!-- Top 6 KPI Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
             
             <!-- Online Now (Real-Time Live) -->
             <div class="mw-surface border rounded-2xl p-5 flex flex-col justify-between shadow-sm">
@@ -283,6 +295,19 @@
                 <span class="text-xs px-2 py-0.5 rounded bg-blue-500/15 text-blue-400 font-bold">Сьогодні: <span id="kpiTodayClicks">0</span></span>
               </div>
               <p class="text-[11px] mw-text-muted mt-2">Кліки по картках моделей</p>
+            </div>
+
+            <!-- Registered Users -->
+            <div class="mw-surface border rounded-2xl p-5 flex flex-col justify-between shadow-sm cursor-pointer hover:border-[#00AE42]/60 transition" onclick="switchTab('users')">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold mw-text-secondary">Користувачі (Акаунти)</span>
+                <span class="text-sm">👥</span>
+              </div>
+              <div class="mt-3 flex items-baseline gap-2">
+                <span id="kpiOverviewUsers" class="text-3xl font-extrabold text-[#00AE42] font-mono">0</span>
+                <span class="text-xs px-2 py-0.5 rounded bg-[#00AE42]/15 text-[#00AE42] font-bold">Сьогодні: <span id="kpiOverviewUsersToday">0</span></span>
+              </div>
+              <p class="text-[11px] mw-text-muted mt-2">Кабінети з Google-авторизацією ↗</p>
             </div>
 
           </div>
@@ -356,7 +381,99 @@
 
         </section>
 
-        <!-- ==================== TAB 2: ПОВІДОМЛЕННЯ ==================== -->
+        <!-- ==================== TAB 2: КОРИСТУВАЧІ ==================== -->
+        <section id="viewUsers" class="hidden space-y-6">
+          
+          <!-- Users KPI Summary Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="mw-surface border rounded-2xl p-5 flex flex-col justify-between shadow-sm">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold mw-text-secondary">Всього акаунтів</span>
+                <span class="text-sm">👥</span>
+              </div>
+              <div class="mt-3">
+                <span id="kpiUsersTotal" class="text-3xl font-extrabold text-[#00AE42] font-mono">0</span>
+              </div>
+              <p class="text-[11px] mw-text-muted mt-2">Авторизовані через Google</p>
+            </div>
+
+            <div class="mw-surface border rounded-2xl p-5 flex flex-col justify-between shadow-sm">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold mw-text-secondary">Активні за 24 години</span>
+                <span class="text-sm">🟢</span>
+              </div>
+              <div class="mt-3">
+                <span id="kpiUsersToday" class="text-3xl font-extrabold mw-text-primary font-mono">0</span>
+              </div>
+              <p class="text-[11px] mw-text-muted mt-2">За 7 днів: <strong id="kpiUsersWeek" class="mw-text-primary">0</strong></p>
+            </div>
+
+            <div class="mw-surface border rounded-2xl p-5 flex flex-col justify-between shadow-sm">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold mw-text-secondary">Котушок у користувачів</span>
+                <span class="text-sm">🧵</span>
+              </div>
+              <div class="mt-3">
+                <span id="kpiUsersFilaments" class="text-3xl font-extrabold mw-text-primary font-mono">0</span>
+              </div>
+              <p class="text-[11px] mw-text-muted mt-2">Збережено у кабінетах</p>
+            </div>
+
+            <div class="mw-surface border rounded-2xl p-5 flex flex-col justify-between shadow-sm">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold mw-text-secondary">Збережених кошторисів</span>
+                <span class="text-sm">📋</span>
+              </div>
+              <div class="mt-3">
+                <span id="kpiUsersCalculations" class="text-3xl font-extrabold mw-text-primary font-mono">0</span>
+              </div>
+              <p class="text-[11px] mw-text-muted mt-2">Розрахунки 3D-друку</p>
+            </div>
+          </div>
+
+          <!-- Users Search & Filter -->
+          <div class="flex flex-wrap items-center justify-between gap-3 p-4 rounded-2xl mw-surface border shadow-sm">
+            <div class="relative flex-1 min-w-[240px] max-w-md">
+              <span class="absolute left-3 top-2.5 text-xs text-zinc-400">🔍</span>
+              <input id="userSearchInput" type="text" placeholder="Пошук за ім'ям або email..." oninput="filterUsersList()"
+                     class="w-full bg-[var(--bg-elevated)] border mw-border rounded-xl pl-8 pr-3 py-1.5 text-xs mw-text-primary focus:outline-none focus:border-[#00AE42]" />
+            </div>
+            <button onclick="loadUsersAnalytics()" class="px-3.5 py-1.5 rounded-xl mw-elevated border hover:border-[#00AE42] text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer">
+              <span>🔄</span>
+              <span>Оновити список</span>
+            </button>
+          </div>
+
+          <!-- Users Table -->
+          <div class="mw-surface border rounded-2xl overflow-hidden shadow-sm">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-black/5 dark:bg-white/[0.03] border-b mw-border text-[11px] font-bold uppercase tracking-wider mw-text-muted">
+                  <tr>
+                    <th class="px-4 py-3">Користувач</th>
+                    <th class="px-4 py-3">Email</th>
+                    <th class="px-4 py-3">Перший вхід</th>
+                    <th class="px-4 py-3">Останній візит</th>
+                    <th class="px-4 py-3 text-center">Котушок</th>
+                    <th class="px-4 py-3 text-center">Розрахунків</th>
+                    <th class="px-4 py-3 text-center">Статус</th>
+                  </tr>
+                </thead>
+                <tbody id="usersTableBody" class="divide-y mw-border">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+
+            <div id="usersEmptyState" class="hidden p-8 text-center">
+              <span class="text-3xl block mb-2">👥</span>
+              <p class="text-xs mw-text-muted">Користувачів ще немає або нікого не знайдено</p>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ==================== TAB 3: ПОВІДОМЛЕННЯ ==================== -->
         <section id="viewFeedback" class="hidden space-y-6">
 
           <!-- Feedback Header Bar -->
@@ -578,6 +695,7 @@
 
       // Show/Hide Tab Views
       document.getElementById('viewStats').classList.toggle('hidden', tab !== 'stats');
+      document.getElementById('viewUsers').classList.toggle('hidden', tab !== 'users');
       document.getElementById('viewFeedback').classList.toggle('hidden', tab !== 'feedback');
       document.getElementById('viewSettings').classList.toggle('hidden', tab !== 'settings');
 
@@ -586,6 +704,10 @@
         stats: {
           title: 'Статистика та аналітика',
           desc: 'Показники відвідуваності, пошукових запитів та переходів'
+        },
+        users: {
+          title: 'Користувачі та кабінети',
+          desc: 'Аналітика людей, які авторизувалися через Google, котушки та збережені розрахунки'
         },
         feedback: {
           title: 'Повідомлення зворотного зв\'язку',
@@ -602,7 +724,9 @@
         document.getElementById('pageSubtitle').textContent = headerMap[tab].desc;
       }
 
-      if (tab === 'feedback') {
+      if (tab === 'users') {
+        loadUsersAnalytics();
+      } else if (tab === 'feedback') {
         renderFeedbackView();
       }
     }
@@ -693,6 +817,16 @@
 
       document.getElementById('kpiTotalClicks').textContent = s.all_time.clicks;
       document.getElementById('kpiTodayClicks').textContent = s.today.clicks;
+
+      if (s.users_summary) {
+        const uTot = document.getElementById('kpiOverviewUsers');
+        if (uTot) uTot.textContent = s.users_summary.total_users || 0;
+        const uTod = document.getElementById('kpiOverviewUsersToday');
+        if (uTod) uTod.textContent = s.users_summary.active_today || 0;
+        const uBdg = document.getElementById('sidebarUsersBadge');
+        if (uBdg) uBdg.textContent = s.users_summary.total_users || 0;
+      }
+
       document.getElementById('lastUpdatedLabel').textContent = `Оновлено о ${new Date().toLocaleTimeString('uk-UA')}`;
 
       // 2. Render 14-day Bar Chart
@@ -789,6 +923,122 @@
       if (currentTab === 'feedback') {
         renderFeedbackView();
       }
+    }
+
+    // ==================== USERS VIEW & ANALYTICS RENDERER ====================
+    let allAdminUsers = [];
+
+    async function loadUsersAnalytics() {
+      if (!adminToken) return;
+      try {
+        const resp = await fetch('/api/admin/users', {
+          headers: { 'X-Admin-Token': adminToken }
+        });
+        if (resp.status === 401) {
+          logoutAdmin();
+          return;
+        }
+        const data = await resp.json();
+        allAdminUsers = data.users || [];
+
+        const elTot = document.getElementById('kpiUsersTotal');
+        if (elTot) elTot.textContent = data.total_users || 0;
+        const elTod = document.getElementById('kpiUsersToday');
+        if (elTod) elTod.textContent = data.active_today || 0;
+        const elWk = document.getElementById('kpiUsersWeek');
+        if (elWk) elWk.textContent = data.active_week || 0;
+        const elFil = document.getElementById('kpiUsersFilaments');
+        if (elFil) elFil.textContent = data.total_filaments || 0;
+        const elCalc = document.getElementById('kpiUsersCalculations');
+        if (elCalc) elCalc.textContent = data.total_calculations || 0;
+        const elBdg = document.getElementById('sidebarUsersBadge');
+        if (elBdg) elBdg.textContent = data.total_users || 0;
+
+        renderUsersList();
+      } catch (err) {
+        console.error('Failed to load users analytics:', err);
+      }
+    }
+
+    function filterUsersList() {
+      renderUsersList();
+    }
+
+    function renderUsersList() {
+      const q = (document.getElementById('userSearchInput')?.value || '').toLowerCase().trim();
+      const filtered = allAdminUsers.filter(u => {
+        if (!q) return true;
+        return (u.name && u.name.toLowerCase().includes(q)) ||
+               (u.email && u.email.toLowerCase().includes(q));
+      });
+
+      const tbody = document.getElementById('usersTableBody');
+      const empty = document.getElementById('usersEmptyState');
+      if (!tbody) return;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '';
+        if (empty) empty.classList.remove('hidden');
+        return;
+      }
+      if (empty) empty.classList.add('hidden');
+
+      tbody.innerHTML = filtered.map(u => {
+        const avatarSrc = u.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || 'User')}&background=00AE42&color=fff`;
+        const createdDate = u.created_at ? new Date(u.created_at * 1000).toLocaleString('uk-UA', { dateStyle: 'short', timeStyle: 'short' }) : '—';
+        const lastLoginDate = u.last_login_at ? new Date(u.last_login_at * 1000).toLocaleString('uk-UA', { dateStyle: 'short', timeStyle: 'short' }) : '—';
+        const isOnline = (u.active_sessions_count || 0) > 0;
+
+        return `
+          <tr class="hover:bg-white/[0.02] transition">
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-2.5">
+                <img src="${avatarSrc}" alt="Avatar" class="w-8 h-8 rounded-xl object-cover border border-white/10 shrink-0" />
+                <div class="min-w-0">
+                  <span class="font-bold mw-text-primary block truncate">${escapeHtml(u.name || 'Безіменний')}</span>
+                  <span class="text-[10px] text-zinc-500 font-mono">ID: ${u.id}</span>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-3 font-mono">
+              <div class="flex items-center gap-1.5">
+                <span class="mw-text-secondary select-all text-xs">${escapeHtml(u.email || '')}</span>
+                <button type="button" onclick="navigator.clipboard.writeText('${escapeHtml(u.email || '')}'); alert('Email скопійовано!');" class="p-1 rounded hover:mw-text-primary mw-text-muted" title="Скопіювати">
+                  📋
+                </button>
+              </div>
+            </td>
+            <td class="px-4 py-3 mw-text-muted font-mono whitespace-nowrap">
+              ${createdDate}
+            </td>
+            <td class="px-4 py-3 font-mono whitespace-nowrap">
+              <span class="mw-text-primary font-bold">${lastLoginDate}</span>
+            </td>
+            <td class="px-4 py-3 text-center">
+              <span class="px-2.5 py-1 rounded-lg text-xs font-bold font-mono ${u.filaments_count > 0 ? 'bg-[#00AE42]/15 text-[#00AE42] border border-[#00AE42]/30' : 'mw-elevated mw-text-muted'}">
+                🧵 ${u.filaments_count || 0}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-center">
+              <span class="px-2.5 py-1 rounded-lg text-xs font-bold font-mono ${u.calculations_count > 0 ? 'bg-sky-500/15 text-sky-400 border border-sky-500/30' : 'mw-elevated mw-text-muted'}">
+                📋 ${u.calculations_count || 0}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-center whitespace-nowrap">
+              ${isOnline ? `
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#00AE42]/15 text-[#00AE42] border border-[#00AE42]/30">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#00AE42] animate-pulse"></span>
+                  Сесія активна
+                </span>
+              ` : `
+                <span class="px-2.5 py-1 rounded-full text-[10px] font-medium mw-elevated mw-text-muted">
+                  Офлайн
+                </span>
+              `}
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
     // ==================== FEEDBACK VIEW RENDERER ====================

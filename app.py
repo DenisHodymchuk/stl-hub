@@ -524,7 +524,28 @@ async def admin_stats(
 ):
     if not _verify_admin_token(x_admin_token):
         raise HTTPException(status_code=401, detail="Необхідна авторизація")
-    return get_dashboard_stats(days=days)
+    stats = get_dashboard_stats(days=days)
+    try:
+        u_stats = user_db.get_all_users_analytics()
+        stats["users_summary"] = {
+            "total_users": u_stats["total_users"],
+            "active_today": u_stats["active_today"],
+            "active_week": u_stats["active_week"],
+            "total_filaments": u_stats["total_filaments"],
+            "total_calculations": u_stats["total_calculations"],
+        }
+    except Exception as e:
+        logger.warning(f"Failed to attach users summary to stats: {e}")
+    return stats
+
+
+@app.get("/api/admin/users")
+async def admin_users(
+    x_admin_token: Optional[str] = Header(None),
+):
+    if not _verify_admin_token(x_admin_token):
+        raise HTTPException(status_code=401, detail="Необхідна авторизація")
+    return user_db.get_all_users_analytics()
 
 
 @app.post("/api/admin/change-password")
