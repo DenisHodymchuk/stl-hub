@@ -267,8 +267,7 @@
               <span id="modelBannerSiteBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#00AE42]/15 text-[#00AE42] uppercase tracking-wide">
                 MakerWorld
               </span>
-              <span id="modelBannerStatusBadge" class="text-[11px] font-medium text-emerald-400 flex items-center gap-1">
-                <span>⚡</span>
+              <span id="modelBannerStatusBadge" class="text-[11px] font-medium text-emerald-400">
                 <span id="modelBannerStatusText">Завантаження параметрів моделі...</span>
               </span>
             </div>
@@ -1158,9 +1157,9 @@
                 const bannerStatus = document.getElementById('modelBannerStatusText');
                 if (bannerStatus) {
                   if (specs.is_estimate) {
-                    bannerStatus.textContent = '⚡ Орієнтовні параметри STL-HUB (можна змінити)';
+                    bannerStatus.textContent = 'Орієнтовні параметри STL-HUB (можна змінити)';
                   } else {
-                    bannerStatus.textContent = `✓ ${specs.source}: ${specs.weight_g} г • ${specs.print_hours}год ${specs.print_minutes}хв`;
+                    bannerStatus.textContent = `${specs.source}: ${specs.weight_g} г • ${specs.print_hours}год ${specs.print_minutes}хв`;
                   }
                 }
                 calculateCost(true);
