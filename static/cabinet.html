@@ -9,7 +9,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
   
   <!-- Google Identity Services SDK -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -20,7 +20,7 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Manrope', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
             mono: ['JetBrains Mono', 'monospace'],
           },
           colors: {
@@ -37,26 +37,26 @@
 
   <style>
     :root {
-      --bg-base: #F5F7F6;
+      --bg-base: #F5F6F7;
       --bg-surface: #FFFFFF;
-      --bg-elevated: #F0F3F1;
-      --text-primary: #18201C;
-      --text-secondary: #56645C;
-      --text-muted: #849389;
-      --border-color: #E2E8E4;
-      --brand-green: #00AE42;
-      --brand-green-hover: #00993A;
+      --bg-elevated: #F0F2F5;
+      --text-primary: #242424;
+      --text-secondary: #595959;
+      --text-muted: #8C8C8C;
+      --border-color: #E5E7EB;
+      --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      --card-hover-shadow: 0 8px 20px rgba(0, 0, 0, 0.10);
     }
     html.dark {
-      --bg-base: #101412;
-      --bg-surface: #181E1B;
-      --bg-elevated: #212824;
-      --text-primary: #EEF4F0;
-      --text-secondary: #9DB0A4;
-      --text-muted: #738379;
-      --border-color: #2B3530;
-      --brand-green: #00AE42;
-      --brand-green-hover: #00993A;
+      --bg-base: #121212;
+      --bg-surface: #1C1C1E;
+      --bg-elevated: #262629;
+      --text-primary: #F2F2F2;
+      --text-secondary: #A6A6A6;
+      --text-muted: #737373;
+      --border-color: #2E2E32;
+      --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      --card-hover-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
     }
 
     body {
@@ -65,7 +65,7 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      font-family: 'Manrope', system-ui, sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
     .mw-surface { background-color: var(--bg-surface); border-color: var(--border-color); }
@@ -86,43 +86,102 @@
     }
 
     .tab-active {
-      background-color: rgba(0, 174, 66, 0.18) !important;
+      background-color: rgba(0, 174, 66, 0.15) !important;
       color: #00AE42 !important;
       border-color: rgba(0, 174, 66, 0.35) !important;
     }
-    html.dark .tab-active {
-      background-color: #173E29 !important;
-      color: #38E28B !important;
+
+    /* Custom Dropdown Styling (STL-HUB native style matching index.html) */
+    .hub-dropdown-btn {
+      height: 38px;
+      padding: 0 13px;
+      border-radius: 12px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+      background-color: var(--bg-elevated);
+      border: 1px solid var(--border-color);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+    .hub-dropdown-btn:hover, .hub-dropdown-btn.open {
+      border-color: #00AE42;
+      background-color: var(--bg-surface);
+    }
+    .hub-dropdown-menu {
+      position: absolute;
+      right: 0;
+      top: calc(100% + 6px);
+      min-width: 190px;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 6px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
+      z-index: 50;
+    }
+    .hub-dropdown-item {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      border-radius: 9px;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: all 0.12s ease;
+      text-align: left;
+      cursor: pointer;
+      background: transparent;
+      border: none;
+    }
+    .hub-dropdown-item:hover {
+      background-color: var(--bg-elevated);
+      color: var(--text-primary);
+    }
+    .hub-dropdown-item.selected {
+      background-color: rgba(0, 174, 66, 0.14);
+      color: #00AE42;
+      font-weight: 700;
     }
   </style>
 </head>
 <body class="antialiased selection:bg-[#00AE42] selection:text-white flex flex-col min-h-screen">
 
-  <!-- ======================== HEADER ======================== -->
+  <!-- ======================== HEADER (Authentic STL-HUB Brand Logo) ======================== -->
   <header class="sticky top-0 z-40 mw-surface border-b backdrop-blur-md bg-opacity-95 dark:bg-opacity-95 transition-colors">
-    <div class="max-w-[1640px] mx-auto px-4 sm:px-8 h-[72px] flex items-center justify-between gap-4">
+    <div class="max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8 h-[68px] flex items-center justify-between gap-4">
       
-      <!-- Brand Logo -->
-      <div class="flex items-center gap-3">
-        <a href="/" class="flex items-center gap-3 group">
-          <div class="w-10 h-10 rounded-xl bg-[#00AE42] flex items-center justify-center text-white font-extrabold text-xl shadow-md shadow-[#00AE42]/25 group-hover:scale-105 transition-transform">
-            ⬡
+      <!-- Left: STL-HUB Original Brand Logo (3D Isometric Wireframe Cube in Viewfinder Brackets) -->
+      <a href="/" class="flex items-center gap-3 shrink-0 group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00C853] to-[#008C35] flex items-center justify-center text-white shadow-md shadow-[#00AE42]/20 group-hover:scale-105 transition-transform">
+          <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 8V5C3 3.89543 3.89543 3 5 3H8" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M20 3H23C24.1046 3 25 3.89543 25 5V8" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M25 20V23C25 24.1046 24.1046 25 23 25H20" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M8 25H5C3.89543 25 3 24.1046 3 23V20" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M14 7.5L20 11V17L14 20.5L8 17V11L14 7.5Z" fill="white" fill-opacity="0.22" stroke="white" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M8 11L14 14.5L20 11" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14 14.5V20.5" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="flex flex-col">
+          <div class="flex items-center gap-1.5">
+            <span class="font-extrabold text-xl tracking-tight mw-text-primary">STL<span class="text-[#00AE42]">-HUB</span></span>
           </div>
-          <div>
-            <div class="text-xl font-extrabold tracking-tight leading-none mw-text-primary">
-              STL<span class="text-[#00AE42]">-HUB</span>
-            </div>
-            <div class="text-[10px] font-bold tracking-wider uppercase text-zinc-400 mt-1">
-              Майстерня під контролем
-            </div>
-          </div>
-        </a>
-      </div>
+          <span class="text-[11px] mw-text-muted hidden sm:block leading-none mt-0.5">Особистий кабінет</span>
+        </div>
+      </a>
 
       <!-- Right Controls: Theme Toggle & User Info -->
       <div class="flex items-center gap-2.5">
         <!-- Theme Toggle -->
-        <button onclick="toggleTheme()" class="p-2.5 rounded-xl mw-elevated border mw-border hover:border-[#00AE42] transition cursor-pointer" title="Перемкнути тему">
+        <button onclick="toggleTheme()" class="p-2 rounded-lg mw-elevated border hover:border-[#00AE42] transition relative overflow-hidden cursor-pointer" title="Перемкнути Світлу / Темну тему">
           <svg id="themeIconSun" class="w-4 h-4 text-amber-400 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
           </svg>
@@ -141,7 +200,7 @@
   </header>
 
   <!-- ======================== MAIN CONTENT ======================== -->
-  <main class="max-w-[1640px] mx-auto px-4 sm:px-8 py-8 w-full flex-1">
+  <main class="max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-1">
 
     <!-- Loading State -->
     <div id="loadingState" class="py-24 text-center">
@@ -189,7 +248,7 @@
         </button>
       </div>
 
-      <!-- Profile & Quick Stats Card (Mockup Style) -->
+      <!-- Profile & Quick Stats Card -->
       <section class="mw-surface border mw-border rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-5">
         
         <!-- Identity Left -->
@@ -269,46 +328,62 @@
 
             <!-- Type Filter Pills -->
             <div class="flex items-center gap-1.5 overflow-x-auto py-1 text-xs font-extrabold shrink-0">
-              <button onclick="setFilamentTypeFilter('all')" class="fil-type-btn px-3 py-1.5 rounded-lg bg-[#00AE42] text-white transition" data-type="all">Всі</button>
-              <button onclick="setFilamentTypeFilter('PLA')" class="fil-type-btn px-3 py-1.5 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary transition" data-type="PLA">PLA</button>
-              <button onclick="setFilamentTypeFilter('PETG')" class="fil-type-btn px-3 py-1.5 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary transition" data-type="PETG">PETG</button>
-              <button onclick="setFilamentTypeFilter('ABS')" class="fil-type-btn px-3 py-1.5 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary transition" data-type="ABS">ABS</button>
-              <button onclick="setFilamentTypeFilter('TPU')" class="fil-type-btn px-3 py-1.5 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary transition" data-type="TPU">TPU</button>
-              <button onclick="setFilamentTypeFilter('CoPET')" class="fil-type-btn px-3 py-1.5 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary transition" data-type="CoPET">CoPET</button>
-              <button onclick="setFilamentTypeFilter('Resin')" class="fil-type-btn px-3 py-1.5 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary transition" data-type="Resin">Смола</button>
+              <button onclick="setFilamentTypeFilter('all')" class="fil-type-btn px-3 py-1.5 rounded-lg bg-[#00AE42] text-white transition cursor-pointer" data-type="all">Всі</button>
+              <button onclick="setFilamentTypeFilter('PLA')" class="fil-type-btn px-3 py-1.5 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary transition cursor-pointer" data-type="PLA">PLA</button>
+              <button onclick="setFilamentTypeFilter('PETG')" class="fil-type-btn px-3 py-1.5 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary transition cursor-pointer" data-type="PETG">PETG</button>
+              <button onclick="setFilamentTypeFilter('ABS')" class="fil-type-btn px-3 py-1.5 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary transition cursor-pointer" data-type="ABS">ABS</button>
+              <button onclick="setFilamentTypeFilter('TPU')" class="fil-type-btn px-3 py-1.5 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary transition cursor-pointer" data-type="TPU">TPU</button>
+              <button onclick="setFilamentTypeFilter('CoPET')" class="fil-type-btn px-3 py-1.5 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary transition cursor-pointer" data-type="CoPET">CoPET</button>
+              <button onclick="setFilamentTypeFilter('Resin')" class="fil-type-btn px-3 py-1.5 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary transition cursor-pointer" data-type="Resin">Смола</button>
             </div>
 
             <!-- View Switcher (Grid / Table) -->
             <div class="flex items-center p-1 rounded-xl mw-elevated border mw-border shrink-0">
               <button id="viewGridBtn" onclick="setFilamentsView('grid')" title="Картки"
-                      class="px-2.5 py-1.5 rounded-lg bg-[#00AE42] text-white text-xs font-bold transition">
+                      class="px-2.5 py-1.5 rounded-lg bg-[#00AE42] text-white text-xs font-bold transition cursor-pointer">
                 ▦
               </button>
               <button id="viewTableBtn" onclick="setFilamentsView('table')" title="Таблиця"
-                      class="px-2.5 py-1.5 rounded-lg text-zinc-400 hover:mw-text-primary text-xs font-bold transition">
+                      class="px-2.5 py-1.5 rounded-lg text-zinc-400 hover:mw-text-primary text-xs font-bold transition cursor-pointer">
                 ☷
               </button>
             </div>
 
           </div>
 
-          <!-- Result Line & Sort -->
+          <!-- Result Line & Custom STL-HUB Dropdown for Sorting -->
           <div class="flex items-center justify-between text-xs mw-text-muted pt-1">
             <span id="resultsCountLabel">Показано 0 матеріалів</span>
             
-            <div class="flex items-center gap-2">
-              <label for="filamentSortSelect" class="hidden sm:inline">Сортування:</label>
-              <select id="filamentSortSelect" onchange="filterFilamentsList()"
-                      class="bg-[var(--bg-elevated)] border mw-border rounded-lg px-2.5 py-1 text-xs mw-text-primary focus:outline-none focus:border-[#00AE42] cursor-pointer">
-                <option value="default">за додаванням</option>
-                <option value="priceUp">Ціна: від дешевших</option>
-                <option value="priceDown">Ціна: від дорожчих</option>
-                <option value="name">Назва: А–Я</option>
-              </select>
+            <!-- Custom STL-HUB Sort Dropdown -->
+            <div class="relative" id="sortDropdown">
+              <input type="hidden" id="filamentSortSelect" value="default" />
+              <button type="button" onclick="toggleCustomDropdown('sortMenu', this)" class="hub-dropdown-btn">
+                <span class="mw-text-muted font-normal text-xs">Сортування:</span>
+                <span id="sortLabel" class="text-xs font-bold mw-text-primary">за додаванням</span>
+                <svg class="w-3.5 h-3.5 mw-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              <div id="sortMenu" class="hub-dropdown-menu hidden">
+                <button type="button" data-value="default" onclick="selectSortMode('default', 'за додаванням', this)" class="hub-dropdown-item selected">
+                  <span>за додаванням</span><span class="check-icon text-[#00AE42] font-bold">✓</span>
+                </button>
+                <button type="button" data-value="priceUp" onclick="selectSortMode('priceUp', 'Ціна: від дешевших', this)" class="hub-dropdown-item">
+                  <span>Ціна: від дешевших</span><span class="check-icon text-[#00AE42] font-bold hidden">✓</span>
+                </button>
+                <button type="button" data-value="priceDown" onclick="selectSortMode('priceDown', 'Ціна: від дорожчих', this)" class="hub-dropdown-item">
+                  <span>Ціна: від дорожчих</span><span class="check-icon text-[#00AE42] font-bold hidden">✓</span>
+                </button>
+                <button type="button" data-value="name" onclick="selectSortMode('name', 'Назва: А–Я', this)" class="hub-dropdown-item">
+                  <span>Назва: А–Я</span><span class="check-icon text-[#00AE42] font-bold hidden">✓</span>
+                </button>
+              </div>
             </div>
           </div>
 
-          <!-- 1. Grid View (Cards) -->
+          <!-- 1. Grid View (Cards / Kanban) -->
           <div id="filamentsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <!-- Populated by JS -->
           </div>
@@ -342,7 +417,7 @@
             <p class="text-xs mw-text-muted mt-1 max-w-sm mx-auto">
               Додайте свій перший пластик, щоб автоматично підставляти його точну вартість у калькулятор.
             </p>
-            <button onclick="openAddFilamentModal()" class="mt-4 px-4 py-2 rounded-xl bg-[#00AE42] text-white text-xs font-bold shadow-md shadow-[#00AE42]/20">
+            <button onclick="openAddFilamentModal()" class="mt-4 px-4 py-2 rounded-xl bg-[#00AE42] text-white text-xs font-bold shadow-md shadow-[#00AE42]/20 cursor-pointer">
               + Додати першу котушку
             </button>
           </div>
@@ -463,7 +538,7 @@
 
   </main>
 
-  <!-- ======================== MODAL: ADD / EDIT FILAMENT ======================== -->
+  <!-- ======================== MODAL: ADD / EDIT FILAMENT (Custom STL-HUB Dropdowns) ======================== -->
   <div id="filamentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm hidden">
     <div class="mw-surface border mw-border rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-200">
       
@@ -498,20 +573,29 @@
                    class="w-full bg-[var(--bg-elevated)] border mw-border rounded-xl px-3.5 py-2.5 text-xs mw-text-primary focus:outline-none focus:border-[#00AE42]" />
           </div>
 
-          <div>
+          <!-- Custom Material Type Dropdown (No native OS select!) -->
+          <div class="relative" id="materialTypeDropdown">
             <label class="block text-xs font-semibold mw-text-secondary mb-1">Матеріал</label>
-            <select id="formMaterialType"
-                    class="w-full bg-[var(--bg-elevated)] border mw-border rounded-xl px-3 py-2.5 text-xs mw-text-primary focus:outline-none focus:border-[#00AE42] cursor-pointer">
-              <option value="PLA">PLA</option>
-              <option value="PETG" selected>PETG</option>
-              <option value="ABS">ABS</option>
-              <option value="ASA">ASA</option>
-              <option value="TPU">TPU 95A</option>
-              <option value="CoPET">CoPET</option>
-              <option value="Nylon">Nylon PA</option>
-              <option value="Resin">Смола</option>
-              <option value="Other">Інший матеріал</option>
-            </select>
+            <input type="hidden" id="formMaterialType" value="PETG" />
+            <button type="button" onclick="toggleCustomDropdown('materialTypeMenu', this)"
+                    class="hub-dropdown-btn w-full justify-between h-[42px] px-3.5 text-xs">
+              <span id="materialTypeLabel" class="font-bold text-xs mw-text-primary">PETG</span>
+              <svg class="w-3.5 h-3.5 mw-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            <div id="materialTypeMenu" class="hub-dropdown-menu w-full hidden max-h-56 overflow-y-auto">
+              <button type="button" data-value="PLA" onclick="selectMaterialType('PLA')" class="hub-dropdown-item">PLA</button>
+              <button type="button" data-value="PETG" onclick="selectMaterialType('PETG')" class="hub-dropdown-item selected">PETG</button>
+              <button type="button" data-value="ABS" onclick="selectMaterialType('ABS')" class="hub-dropdown-item">ABS</button>
+              <button type="button" data-value="ASA" onclick="selectMaterialType('ASA')" class="hub-dropdown-item">ASA</button>
+              <button type="button" data-value="TPU" onclick="selectMaterialType('TPU')" class="hub-dropdown-item">TPU 95A</button>
+              <button type="button" data-value="CoPET" onclick="selectMaterialType('CoPET')" class="hub-dropdown-item">CoPET</button>
+              <button type="button" data-value="Nylon" onclick="selectMaterialType('Nylon')" class="hub-dropdown-item">Nylon PA</button>
+              <button type="button" data-value="Resin" onclick="selectMaterialType('Resin')" class="hub-dropdown-item">Смола</button>
+              <button type="button" data-value="Other" onclick="selectMaterialType('Other')" class="hub-dropdown-item">Інший матеріал</button>
+            </div>
           </div>
         </div>
 
@@ -526,14 +610,14 @@
           </div>
           <!-- Quick color presets -->
           <div class="flex items-center gap-1.5 mt-2">
-            <button type="button" onclick="setColorPreset('#131715', 'Чорний')" class="w-5 h-5 rounded-full border border-white/20 bg-[#131715]" title="Чорний"></button>
-            <button type="button" onclick="setColorPreset('#FFFFFF', 'Білий')" class="w-5 h-5 rounded-full border border-black/20 bg-white" title="Білий"></button>
-            <button type="button" onclick="setColorPreset('#71717A', 'Сірий')" class="w-5 h-5 rounded-full border border-white/20 bg-zinc-500" title="Сірий"></button>
-            <button type="button" onclick="setColorPreset('#EF4444', 'Червоний')" class="w-5 h-5 rounded-full border border-white/20 bg-red-500" title="Червоний"></button>
-            <button type="button" onclick="setColorPreset('#3B82F6', 'Синій')" class="w-5 h-5 rounded-full border border-white/20 bg-blue-500" title="Синій"></button>
-            <button type="button" onclick="setColorPreset('#00AE42', 'Зелений Bambu')" class="w-5 h-5 rounded-full border border-white/20 bg-[#00AE42]" title="Зелений Bambu"></button>
-            <button type="button" onclick="setColorPreset('#F59E0B', 'Помаранчевий')" class="w-5 h-5 rounded-full border border-white/20 bg-amber-500" title="Помаранчевий"></button>
-            <button type="button" onclick="setColorPreset('#A855F7', 'Фіолетовий')" class="w-5 h-5 rounded-full border border-white/20 bg-purple-500" title="Фіолетовий"></button>
+            <button type="button" onclick="setColorPreset('#131715', 'Чорний')" class="w-5 h-5 rounded-full border border-white/20 bg-[#131715] cursor-pointer" title="Чорний"></button>
+            <button type="button" onclick="setColorPreset('#FFFFFF', 'Білий')" class="w-5 h-5 rounded-full border border-black/20 bg-white cursor-pointer" title="Білий"></button>
+            <button type="button" onclick="setColorPreset('#71717A', 'Сірий')" class="w-5 h-5 rounded-full border border-white/20 bg-zinc-500 cursor-pointer" title="Сірий"></button>
+            <button type="button" onclick="setColorPreset('#EF4444', 'Червоний')" class="w-5 h-5 rounded-full border border-white/20 bg-red-500 cursor-pointer" title="Червоний"></button>
+            <button type="button" onclick="setColorPreset('#3B82F6', 'Синій')" class="w-5 h-5 rounded-full border border-white/20 bg-blue-500 cursor-pointer" title="Синій"></button>
+            <button type="button" onclick="setColorPreset('#00AE42', 'Зелений Bambu')" class="w-5 h-5 rounded-full border border-white/20 bg-[#00AE42] cursor-pointer" title="Зелений Bambu"></button>
+            <button type="button" onclick="setColorPreset('#F59E0B', 'Помаранчевий')" class="w-5 h-5 rounded-full border border-white/20 bg-amber-500 cursor-pointer" title="Помаранчевий"></button>
+            <button type="button" onclick="setColorPreset('#A855F7', 'Фіолетовий')" class="w-5 h-5 rounded-full border border-white/20 bg-purple-500 cursor-pointer" title="Фіолетовий"></button>
           </div>
         </div>
 
@@ -755,6 +839,58 @@
       });
     }
 
+    // ==================== CUSTOM DROPDOWNS HANDLER ====================
+
+    function toggleCustomDropdown(menuId, btnEl) {
+      const menu = document.getElementById(menuId);
+      if (!menu) return;
+      const isOpen = !menu.classList.contains('hidden');
+      closeAllCustomDropdowns();
+      if (!isOpen) {
+        menu.classList.remove('hidden');
+        if (btnEl) btnEl.classList.add('open');
+      }
+    }
+
+    function closeAllCustomDropdowns() {
+      document.querySelectorAll('.hub-dropdown-menu').forEach(m => m.classList.add('hidden'));
+      document.querySelectorAll('.hub-dropdown-btn').forEach(b => b.classList.remove('open'));
+    }
+
+    document.addEventListener('click', e => {
+      if (!e.target.closest('#sortDropdown') && !e.target.closest('#materialTypeDropdown')) {
+        closeAllCustomDropdowns();
+      }
+    });
+
+    function selectSortMode(val, labelText, btnItem) {
+      document.getElementById('filamentSortSelect').value = val;
+      document.getElementById('sortLabel').textContent = labelText;
+      document.querySelectorAll('#sortMenu .hub-dropdown-item').forEach(item => {
+        const isSel = (item === btnItem) || (item.dataset.value === val);
+        item.classList.toggle('selected', isSel);
+        const icon = item.querySelector('.check-icon');
+        if (icon) icon.classList.toggle('hidden', !isSel);
+      });
+      closeAllCustomDropdowns();
+      renderFilamentsList();
+    }
+
+    function setMaterialTypeSelection(val) {
+      document.getElementById('formMaterialType').value = val;
+      const label = document.getElementById('materialTypeLabel');
+      if (label) label.textContent = (val === 'Resin' ? 'Смола' : val);
+      document.querySelectorAll('#materialTypeMenu .hub-dropdown-item').forEach(item => {
+        const isSel = (item.dataset.value === val);
+        item.classList.toggle('selected', isSel);
+      });
+    }
+
+    function selectMaterialType(val) {
+      setMaterialTypeSelection(val);
+      closeAllCustomDropdowns();
+    }
+
     // ==================== AUTHENTICATION ====================
 
     async function initAuth() {
@@ -920,13 +1056,13 @@
       if (v === 'table') {
         gridEl.classList.add('hidden');
         tableWrap.classList.remove('hidden');
-        btnTable.className = 'px-2.5 py-1.5 rounded-lg bg-[#00AE42] text-white text-xs font-bold transition';
-        btnGrid.className = 'px-2.5 py-1.5 rounded-lg text-zinc-400 hover:mw-text-primary text-xs font-bold transition';
+        btnTable.className = 'px-2.5 py-1.5 rounded-lg bg-[#00AE42] text-white text-xs font-bold transition cursor-pointer';
+        btnGrid.className = 'px-2.5 py-1.5 rounded-lg text-zinc-400 hover:mw-text-primary text-xs font-bold transition cursor-pointer';
       } else {
         gridEl.classList.remove('hidden');
         tableWrap.classList.add('hidden');
-        btnGrid.className = 'px-2.5 py-1.5 rounded-lg bg-[#00AE42] text-white text-xs font-bold transition';
-        btnTable.className = 'px-2.5 py-1.5 rounded-lg text-zinc-400 hover:mw-text-primary text-xs font-bold transition';
+        btnGrid.className = 'px-2.5 py-1.5 rounded-lg bg-[#00AE42] text-white text-xs font-bold transition cursor-pointer';
+        btnTable.className = 'px-2.5 py-1.5 rounded-lg text-zinc-400 hover:mw-text-primary text-xs font-bold transition cursor-pointer';
       }
     }
 
@@ -1028,7 +1164,7 @@
       empty.classList.add('hidden');
       setFilamentsView(currentFilamentsView);
 
-      // 1. Render Grid View Cards (matching Mockup)
+      // 1. Render Grid View Cards (Kanban)
       grid.innerHTML = filtered.map(f => {
         const spoolW = parseFloat(f.weight_spool_g) || 1000;
         const colorHex = f.color_hex || '#00AE42';
@@ -1046,7 +1182,7 @@
                   </span>
                   ${f.brand ? `<span class="text-[11px] mw-text-muted truncate font-medium">${escapeHtml(f.brand)}</span>` : ''}
                 </div>
-                <button type="button" onclick="editFilamentModal(${f.id})" class="text-zinc-400 hover:mw-text-primary px-1 py-0.5 rounded text-base leading-none transition" title="Редагувати">
+                <button type="button" onclick="editFilamentModal(${f.id})" class="text-zinc-400 hover:mw-text-primary px-1 py-0.5 rounded text-base leading-none transition cursor-pointer" title="Редагувати">
                   ⋯
                 </button>
               </div>
@@ -1082,10 +1218,10 @@
               <a href="/calc?filament_id=${f.id}" class="flex-1 py-2 px-3 rounded-xl bg-[#00AE42] hover:bg-[#00993A] text-white text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm text-center">
                 <span>Перейти в калькулятор</span>
               </a>
-              <button type="button" onclick="editFilamentModal(${f.id})" class="p-2 rounded-xl mw-elevated border mw-border hover:border-[#00AE42] mw-text-secondary hover:mw-text-primary transition" title="Редагувати">
+              <button type="button" onclick="editFilamentModal(${f.id})" class="p-2 rounded-xl mw-elevated border mw-border hover:border-[#00AE42] mw-text-secondary hover:mw-text-primary transition cursor-pointer" title="Редагувати">
                 ✎
               </button>
-              <button type="button" onclick="deleteFilament(${f.id})" class="p-2 rounded-xl mw-elevated border mw-border hover:text-red-500 mw-text-secondary transition" title="Видалити">
+              <button type="button" onclick="deleteFilament(${f.id})" class="p-2 rounded-xl mw-elevated border mw-border hover:text-red-500 mw-text-secondary transition cursor-pointer" title="Видалити">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
               </button>
             </div>
@@ -1094,7 +1230,7 @@
         `;
       }).join('');
 
-      // 2. Render Table View Rows (matching Mockup)
+      // 2. Render Table View Rows (List with identical button as Kanban)
       tableBody.innerHTML = filtered.map(f => {
         const spoolW = parseFloat(f.weight_spool_g) || 1000;
         const colorHex = f.color_hex || '#00AE42';
@@ -1125,15 +1261,15 @@
               ${spoolW} г
             </td>
             <td class="px-4 py-3.5 text-right whitespace-nowrap">
-              <div class="flex items-center justify-end gap-1.5">
-                <a href="/calc?filament_id=${f.id}" class="px-2.5 py-1.5 rounded-lg bg-[#00AE42]/15 text-[#00AE42] hover:bg-[#00AE42] hover:text-white text-xs font-bold transition">
-                  Калькулятор 🧮
+              <div class="flex items-center justify-end gap-2">
+                <a href="/calc?filament_id=${f.id}" class="py-2 px-3.5 rounded-xl bg-[#00AE42] hover:bg-[#00993A] text-white text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm text-center">
+                  <span>Перейти в калькулятор</span>
                 </a>
-                <button type="button" onclick="editFilamentModal(${f.id})" class="p-1.5 rounded-lg mw-elevated border mw-border hover:border-[#00AE42] mw-text-secondary hover:mw-text-primary transition" title="Редагувати">
+                <button type="button" onclick="editFilamentModal(${f.id})" class="p-2 rounded-xl mw-elevated border mw-border hover:border-[#00AE42] mw-text-secondary hover:mw-text-primary transition cursor-pointer" title="Редагувати">
                   ✎
                 </button>
-                <button type="button" onclick="deleteFilament(${f.id})" class="p-1.5 rounded-lg mw-elevated border mw-border hover:text-red-500 mw-text-secondary transition" title="Видалити">
-                  🗑️
+                <button type="button" onclick="deleteFilament(${f.id})" class="p-2 rounded-xl mw-elevated border mw-border hover:text-red-500 mw-text-secondary transition cursor-pointer" title="Видалити">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                 </button>
               </div>
             </td>
@@ -1150,9 +1286,10 @@
       document.getElementById('filamentModalTitle').innerHTML = '<span>🧵</span><span>Нова котушка</span>';
       document.getElementById('formColorHex').value = '#00AE42';
       document.getElementById('formColorName').value = '';
-      document.getElementById('formMaterialType').value = 'PETG';
+      setMaterialTypeSelection('PETG');
       document.getElementById('formPricePerKg').value = 650;
       document.getElementById('formWeightSpool').value = 1000;
+      closeAllCustomDropdowns();
       document.getElementById('filamentModal').classList.remove('hidden');
     }
 
@@ -1161,7 +1298,7 @@
       if (!f) return;
       document.getElementById('formFilamentId').value = f.id;
       document.getElementById('formFilamentName').value = f.name || '';
-      document.getElementById('formMaterialType').value = f.material_type || 'PETG';
+      setMaterialTypeSelection(f.material_type || 'PETG');
       document.getElementById('formBrand').value = f.brand || '';
       document.getElementById('formColorHex').value = f.color_hex || '#00AE42';
       document.getElementById('formColorName').value = f.color_name || '';
@@ -1169,10 +1306,12 @@
       document.getElementById('formWeightSpool').value = f.weight_spool_g || 1000;
 
       document.getElementById('filamentModalTitle').innerHTML = '<span>✎</span><span>Редагувати котушку</span>';
+      closeAllCustomDropdowns();
       document.getElementById('filamentModal').classList.remove('hidden');
     }
 
     function closeFilamentModal() {
+      closeAllCustomDropdowns();
       document.getElementById('filamentModal').classList.add('hidden');
     }
 
