@@ -917,7 +917,7 @@
       const grid = document.getElementById('materialPillsGrid');
       grid.innerHTML = userFilamentsList.map(f => {
         const colorHex = f.color_hex || '#00AE42';
-        const remW = parseFloat(f.remaining_weight_g) || 0;
+        const spoolW = parseFloat(f.weight_spool_g) || 1000;
         return `
           <button type="button" onclick="selectUserFilament(${f.id})" id="userFilBtn_${f.id}"
                   class="user-fil-btn p-2.5 rounded-xl mw-elevated border text-left transition hover:border-[#00AE42] cursor-pointer relative overflow-hidden">
@@ -930,7 +930,7 @@
             </div>
             <div class="flex items-center justify-between text-[10px] mw-text-muted mt-1 font-mono">
               <span>${f.material_type}</span>
-              <span>${remW}г залишок</span>
+              <span>${f.brand ? f.brand + ' · ' : ''}${spoolW} г</span>
             </div>
           </button>
         `;
