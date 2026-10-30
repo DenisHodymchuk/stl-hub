@@ -192,20 +192,12 @@
           </div>
 
           <!-- Quick KPI Counters -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 shrink-0">
-            <div class="p-3.5 rounded-2xl mw-elevated border text-center">
+          <div class="grid grid-cols-2 gap-3 shrink-0">
+            <div class="p-3.5 rounded-2xl mw-elevated border text-center min-w-[130px]">
               <span class="text-[11px] mw-text-muted font-semibold block">Котушок у складі</span>
               <span id="kpiSpoolsCount" class="text-xl font-extrabold text-[#00AE42] font-mono mt-0.5 block">0</span>
             </div>
-            <div class="p-3.5 rounded-2xl mw-elevated border text-center">
-              <span class="text-[11px] mw-text-muted font-semibold block">Загальна вага</span>
-              <span id="kpiRemainingWeight" class="text-xl font-extrabold mw-text-primary font-mono mt-0.5 block">0.0 кг</span>
-            </div>
-            <div class="p-3.5 rounded-2xl mw-elevated border text-center">
-              <span class="text-[11px] mw-text-muted font-semibold block">Вартість котушок</span>
-              <span id="kpiTotalStockValue" class="text-xl font-extrabold mw-text-primary font-mono mt-0.5 block">0 ₴</span>
-            </div>
-            <div class="p-3.5 rounded-2xl mw-elevated border text-center">
+            <div class="p-3.5 rounded-2xl mw-elevated border text-center min-w-[130px]">
               <span class="text-[11px] mw-text-muted font-semibold block">Збережених кошторисів</span>
               <span id="kpiCalculationsCount" class="text-xl font-extrabold mw-text-primary font-mono mt-0.5 block">0</span>
             </div>
@@ -891,21 +883,10 @@
     }
 
     function updateFilamentsKPI() {
-      document.getElementById('kpiSpoolsCount').textContent = allFilaments.length;
-      document.getElementById('tabBadgeFilaments').textContent = allFilaments.length;
-
-      let totalWeightG = 0;
-      let totalValueUah = 0;
-
-      allFilaments.forEach(f => {
-        const spoolW = parseFloat(f.weight_spool_g) || 1000;
-        const pricePerG = (parseFloat(f.price_per_kg) || 0) / 1000;
-        totalWeightG += spoolW;
-        totalValueUah += spoolW * pricePerG;
-      });
-
-      document.getElementById('kpiRemainingWeight').textContent = `${(totalWeightG / 1000).toFixed(2)} кг`;
-      document.getElementById('kpiTotalStockValue').textContent = `${Math.round(totalValueUah).toLocaleString('uk-UA')} ₴`;
+      const spoolsEl = document.getElementById('kpiSpoolsCount');
+      if (spoolsEl) spoolsEl.textContent = allFilaments.length;
+      const badgeEl = document.getElementById('tabBadgeFilaments');
+      if (badgeEl) badgeEl.textContent = allFilaments.length;
     }
 
     function setFilamentTypeFilter(type) {
