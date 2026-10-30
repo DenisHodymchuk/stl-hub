@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Особистий кабінет майстра 3D-друку | STL-HUB</title>
+  <title>STL-HUB — Мій склад філаментів</title>
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v=2" />
   <link rel="shortcut icon" href="/static/favicon.svg?v=2" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
   
   <!-- Google Identity Services SDK -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -20,7 +20,7 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            sans: ['Manrope', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
             mono: ['JetBrains Mono', 'monospace'],
           },
           colors: {
@@ -37,24 +37,26 @@
 
   <style>
     :root {
-      --bg-base: #F5F6F7;
+      --bg-base: #F5F7F6;
       --bg-surface: #FFFFFF;
-      --bg-elevated: #F0F2F5;
-      --text-primary: #242424;
-      --text-secondary: #595959;
-      --text-muted: #8C8C8C;
-      --border-color: #E5E7EB;
-      --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      --bg-elevated: #F0F3F1;
+      --text-primary: #18201C;
+      --text-secondary: #56645C;
+      --text-muted: #849389;
+      --border-color: #E2E8E4;
+      --brand-green: #00AE42;
+      --brand-green-hover: #00993A;
     }
     html.dark {
-      --bg-base: #121212;
-      --bg-surface: #1C1C1E;
-      --bg-elevated: #262629;
-      --text-primary: #F2F2F2;
-      --text-secondary: #A6A6A6;
-      --text-muted: #737373;
-      --border-color: #2E2E32;
-      --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      --bg-base: #101412;
+      --bg-surface: #181E1B;
+      --bg-elevated: #212824;
+      --text-primary: #EEF4F0;
+      --text-secondary: #9DB0A4;
+      --text-muted: #738379;
+      --border-color: #2B3530;
+      --brand-green: #00AE42;
+      --brand-green-hover: #00993A;
     }
 
     body {
@@ -63,6 +65,7 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      font-family: 'Manrope', system-ui, sans-serif;
     }
 
     .mw-surface { background-color: var(--bg-surface); border-color: var(--border-color); }
@@ -83,50 +86,43 @@
     }
 
     .tab-active {
-      background-color: #00AE42 !important;
-      color: #FFFFFF !important;
-      box-shadow: 0 2px 8px rgba(0, 174, 66, 0.25);
+      background-color: rgba(0, 174, 66, 0.18) !important;
+      color: #00AE42 !important;
+      border-color: rgba(0, 174, 66, 0.35) !important;
+    }
+    html.dark .tab-active {
+      background-color: #173E29 !important;
+      color: #38E28B !important;
     }
   </style>
 </head>
 <body class="antialiased selection:bg-[#00AE42] selection:text-white flex flex-col min-h-screen">
 
   <!-- ======================== HEADER ======================== -->
-  <header class="sticky top-0 z-40 mw-surface border-b backdrop-blur-md bg-opacity-90 dark:bg-opacity-90">
-    <div class="max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8 h-[68px] flex items-center justify-between gap-4">
+  <header class="sticky top-0 z-40 mw-surface border-b backdrop-blur-md bg-opacity-95 dark:bg-opacity-95 transition-colors">
+    <div class="max-w-[1640px] mx-auto px-4 sm:px-8 h-[72px] flex items-center justify-between gap-4">
       
       <!-- Brand Logo -->
-      <div class="flex items-center gap-4">
-        <a href="/" class="flex items-center gap-3 shrink-0 group">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00C853] to-[#008C35] flex items-center justify-center text-white shadow-md shadow-[#00AE42]/20 group-hover:scale-105 transition-transform">
-            <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
-              <path d="M3 8V5C3 3.89543 3.89543 3 5 3H8" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
-              <path d="M20 3H23C24.1046 3 25 3.89543 25 5V8" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
-              <path d="M25 20V23C25 24.1046 24.1046 25 23 25H20" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
-              <path d="M8 25H5C3.89543 25 3 24.1046 3 23V20" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
-              <path d="M14 7.5L20 11V17L14 20.5L8 17V11L14 7.5Z" fill="white" fill-opacity="0.22" stroke="white" stroke-width="1.8" stroke-linejoin="round"/>
-              <path d="M8 11L14 14.5L20 11" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M14 14.5V20.5" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-            </svg>
+      <div class="flex items-center gap-3">
+        <a href="/" class="flex items-center gap-3 group">
+          <div class="w-10 h-10 rounded-xl bg-[#00AE42] flex items-center justify-center text-white font-extrabold text-xl shadow-md shadow-[#00AE42]/25 group-hover:scale-105 transition-transform">
+            ⬡
           </div>
-          <div class="flex flex-col">
-            <div class="flex items-center gap-1.5">
-              <span class="font-extrabold text-xl tracking-tight mw-text-primary">STL<span class="text-[#00AE42]">-HUB</span></span>
+          <div>
+            <div class="text-xl font-extrabold tracking-tight leading-none mw-text-primary">
+              STL<span class="text-[#00AE42]">-HUB</span>
             </div>
-            <span class="text-[11px] mw-text-muted hidden sm:block leading-none mt-0.5">Особистий кабінет</span>
+            <div class="text-[10px] font-bold tracking-wider uppercase text-zinc-400 mt-1">
+              Майстерня під контролем
+            </div>
           </div>
         </a>
-
-        <span class="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#00AE42]/15 text-[#00AE42] border border-[#00AE42]/30">
-          <span>🧵</span>
-          <span>Мій склад філаментів</span>
-        </span>
       </div>
 
-      <!-- Navigation & Actions -->
-      <div class="flex items-center gap-3">
+      <!-- Right Controls: Theme Toggle & User Info -->
+      <div class="flex items-center gap-2.5">
         <!-- Theme Toggle -->
-        <button onclick="toggleTheme()" class="p-2 rounded-lg mw-elevated border hover:border-[#00AE42] transition relative overflow-hidden" title="Перемкнути Світлу / Темну тему">
+        <button onclick="toggleTheme()" class="p-2.5 rounded-xl mw-elevated border mw-border hover:border-[#00AE42] transition cursor-pointer" title="Перемкнути тему">
           <svg id="themeIconSun" class="w-4 h-4 text-amber-400 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
           </svg>
@@ -135,7 +131,7 @@
           </svg>
         </button>
 
-        <!-- User Profile Header Section -->
+        <!-- User Profile Slot -->
         <div id="headerAuthContainer">
           <!-- Populated by JS -->
         </div>
@@ -145,21 +141,21 @@
   </header>
 
   <!-- ======================== MAIN CONTENT ======================== -->
-  <main class="max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1">
+  <main class="max-w-[1640px] mx-auto px-4 sm:px-8 py-8 w-full flex-1">
 
     <!-- Loading State -->
-    <div id="loadingState" class="py-20 text-center">
+    <div id="loadingState" class="py-24 text-center">
       <div class="inline-block animate-spin w-10 h-10 border-4 border-[#00AE42] border-t-transparent rounded-full mb-3"></div>
       <p class="text-sm mw-text-muted">Завантаження кабінету...</p>
     </div>
 
     <!-- Login Prompt (Shown if not logged in) -->
-    <div id="notLoggedInCard" class="hidden max-w-lg mx-auto my-12 p-8 mw-surface border rounded-3xl text-center shadow-lg">
-      <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#00AE42]/15 text-[#00AE42] flex items-center justify-center text-3xl">
+    <div id="notLoggedInCard" class="hidden max-w-lg mx-auto my-16 p-8 mw-surface border mw-border rounded-3xl text-center shadow-2xl">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#00AE42]/15 text-[#00AE42] flex items-center justify-center text-3xl border border-[#00AE42]/30">
         🔐
       </div>
-      <h2 class="text-xl font-extrabold mw-text-primary">Увійдіть у свій кабінет</h2>
-      <p class="text-xs sm:text-sm mw-text-secondary mt-2 mb-6">
+      <h2 class="text-2xl font-extrabold mw-text-primary">Увійдіть у свій кабінет</h2>
+      <p class="text-xs sm:text-sm mw-text-secondary mt-2 mb-6 leading-relaxed">
         Зберігайте власні котушки філаменту з точними цінами, синхронізуйте налаштування друкарні та рахуйте собівартість в один клік.
       </p>
 
@@ -170,239 +166,317 @@
     </div>
 
     <!-- Logged In Cabinet View -->
-    <div id="loggedInView" class="hidden space-y-6">
+    <div id="loggedInView" class="hidden space-y-7">
 
-      <!-- Profile & KPI Summary Banner -->
-      <div class="mw-surface border rounded-3xl p-5 sm:p-7 shadow-sm">
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          
-          <!-- User info -->
-          <div class="flex items-center gap-4">
-            <img id="userAvatarImg" src="" alt="Avatar" class="w-16 h-16 rounded-2xl object-cover border-2 border-[#00AE42] shadow-sm bg-zinc-800" />
-            <div>
-              <div class="flex items-center gap-2">
-                <h1 id="userNameHeading" class="text-xl sm:text-2xl font-extrabold mw-text-primary tracking-tight">Завантаження...</h1>
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#00AE42]/15 text-[#00AE42] border border-[#00AE42]/30">3D-Майстер</span>
-              </div>
-              <p id="userEmailText" class="text-xs mw-text-secondary font-mono mt-0.5">user@example.com</p>
-              <div class="flex items-center gap-3 mt-2 text-[11px] mw-text-muted">
-                <span id="userJoinDate">В системі з ...</span>
-              </div>
-            </div>
+      <!-- Heading & Action Row -->
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-5">
+        <div>
+          <div class="text-[11px] font-extrabold tracking-widest uppercase text-[#00AE42]">
+            ОСОБИСТИЙ КАБІНЕТ / СКЛАД
           </div>
-
-          <!-- Quick KPI Counters -->
-          <div class="grid grid-cols-2 gap-3 shrink-0">
-            <div class="p-3.5 rounded-2xl mw-elevated border text-center min-w-[130px]">
-              <span class="text-[11px] mw-text-muted font-semibold block">Котушок у складі</span>
-              <span id="kpiSpoolsCount" class="text-xl font-extrabold text-[#00AE42] font-mono mt-0.5 block">0</span>
-            </div>
-            <div class="p-3.5 rounded-2xl mw-elevated border text-center min-w-[130px]">
-              <span class="text-[11px] mw-text-muted font-semibold block">Збережених кошторисів</span>
-              <span id="kpiCalculationsCount" class="text-xl font-extrabold mw-text-primary font-mono mt-0.5 block">0</span>
-            </div>
-          </div>
-
+          <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight mw-text-primary mt-1.5 mb-1">
+            Мій склад філаментів
+          </h1>
+          <p class="text-xs sm:text-sm mw-text-muted">
+            Усі ваші матеріали в одному місці — швидко знайти, змінити й розрахувати.
+          </p>
         </div>
+
+        <button type="button" onclick="openAddFilamentModal()"
+                class="px-5 py-3 rounded-xl bg-[#00AE42] hover:bg-[#00993A] text-white font-extrabold text-xs sm:text-sm shadow-lg shadow-[#00AE42]/25 flex items-center justify-center gap-2 transition transform active:scale-95 shrink-0 cursor-pointer">
+          <span class="text-base font-bold">＋</span>
+          <span>Додати котушку</span>
+        </button>
       </div>
 
-      <!-- Tab Navigation Switcher -->
-      <div class="flex flex-wrap items-center justify-between gap-4 border-b mw-border pb-3">
-        <div class="flex items-center gap-2 p-1 rounded-2xl mw-surface border text-xs font-bold shadow-sm">
+      <!-- Profile & Quick Stats Card (Mockup Style) -->
+      <section class="mw-surface border mw-border rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-5">
+        
+        <!-- Identity Left -->
+        <div class="flex items-center gap-4 min-w-0">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#00AE42] to-[#006024] p-0.5 border border-[#00AE42]/40 shadow-sm shrink-0 flex items-center justify-center overflow-hidden">
+            <img id="userAvatarImg" src="" alt="Avatar" class="w-full h-full object-cover rounded-[14px]" />
+          </div>
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2.5">
+              <h2 id="userNameHeading" class="text-base sm:text-lg font-extrabold mw-text-primary truncate">
+                Завантаження...
+              </h2>
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-[#00AE42]/15 text-[#00AE42] border border-[#00AE42]/30 shrink-0">
+                ✦ 3D-Майстер
+              </span>
+            </div>
+            <div class="text-xs mw-text-secondary mt-1 font-mono truncate">
+              <span id="userEmailText">user@example.com</span>
+              <span class="mx-1.5 opacity-50">·</span>
+              <span id="userJoinDate" class="text-zinc-500 font-sans">У системі з ...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats Right -->
+        <div class="flex items-center gap-0 border-t md:border-t-0 md:border-l mw-border pt-4 md:pt-0 shrink-0">
+          <div class="px-5 sm:px-7 text-left">
+            <span class="text-[11px] font-semibold mw-text-muted block">Видів пластику</span>
+            <strong id="kpiSpoolsCount" class="text-2xl sm:text-3xl font-extrabold text-[#00AE42] font-mono leading-tight block mt-0.5">0</strong>
+          </div>
+          <div class="px-5 sm:px-7 border-l mw-border text-left">
+            <span class="text-[11px] font-semibold mw-text-muted block">Збережених розрахунків</span>
+            <strong id="kpiCalculationsCount" class="text-2xl sm:text-3xl font-extrabold mw-text-primary font-mono leading-tight block mt-0.5">0</strong>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Workspace with Tabs -->
+      <section class="space-y-4">
+        
+        <!-- Tabs Navigation -->
+        <nav class="flex items-center gap-2 border-b mw-border pb-3 overflow-x-auto text-xs font-extrabold">
           <button type="button" onclick="switchCabinetTab('filaments')" id="tabNavFilaments"
-                  class="px-4 py-2 rounded-xl transition flex items-center gap-2 tab-active cursor-pointer">
-            <span>🧵</span>
-            <span>Мої котушки філаменту</span>
-            <span id="tabBadgeFilaments" class="px-1.5 py-0.2 rounded-full text-[10px] bg-white/20 text-white font-mono">0</span>
+                  class="px-4 py-2.5 rounded-xl border border-transparent transition flex items-center gap-2 tab-active cursor-pointer shrink-0">
+            <span>▦</span>
+            <span>Мої котушки</span>
+            <span id="tabBadgeFilaments" class="px-2 py-0.5 rounded-full text-[10px] bg-black/10 dark:bg-white/10 font-mono">0</span>
           </button>
+
           <button type="button" onclick="switchCabinetTab('settings')" id="tabNavSettings"
-                  class="px-4 py-2 rounded-xl transition flex items-center gap-2 mw-text-muted hover:mw-text-primary cursor-pointer">
-            <span>⚙️</span>
+                  class="px-4 py-2.5 rounded-xl border border-transparent transition flex items-center gap-2 mw-text-muted hover:mw-text-primary cursor-pointer shrink-0">
+            <span>⚙</span>
             <span>Тарифи майстерні</span>
           </button>
+
           <button type="button" onclick="switchCabinetTab('calculations')" id="tabNavCalculations"
-                  class="px-4 py-2 rounded-xl transition flex items-center gap-2 mw-text-muted hover:mw-text-primary cursor-pointer">
-            <span>📋</span>
+                  class="px-4 py-2.5 rounded-xl border border-transparent transition flex items-center gap-2 mw-text-muted hover:mw-text-primary cursor-pointer shrink-0">
+            <span>▤</span>
             <span>Збережені розрахунки</span>
-            <span id="tabBadgeCalculations" class="px-1.5 py-0.2 rounded-full text-[10px] bg-zinc-700 text-white font-mono">0</span>
+            <span id="tabBadgeCalculations" class="px-2 py-0.5 rounded-full text-[10px] bg-black/10 dark:bg-white/10 font-mono">0</span>
           </button>
-        </div>
+        </nav>
 
-        <div class="flex items-center gap-3">
-          <button type="button" onclick="openAddFilamentModal()"
-                  class="px-4 py-2 rounded-xl bg-[#00AE42] hover:bg-[#00993A] text-white font-bold text-xs shadow-md shadow-[#00AE42]/20 flex items-center gap-2 transition transform active:scale-95 cursor-pointer">
-            <span class="text-sm font-extrabold">+</span>
-            <span>Додати нову котушку</span>
-          </button>
-        </div>
-      </div>
+        <!-- ==================== TAB 1: FILAMENTS STASH ==================== -->
+        <div id="tabSectionFilaments" class="space-y-4">
+          
+          <!-- Toolbar: Search + Filter Pills + View Switcher -->
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+            
+            <!-- Search input -->
+            <div class="relative flex-1 min-w-[240px] max-w-md">
+              <span class="absolute left-3.5 top-2.5 text-xs text-zinc-400">⌕</span>
+              <input id="filamentSearchInput" type="text" placeholder="Пошук за назвою, брендом або кольором…" oninput="filterFilamentsList()"
+                     class="w-full bg-[var(--bg-elevated)] border mw-border rounded-xl pl-9 pr-3.5 py-2 text-xs mw-text-primary focus:outline-none focus:border-[#00AE42] transition" />
+            </div>
 
-      <!-- ==================== TAB 1: FILAMENTS STASH ==================== -->
-      <div id="tabSectionFilaments" class="space-y-4">
-        
-        <!-- Filter and Search Bar -->
-        <div class="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl mw-surface border shadow-sm">
-          <!-- Search input -->
-          <div class="relative flex-1 min-w-[200px] max-w-md">
-            <span class="absolute left-3 top-2.5 text-xs text-zinc-400">🔍</span>
-            <input id="filamentSearchInput" type="text" placeholder="Пошук за назвою, брендом, кольором..." oninput="filterFilamentsList()"
-                   class="w-full bg-[var(--bg-elevated)] border mw-border rounded-xl pl-8 pr-3 py-1.5 text-xs mw-text-primary focus:outline-none focus:border-[#00AE42]" />
+            <!-- Type Filter Pills -->
+            <div class="flex items-center gap-1.5 overflow-x-auto py-1 text-xs font-extrabold shrink-0">
+              <button onclick="setFilamentTypeFilter('all')" class="fil-type-btn px-3 py-1.5 rounded-lg bg-[#00AE42] text-white transition" data-type="all">Всі</button>
+              <button onclick="setFilamentTypeFilter('PLA')" class="fil-type-btn px-3 py-1.5 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary transition" data-type="PLA">PLA</button>
+              <button onclick="setFilamentTypeFilter('PETG')" class="fil-type-btn px-3 py-1.5 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary transition" data-type="PETG">PETG</button>
+              <button onclick="setFilamentTypeFilter('ABS')" class="fil-type-btn px-3 py-1.5 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary transition" data-type="ABS">ABS</button>
+              <button onclick="setFilamentTypeFilter('TPU')" class="fil-type-btn px-3 py-1.5 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary transition" data-type="TPU">TPU</button>
+              <button onclick="setFilamentTypeFilter('CoPET')" class="fil-type-btn px-3 py-1.5 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary transition" data-type="CoPET">CoPET</button>
+              <button onclick="setFilamentTypeFilter('Resin')" class="fil-type-btn px-3 py-1.5 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary transition" data-type="Resin">Смола</button>
+            </div>
+
+            <!-- View Switcher (Grid / Table) -->
+            <div class="flex items-center p-1 rounded-xl mw-elevated border mw-border shrink-0">
+              <button id="viewGridBtn" onclick="setFilamentsView('grid')" title="Картки"
+                      class="px-2.5 py-1.5 rounded-lg bg-[#00AE42] text-white text-xs font-bold transition">
+                ▦
+              </button>
+              <button id="viewTableBtn" onclick="setFilamentsView('table')" title="Таблиця"
+                      class="px-2.5 py-1.5 rounded-lg text-zinc-400 hover:mw-text-primary text-xs font-bold transition">
+                ☷
+              </button>
+            </div>
+
           </div>
 
-          <!-- Type Filter Pills -->
-          <div class="flex items-center gap-1.5 overflow-x-auto py-1 text-[11px] font-semibold">
-            <button onclick="setFilamentTypeFilter('all')" class="fil-type-btn px-2.5 py-1 rounded-lg bg-[#00AE42] text-white" data-type="all">Всі</button>
-            <button onclick="setFilamentTypeFilter('PLA')" class="fil-type-btn px-2.5 py-1 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary" data-type="PLA">PLA</button>
-            <button onclick="setFilamentTypeFilter('PETG')" class="fil-type-btn px-2.5 py-1 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary" data-type="PETG">PETG</button>
-            <button onclick="setFilamentTypeFilter('ABS')" class="fil-type-btn px-2.5 py-1 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary" data-type="ABS">ABS</button>
-            <button onclick="setFilamentTypeFilter('TPU')" class="fil-type-btn px-2.5 py-1 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary" data-type="TPU">TPU</button>
-            <button onclick="setFilamentTypeFilter('CoPET')" class="fil-type-btn px-2.5 py-1 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary" data-type="CoPET">CoPET</button>
-            <button onclick="setFilamentTypeFilter('Resin')" class="fil-type-btn px-2.5 py-1 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary" data-type="Resin">Смола</button>
+          <!-- Result Line & Sort -->
+          <div class="flex items-center justify-between text-xs mw-text-muted pt-1">
+            <span id="resultsCountLabel">Показано 0 матеріалів</span>
+            
+            <div class="flex items-center gap-2">
+              <label for="filamentSortSelect" class="hidden sm:inline">Сортування:</label>
+              <select id="filamentSortSelect" onchange="filterFilamentsList()"
+                      class="bg-[var(--bg-elevated)] border mw-border rounded-lg px-2.5 py-1 text-xs mw-text-primary focus:outline-none focus:border-[#00AE42] cursor-pointer">
+                <option value="default">за додаванням</option>
+                <option value="priceUp">Ціна: від дешевших</option>
+                <option value="priceDown">Ціна: від дорожчих</option>
+                <option value="name">Назва: А–Я</option>
+              </select>
+            </div>
           </div>
-        </div>
 
-        <!-- Filaments Cards Grid -->
-        <div id="filamentsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          <!-- Populated by JS -->
-        </div>
+          <!-- 1. Grid View (Cards) -->
+          <div id="filamentsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <!-- Populated by JS -->
+          </div>
 
-        <!-- Empty State -->
-        <div id="filamentsEmptyState" class="hidden p-12 text-center mw-surface border rounded-3xl">
-          <span class="text-4xl block mb-2">🧵</span>
-          <h3 class="text-base font-bold mw-text-primary">Не знайдено жодної котушки</h3>
-          <p class="text-xs mw-text-muted mt-1 max-w-sm mx-auto">
-            Додайте свій перший пластик, щоб автоматично підставляти його точну вартість у калькулятор.
-          </p>
-          <button onclick="openAddFilamentModal()" class="mt-4 px-4 py-2 rounded-xl bg-[#00AE42] text-white text-xs font-bold">
-            + Додати першу котушку
-          </button>
-        </div>
+          <!-- 2. Table View (List) -->
+          <div id="filamentsTableWrap" class="hidden mw-surface border mw-border rounded-2xl overflow-hidden shadow-sm">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-black/5 dark:bg-white/[0.03] border-b mw-border text-[11px] font-bold uppercase tracking-wider mw-text-muted">
+                  <tr>
+                    <th class="px-4 py-3.5">Матеріал</th>
+                    <th class="px-4 py-3.5">Тип</th>
+                    <th class="px-4 py-3.5">Бренд</th>
+                    <th class="px-4 py-3.5">Колір</th>
+                    <th class="px-4 py-3.5">Ціна за кг</th>
+                    <th class="px-4 py-3.5">Повна вага</th>
+                    <th class="px-4 py-3.5 text-right">Дії</th>
+                  </tr>
+                </thead>
+                <tbody id="filamentsTableBody" class="divide-y mw-border">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-      </div>
-
-      <!-- ==================== TAB 2: WORKSHOP SETTINGS ==================== -->
-      <div id="tabSectionSettings" class="hidden max-w-3xl space-y-5">
-        <div class="mw-surface border rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
-          <div>
-            <h2 class="text-lg font-bold mw-text-primary flex items-center gap-2">
-              <span>⚙️</span>
-              <span>Індивідуальні тарифи друкарні</span>
-            </h2>
-            <p class="text-xs mw-text-secondary mt-1">
-              Ці тарифи синхронізуються з вашим акаунтом і автоматично завантажуються в калькулятор при кожному вході.
+          <!-- Empty State -->
+          <div id="filamentsEmptyState" class="hidden p-14 text-center mw-surface border border-dashed mw-border rounded-3xl">
+            <span class="text-4xl block mb-2">🧵</span>
+            <h3 class="text-base font-bold mw-text-primary">Не знайдено жодної котушки</h3>
+            <p class="text-xs mw-text-muted mt-1 max-w-sm mx-auto">
+              Додайте свій перший пластик, щоб автоматично підставляти його точну вартість у калькулятор.
             </p>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-semibold mw-text-secondary mb-1.5">Тариф на електроенергію (грн/кВт·год):</label>
-              <div class="relative flex items-center rounded-xl mw-elevated border mw-border h-10 px-3">
-                <input id="setPowerKwh" type="number" step="0.01" min="0" value="4.32"
-                       class="w-full bg-transparent text-xs sm:text-sm mw-text-primary font-mono font-bold focus:outline-none" />
-                <span class="text-[11px] mw-text-muted font-mono select-none">₴/кВт·г</span>
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold mw-text-secondary mb-1.5">Споживання 3D-принтера (Вт):</label>
-              <div class="relative flex items-center rounded-xl mw-elevated border mw-border h-10 px-3">
-                <input id="setPrinterWatts" type="number" step="10" min="10" value="180"
-                       class="w-full bg-transparent text-xs sm:text-sm mw-text-primary font-mono font-bold focus:outline-none" />
-                <span class="text-[11px] mw-text-muted font-mono select-none">Вт</span>
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold mw-text-secondary mb-1.5">Амортизація та знос сопла (грн/год друку):</label>
-              <div class="relative flex items-center rounded-xl mw-elevated border mw-border h-10 px-3">
-                <input id="setDepreciation" type="number" step="1" min="0" value="20"
-                       class="w-full bg-transparent text-xs sm:text-sm mw-text-primary font-mono font-bold focus:outline-none" />
-                <span class="text-[11px] mw-text-muted font-mono select-none">₴/год</span>
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold mw-text-secondary mb-1.5">Підготовка замовлення та слайсинг (фіксовано):</label>
-              <div class="relative flex items-center rounded-xl mw-elevated border mw-border h-10 px-3">
-                <input id="setPrepFee" type="number" step="5" min="0" value="20"
-                       class="w-full bg-transparent text-xs sm:text-sm mw-text-primary font-mono font-bold focus:outline-none" />
-                <span class="text-[11px] mw-text-muted font-mono select-none">₴/зам</span>
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold mw-text-secondary mb-1.5">Закладений ризик браку (%):</label>
-              <div class="relative flex items-center rounded-xl mw-elevated border mw-border h-10 px-3">
-                <input id="setFailureRisk" type="number" step="1" min="0" max="50" value="5"
-                       class="w-full bg-transparent text-xs sm:text-sm mw-text-primary font-mono font-bold focus:outline-none" />
-                <span class="text-[11px] mw-text-muted font-mono select-none">%</span>
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-xs font-semibold mw-text-secondary mb-1.5">Стандартна націнка на роботу (%):</label>
-              <div class="relative flex items-center rounded-xl mw-elevated border mw-border h-10 px-3">
-                <input id="setMarkupPercent" type="number" step="5" min="0" max="500" value="100"
-                       class="w-full bg-transparent text-xs sm:text-sm mw-text-primary font-mono font-bold focus:outline-none" />
-                <span class="text-[11px] mw-text-muted font-mono select-none">%</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="pt-4 border-t mw-border flex items-center justify-between">
-            <button type="button" onclick="saveWorkshopSettingsBtn()"
-                    class="px-5 py-2.5 rounded-xl bg-[#00AE42] hover:bg-[#00993A] text-white font-bold text-xs shadow-md shadow-[#00AE42]/20 flex items-center gap-2 transition transform active:scale-95">
-              <span>💾</span>
-              <span>Зберегти налаштування майстерні</span>
+            <button onclick="openAddFilamentModal()" class="mt-4 px-4 py-2 rounded-xl bg-[#00AE42] text-white text-xs font-bold shadow-md shadow-[#00AE42]/20">
+              + Додати першу котушку
             </button>
-            <span id="saveSettingsStatus" class="text-xs text-[#00AE42] font-semibold hidden">✓ Збережено успішно!</span>
+          </div>
+
+        </div>
+
+        <!-- ==================== TAB 2: WORKSHOP SETTINGS ==================== -->
+        <div id="tabSectionSettings" class="hidden max-w-3xl space-y-5">
+          <div class="mw-surface border mw-border rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+            <div>
+              <h2 class="text-lg font-bold mw-text-primary flex items-center gap-2">
+                <span>⚙</span>
+                <span>Індивідуальні тарифи друкарні</span>
+              </h2>
+              <p class="text-xs mw-text-secondary mt-1">
+                Ці тарифи синхронізуються з вашим акаунтом і автоматично завантажуються в калькулятор при кожному вході.
+              </p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold mw-text-secondary mb-1.5">Тариф на електроенергію (грн/кВт·год):</label>
+                <div class="relative flex items-center rounded-xl mw-elevated border mw-border h-10 px-3">
+                  <input id="setPowerKwh" type="number" step="0.01" min="0" value="4.32"
+                         class="w-full bg-transparent text-xs sm:text-sm mw-text-primary font-mono font-bold focus:outline-none" />
+                  <span class="text-[11px] mw-text-muted font-mono select-none">₴/кВт·г</span>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold mw-text-secondary mb-1.5">Споживання 3D-принтера (Вт):</label>
+                <div class="relative flex items-center rounded-xl mw-elevated border mw-border h-10 px-3">
+                  <input id="setPrinterWatts" type="number" step="10" min="10" value="180"
+                         class="w-full bg-transparent text-xs sm:text-sm mw-text-primary font-mono font-bold focus:outline-none" />
+                  <span class="text-[11px] mw-text-muted font-mono select-none">Вт</span>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold mw-text-secondary mb-1.5">Амортизація та знос сопла (грн/год друку):</label>
+                <div class="relative flex items-center rounded-xl mw-elevated border mw-border h-10 px-3">
+                  <input id="setDepreciation" type="number" step="1" min="0" value="20"
+                         class="w-full bg-transparent text-xs sm:text-sm mw-text-primary font-mono font-bold focus:outline-none" />
+                  <span class="text-[11px] mw-text-muted font-mono select-none">₴/год</span>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold mw-text-secondary mb-1.5">Підготовка замовлення та слайсинг (фіксовано):</label>
+                <div class="relative flex items-center rounded-xl mw-elevated border mw-border h-10 px-3">
+                  <input id="setPrepFee" type="number" step="5" min="0" value="20"
+                         class="w-full bg-transparent text-xs sm:text-sm mw-text-primary font-mono font-bold focus:outline-none" />
+                  <span class="text-[11px] mw-text-muted font-mono select-none">₴/зам</span>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold mw-text-secondary mb-1.5">Закладений ризик браку (%):</label>
+                <div class="relative flex items-center rounded-xl mw-elevated border mw-border h-10 px-3">
+                  <input id="setFailureRisk" type="number" step="1" min="0" max="50" value="5"
+                         class="w-full bg-transparent text-xs sm:text-sm mw-text-primary font-mono font-bold focus:outline-none" />
+                  <span class="text-[11px] mw-text-muted font-mono select-none">%</span>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold mw-text-secondary mb-1.5">Стандартна націнка на роботу (%):</label>
+                <div class="relative flex items-center rounded-xl mw-elevated border mw-border h-10 px-3">
+                  <input id="setMarkupPercent" type="number" step="5" min="0" max="500" value="100"
+                         class="w-full bg-transparent text-xs sm:text-sm mw-text-primary font-mono font-bold focus:outline-none" />
+                  <span class="text-[11px] mw-text-muted font-mono select-none">%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-4 border-t mw-border flex items-center justify-between">
+              <button type="button" onclick="saveWorkshopSettingsBtn()"
+                      class="px-5 py-2.5 rounded-xl bg-[#00AE42] hover:bg-[#00993A] text-white font-bold text-xs shadow-md shadow-[#00AE42]/20 flex items-center gap-2 transition transform active:scale-95 cursor-pointer">
+                <span>💾</span>
+                <span>Зберегти налаштування майстерні</span>
+              </button>
+              <span id="saveSettingsStatus" class="text-xs text-[#00AE42] font-semibold hidden">✓ Збережено успішно!</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- ==================== TAB 3: SAVED CALCULATIONS ==================== -->
-      <div id="tabSectionCalculations" class="hidden space-y-4">
-        <div class="flex items-center justify-between">
-          <div>
-            <h2 class="text-base font-bold mw-text-primary">Збережені розрахунки та кошториси</h2>
-            <p class="text-xs mw-text-secondary">Історія ваших прорахунків із калькулятора 3D-друку.</p>
+        <!-- ==================== TAB 3: SAVED CALCULATIONS ==================== -->
+        <div id="tabSectionCalculations" class="hidden space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-base font-bold mw-text-primary">Збережені розрахунки та кошториси</h2>
+              <p class="text-xs mw-text-secondary">Історія ваших прорахунків із калькулятора 3D-друку.</p>
+            </div>
+            <a href="/calc" class="px-3.5 py-1.5 rounded-xl bg-[#00AE42] text-white text-xs font-bold hover:bg-[#00993A] transition">
+              + Новий розрахунок
+            </a>
           </div>
-          <a href="/calc" class="px-3.5 py-1.5 rounded-xl bg-[#00AE42] text-white text-xs font-bold hover:bg-[#00993A] transition">
-            + Новий розрахунок
-          </a>
+
+          <div id="calculationsList" class="space-y-3">
+            <!-- Populated by JS -->
+          </div>
+
+          <div id="calculationsEmptyState" class="hidden p-12 text-center mw-surface border border-dashed mw-border rounded-3xl">
+            <span class="text-4xl block mb-2">📋</span>
+            <h3 class="text-base font-bold mw-text-primary">Ще немає збережених розрахунків</h3>
+            <p class="text-xs mw-text-muted mt-1 max-w-sm mx-auto">
+              Перейдіть у калькулятор 3D-друку, завантажте модель або введіть вагу, та натисніть «Зберегти в особистий кабінет».
+            </p>
+            <a href="/calc" class="inline-block mt-4 px-4 py-2 rounded-xl bg-[#00AE42] text-white text-xs font-bold">
+              Перейти до калькулятора
+            </a>
+          </div>
         </div>
 
-        <div id="calculationsList" class="space-y-3">
-          <!-- Populated by JS -->
-        </div>
-
-        <div id="calculationsEmptyState" class="hidden p-12 text-center mw-surface border rounded-3xl">
-          <span class="text-4xl block mb-2">📋</span>
-          <h3 class="text-base font-bold mw-text-primary">Ще немає збережених розрахунків</h3>
-          <p class="text-xs mw-text-muted mt-1 max-w-sm mx-auto">
-            Перейдіть у калькулятор 3D-друку, завантажте модель або введіть вагу, та натисніть «Зберегти в особистий кабінет».
-          </p>
-          <a href="/calc" class="inline-block mt-4 px-4 py-2 rounded-xl bg-[#00AE42] text-white text-xs font-bold">
-            Перейти до калькулятора
-          </a>
-        </div>
-      </div>
+      </section>
 
     </div>
 
   </main>
 
   <!-- ======================== MODAL: ADD / EDIT FILAMENT ======================== -->
-  <div id="filamentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm hidden">
-    <div class="mw-surface border rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[92vh] animate-in fade-in duration-200">
+  <div id="filamentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm hidden">
+    <div class="mw-surface border mw-border rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-200">
       
       <!-- Modal Header -->
       <div class="p-5 border-b mw-border flex items-center justify-between">
-        <h3 id="filamentModalTitle" class="text-base font-bold mw-text-primary flex items-center gap-2">
-          <span>🧵</span>
-          <span>Додати котушку філаменту</span>
-        </h3>
-        <button type="button" onclick="closeFilamentModal()" class="p-1 rounded-lg mw-elevated hover:text-red-500 transition">
+        <div>
+          <h3 id="filamentModalTitle" class="text-base font-bold mw-text-primary flex items-center gap-2">
+            <span>🧵</span>
+            <span>Нова котушка</span>
+          </h3>
+          <p class="text-xs mw-text-muted mt-0.5">Додайте філамент до особистого складу.</p>
+        </div>
+        <button type="button" onclick="closeFilamentModal()" class="p-1.5 rounded-lg mw-elevated hover:text-red-500 transition cursor-pointer">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
@@ -412,16 +486,22 @@
         <input type="hidden" id="formFilamentId" value="" />
 
         <div>
-          <label class="block text-xs font-semibold mw-text-secondary mb-1">Назва котушки / маркування *</label>
-          <input id="formFilamentName" type="text" required placeholder="Наприклад: PLA Basic Black або PETG White"
-                 class="w-full bg-[var(--bg-elevated)] border mw-border rounded-xl px-3 py-2 text-xs sm:text-sm mw-text-primary focus:outline-none focus:border-[#00AE42]" />
+          <label class="block text-xs font-semibold mw-text-secondary mb-1">Назва *</label>
+          <input id="formFilamentName" type="text" required placeholder="Наприклад, PLA Matte Black"
+                 class="w-full bg-[var(--bg-elevated)] border mw-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm mw-text-primary focus:outline-none focus:border-[#00AE42]" />
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold mw-text-secondary mb-1">Тип пластику / смоли</label>
+            <label class="block text-xs font-semibold mw-text-secondary mb-1">Бренд *</label>
+            <input id="formBrand" type="text" required placeholder="Bambu Lab, Plexiwire..."
+                   class="w-full bg-[var(--bg-elevated)] border mw-border rounded-xl px-3.5 py-2.5 text-xs mw-text-primary focus:outline-none focus:border-[#00AE42]" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold mw-text-secondary mb-1">Матеріал</label>
             <select id="formMaterialType"
-                    class="w-full bg-[var(--bg-elevated)] border mw-border rounded-xl px-3 py-2 text-xs mw-text-primary focus:outline-none focus:border-[#00AE42]">
+                    class="w-full bg-[var(--bg-elevated)] border mw-border rounded-xl px-3 py-2.5 text-xs mw-text-primary focus:outline-none focus:border-[#00AE42] cursor-pointer">
               <option value="PLA">PLA</option>
               <option value="PETG" selected>PETG</option>
               <option value="ABS">ABS</option>
@@ -429,30 +509,24 @@
               <option value="TPU">TPU 95A</option>
               <option value="CoPET">CoPET</option>
               <option value="Nylon">Nylon PA</option>
-              <option value="Resin">Resin / Смола</option>
+              <option value="Resin">Смола</option>
               <option value="Other">Інший матеріал</option>
             </select>
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold mw-text-secondary mb-1">Бренд / Виробник</label>
-            <input id="formBrand" type="text" placeholder="Bambu Lab, Plexiwire..."
-                   class="w-full bg-[var(--bg-elevated)] border mw-border rounded-xl px-3 py-2 text-xs mw-text-primary focus:outline-none focus:border-[#00AE42]" />
           </div>
         </div>
 
         <!-- Color Section -->
         <div>
-          <label class="block text-xs font-semibold mw-text-secondary mb-1">Колір пластику</label>
+          <label class="block text-xs font-semibold mw-text-secondary mb-1">Колір</label>
           <div class="flex items-center gap-3">
             <input id="formColorHex" type="color" value="#00AE42" onchange="syncColorInput(this.value)"
-                   class="w-10 h-10 rounded-xl cursor-pointer bg-transparent border-0 p-0" />
-            <input id="formColorName" type="text" placeholder="Назва кольору: Чорний, Смарагдовий..."
-                   class="flex-1 bg-[var(--bg-elevated)] border mw-border rounded-xl px-3 py-2 text-xs mw-text-primary focus:outline-none focus:border-[#00AE42]" />
+                   class="w-10 h-10 rounded-xl cursor-pointer bg-transparent border-0 p-0 shrink-0" />
+            <input id="formColorName" type="text" placeholder="Наприклад: Чорний, Білий, Смарагдовий..."
+                   class="flex-1 bg-[var(--bg-elevated)] border mw-border rounded-xl px-3.5 py-2 text-xs mw-text-primary focus:outline-none focus:border-[#00AE42]" />
           </div>
           <!-- Quick color presets -->
           <div class="flex items-center gap-1.5 mt-2">
-            <button type="button" onclick="setColorPreset('#1C1C1E', 'Чорний')" class="w-5 h-5 rounded-full border border-white/20 bg-[#1C1C1E]" title="Чорний"></button>
+            <button type="button" onclick="setColorPreset('#131715', 'Чорний')" class="w-5 h-5 rounded-full border border-white/20 bg-[#131715]" title="Чорний"></button>
             <button type="button" onclick="setColorPreset('#FFFFFF', 'Білий')" class="w-5 h-5 rounded-full border border-black/20 bg-white" title="Білий"></button>
             <button type="button" onclick="setColorPreset('#71717A', 'Сірий')" class="w-5 h-5 rounded-full border border-white/20 bg-zinc-500" title="Сірий"></button>
             <button type="button" onclick="setColorPreset('#EF4444', 'Червоний')" class="w-5 h-5 rounded-full border border-white/20 bg-red-500" title="Червоний"></button>
@@ -465,7 +539,7 @@
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold mw-text-secondary mb-1">Вартість котушки (грн/кг) *</label>
+            <label class="block text-xs font-semibold mw-text-secondary mb-1">Вартість (грн/кг) *</label>
             <div class="relative flex items-center rounded-xl mw-elevated border mw-border px-3 h-10">
               <input id="formPricePerKg" type="number" step="10" min="1" required value="650"
                      class="w-full bg-transparent text-xs font-mono font-bold mw-text-primary focus:outline-none" />
@@ -474,9 +548,9 @@
           </div>
 
           <div>
-            <label class="block text-xs font-semibold mw-text-secondary mb-1">Повна вага котушки (г)</label>
+            <label class="block text-xs font-semibold mw-text-secondary mb-1">Повна вага (г) *</label>
             <div class="relative flex items-center rounded-xl mw-elevated border mw-border px-3 h-10">
-              <input id="formWeightSpool" type="number" step="50" min="100" max="5000" value="1000"
+              <input id="formWeightSpool" type="number" step="50" min="50" max="5000" required value="1000"
                      class="w-full bg-transparent text-xs font-mono font-bold mw-text-primary focus:outline-none" />
               <span class="text-[11px] mw-text-muted font-mono select-none">г</span>
             </div>
@@ -485,11 +559,11 @@
 
         <!-- Submit Footer -->
         <div class="pt-4 border-t mw-border flex items-center justify-end gap-3">
-          <button type="button" onclick="closeFilamentModal()" class="px-4 py-2 rounded-xl mw-elevated text-xs font-semibold mw-text-muted hover:mw-text-primary">
+          <button type="button" onclick="closeFilamentModal()" class="px-4 py-2.5 rounded-xl mw-elevated border mw-border text-xs font-semibold mw-text-muted hover:mw-text-primary transition cursor-pointer">
             Скасувати
           </button>
           <button type="submit" id="btnSaveFilament"
-                  class="px-5 py-2 rounded-xl bg-[#00AE42] hover:bg-[#00993A] text-white text-xs font-bold shadow-md shadow-[#00AE42]/20">
+                  class="px-5 py-2.5 rounded-xl bg-[#00AE42] hover:bg-[#00993A] text-white text-xs font-bold shadow-md shadow-[#00AE42]/20 transition cursor-pointer">
             Зберегти котушку
           </button>
         </div>
@@ -498,7 +572,7 @@
     </div>
   </div>
 
-  <!-- ======================== MODAL: CUSTOM CONFIRMATION / PROMPT DIALOG ======================== -->
+  <!-- ======================== MODAL: CUSTOM CONFIRMATION DIALOG ======================== -->
   <div id="customConfirmModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm hidden">
     <div class="mw-surface border mw-border rounded-3xl w-full max-w-sm p-6 shadow-2xl text-center transform transition-all animate-in fade-in zoom-in-95 duration-200">
       
@@ -509,15 +583,9 @@
 
       <!-- Title & Message -->
       <h3 id="confirmModalTitle" class="text-base sm:text-lg font-extrabold mw-text-primary tracking-tight">Вихід з акаунта</h3>
-      <p id="confirmModalMessage" class="text-xs sm:text-sm mw-text-secondary mt-2 mb-4 leading-relaxed">
+      <p id="confirmModalMessage" class="text-xs sm:text-sm mw-text-secondary mt-2 mb-5 leading-relaxed">
         Ви дійсно бажаєте вийти зі свого особистого кабінету?
       </p>
-
-      <!-- Optional Input (for prompt dialogs) -->
-      <div id="confirmModalInputContainer" class="hidden mb-5">
-        <input id="confirmModalInput" type="text"
-               class="w-full bg-[var(--bg-elevated)] border mw-border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm mw-text-primary focus:outline-none focus:border-[#00AE42] text-left" />
-      </div>
 
       <!-- Action Buttons -->
       <div class="flex items-center justify-center gap-3">
@@ -548,6 +616,7 @@
     let allFilaments = [];
     let allCalculations = [];
     let currentFilamentFilterType = 'all';
+    let currentFilamentsView = localStorage.getItem('stlhub_filaments_view') || 'grid'; // 'grid' | 'table'
 
     const DENSITIES_BY_TYPE = {
       PLA: 1.24,
@@ -628,10 +697,7 @@
       confirmText = 'Підтвердити',
       cancelText = 'Скасувати',
       isDanger = false,
-      icon = '❓',
-      hasInput = false,
-      inputValue = '',
-      inputPlaceholder = ''
+      icon = '❓'
     } = {}) {
       return new Promise((resolve) => {
         const modal = document.getElementById('customConfirmModal');
@@ -644,8 +710,6 @@
         const iconBox = document.getElementById('confirmModalIconBox');
         const titleEl = document.getElementById('confirmModalTitle');
         const msgEl = document.getElementById('confirmModalMessage');
-        const inputContainer = document.getElementById('confirmModalInputContainer');
-        const inputEl = document.getElementById('confirmModalInput');
         const okBtn = document.getElementById('confirmModalOkBtn');
         const cancelBtn = document.getElementById('confirmModalCancelBtn');
 
@@ -654,15 +718,6 @@
         if (msgEl) msgEl.textContent = message;
         if (okBtn) okBtn.textContent = confirmText;
         if (cancelBtn) cancelBtn.textContent = cancelText;
-
-        if (hasInput && inputContainer && inputEl) {
-          inputContainer.classList.remove('hidden');
-          inputEl.value = inputValue;
-          inputEl.placeholder = inputPlaceholder;
-          setTimeout(() => { inputEl.focus(); inputEl.select(); }, 60);
-        } else if (inputContainer) {
-          inputContainer.classList.add('hidden');
-        }
 
         if (iconBox) {
           iconBox.className = isDanger
@@ -677,8 +732,7 @@
         }
 
         const handleKey = (e) => {
-          if (e.key === 'Escape') cleanup(hasInput ? null : false);
-          if (e.key === 'Enter' && hasInput) cleanup(inputEl ? inputEl.value.trim() : '');
+          if (e.key === 'Escape') cleanup(false);
         };
 
         const cleanup = (val) => {
@@ -690,10 +744,10 @@
           resolve(val);
         };
 
-        okBtn.onclick = () => cleanup(hasInput ? (inputEl ? inputEl.value.trim() : '') : true);
-        cancelBtn.onclick = () => cleanup(hasInput ? null : false);
+        okBtn.onclick = () => cleanup(true);
+        cancelBtn.onclick = () => cleanup(false);
         modal.onclick = (e) => {
-          if (e.target === modal) cleanup(hasInput ? null : false);
+          if (e.target === modal) cleanup(false);
         };
         window.addEventListener('keydown', handleKey);
 
@@ -738,12 +792,12 @@
       if (currentUser) {
         const avatarSrc = currentUser.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=00AE42&color=fff`;
         c.innerHTML = `
-          <div class="flex items-center gap-2.5">
-            <div class="flex items-center gap-2 pl-2 pr-3 py-1 rounded-xl mw-elevated border">
+          <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl mw-elevated border mw-border">
               <img src="${avatarSrc}" alt="Avatar" class="w-6 h-6 rounded-lg object-cover" />
-              <span class="text-xs font-bold mw-text-primary hidden sm:inline max-w-[120px] truncate">${currentUser.name}</span>
+              <span class="text-xs font-bold mw-text-primary hidden sm:inline max-w-[130px] truncate">${currentUser.name}</span>
             </div>
-            <button onclick="logout()" class="px-3 py-1.5 rounded-xl mw-elevated border hover:text-red-500 text-xs font-semibold transition" title="Вийти з акаунта">
+            <button onclick="logout()" class="px-3 py-2 rounded-xl mw-elevated border mw-border hover:text-red-500 text-xs font-semibold transition cursor-pointer" title="Вийти з акаунта">
               Вийти
             </button>
           </div>
@@ -806,22 +860,6 @@
       }
     }
 
-    async function loginDevDemo() {
-      try {
-        const res = await fetch('/api/auth/dev-login', { method: 'POST' });
-        const data = await res.json();
-        if (res.ok && data.user) {
-          currentUser = data.user;
-          showToast(`Вхід виконано! Вітаємо, ${currentUser.name}!`);
-          setTimeout(() => window.location.reload(), 400);
-        } else {
-          showToast('Помилка входу', true);
-        }
-      } catch (e) {
-        showToast('Помилка сервера', true);
-      }
-    }
-
     async function logout() {
       const confirmed = await showConfirmDialog({
         title: 'Вихід з акаунта',
@@ -845,7 +883,7 @@
       document.getElementById('userAvatarImg').src = avatarSrc;
       if (user.created_at) {
         const date = new Date(user.created_at * 1000).toLocaleDateString('uk-UA', { year: 'numeric', month: 'long', day: 'numeric' });
-        document.getElementById('userJoinDate').textContent = `В системі з ${date}`;
+        document.getElementById('userJoinDate').textContent = `У системі з ${date}`;
       }
     }
 
@@ -868,6 +906,30 @@
       });
     }
 
+    // ==================== FILAMENTS VIEW (GRID vs TABLE) ====================
+
+    function setFilamentsView(v) {
+      currentFilamentsView = v;
+      localStorage.setItem('stlhub_filaments_view', v);
+
+      const gridEl = document.getElementById('filamentsGrid');
+      const tableWrap = document.getElementById('filamentsTableWrap');
+      const btnGrid = document.getElementById('viewGridBtn');
+      const btnTable = document.getElementById('viewTableBtn');
+
+      if (v === 'table') {
+        gridEl.classList.add('hidden');
+        tableWrap.classList.remove('hidden');
+        btnTable.className = 'px-2.5 py-1.5 rounded-lg bg-[#00AE42] text-white text-xs font-bold transition';
+        btnGrid.className = 'px-2.5 py-1.5 rounded-lg text-zinc-400 hover:mw-text-primary text-xs font-bold transition';
+      } else {
+        gridEl.classList.remove('hidden');
+        tableWrap.classList.add('hidden');
+        btnGrid.className = 'px-2.5 py-1.5 rounded-lg bg-[#00AE42] text-white text-xs font-bold transition';
+        btnTable.className = 'px-2.5 py-1.5 rounded-lg text-zinc-400 hover:mw-text-primary text-xs font-bold transition';
+      }
+    }
+
     // ==================== FILAMENTS MANAGEMENT ====================
 
     async function loadFilaments() {
@@ -876,6 +938,7 @@
         const data = await res.json();
         allFilaments = data.filaments || [];
         updateFilamentsKPI();
+        setFilamentsView(currentFilamentsView);
         renderFilamentsList();
       } catch (e) {
         console.error('Failed to load filaments:', e);
@@ -907,13 +970,13 @@
       renderFilamentsList();
     }
 
-    function renderFilamentsList() {
-      const grid = document.getElementById('filamentsGrid');
-      const empty = document.getElementById('filamentsEmptyState');
-      const q = (document.getElementById('filamentSearchInput').value || '').toLowerCase().trim();
+    function getFilteredAndSortedFilaments() {
+      const q = (document.getElementById('filamentSearchInput')?.value || '').toLowerCase().trim();
+      const sortVal = document.getElementById('filamentSortSelect')?.value || 'default';
 
-      const filtered = allFilaments.filter(f => {
-        const matchType = currentFilamentFilterType === 'all' || f.material_type.toUpperCase().includes(currentFilamentFilterType.toUpperCase());
+      let list = allFilaments.filter(f => {
+        const matchType = currentFilamentFilterType === 'all' || 
+                          f.material_type.toUpperCase().includes(currentFilamentFilterType.toUpperCase());
         const matchQ = !q || (f.name && f.name.toLowerCase().includes(q)) ||
                              (f.brand && f.brand.toLowerCase().includes(q)) ||
                              (f.color_name && f.color_name.toLowerCase().includes(q)) ||
@@ -921,69 +984,160 @@
         return matchType && matchQ;
       });
 
+      if (sortVal === 'priceUp') {
+        list.sort((a, b) => (parseFloat(a.price_per_kg) || 0) - (parseFloat(b.price_per_kg) || 0));
+      } else if (sortVal === 'priceDown') {
+        list.sort((a, b) => (parseFloat(b.price_per_kg) || 0) - (parseFloat(a.price_per_kg) || 0));
+      } else if (sortVal === 'name') {
+        list.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'uk'));
+      }
+
+      return list;
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function renderFilamentsList() {
+      const grid = document.getElementById('filamentsGrid');
+      const tableBody = document.getElementById('filamentsTableBody');
+      const tableWrap = document.getElementById('filamentsTableWrap');
+      const empty = document.getElementById('filamentsEmptyState');
+      const countLabel = document.getElementById('resultsCountLabel');
+
+      const filtered = getFilteredAndSortedFilaments();
+
+      if (countLabel) {
+        countLabel.textContent = `Показано ${filtered.length} з ${allFilaments.length} матеріалів`;
+      }
+
       if (filtered.length === 0) {
         grid.innerHTML = '';
+        tableBody.innerHTML = '';
+        tableWrap.classList.add('hidden');
+        grid.classList.add('hidden');
         empty.classList.remove('hidden');
         return;
       }
 
       empty.classList.add('hidden');
+      setFilamentsView(currentFilamentsView);
+
+      // 1. Render Grid View Cards (matching Mockup)
       grid.innerHTML = filtered.map(f => {
         const spoolW = parseFloat(f.weight_spool_g) || 1000;
         const colorHex = f.color_hex || '#00AE42';
+        const weightKg = (spoolW / 1000).toLocaleString('uk-UA');
 
         return `
-          <div class="mw-surface border rounded-3xl p-5 shadow-sm hover:border-[#00AE42]/60 transition flex flex-col justify-between group">
+          <article class="mw-surface border mw-border rounded-2xl p-5 shadow-sm hover:border-[#00AE42]/60 hover:-translate-y-1 transition duration-200 flex flex-col justify-between group">
             <div>
-              <!-- Top Row: Color + Type + Brand -->
-              <div class="flex items-center justify-between gap-2 mb-3">
+              <!-- Top Row: Color Dot + Material Tag + Brand + More Button -->
+              <div class="flex items-center justify-between gap-2 mb-3.5">
                 <div class="flex items-center gap-2 min-w-0">
-                  <span class="w-4 h-4 rounded-full border border-black/20 shadow-sm shrink-0" style="background-color: ${colorHex}"></span>
+                  <span class="w-3.5 h-3.5 rounded-full border border-black/30 shadow-inner shrink-0" style="background-color: ${colorHex}"></span>
                   <span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wide bg-[#00AE42]/15 text-[#00AE42] border border-[#00AE42]/30 shrink-0">
-                    ${f.material_type}
+                    ${escapeHtml(f.material_type)}
                   </span>
-                  ${f.brand ? `<span class="text-[11px] mw-text-muted truncate font-medium">${f.brand}</span>` : ''}
+                  ${f.brand ? `<span class="text-[11px] mw-text-muted truncate font-medium">${escapeHtml(f.brand)}</span>` : ''}
                 </div>
+                <button type="button" onclick="editFilamentModal(${f.id})" class="text-zinc-400 hover:mw-text-primary px-1 py-0.5 rounded text-base leading-none transition" title="Редагувати">
+                  ⋯
+                </button>
               </div>
 
               <!-- Title -->
-              <h4 class="text-sm font-extrabold mw-text-primary tracking-tight line-clamp-1" title="${f.name}">
-                ${f.name}
-              </h4>
-              <span class="text-[11px] mw-text-secondary block mt-0.5">
-                ${f.color_name ? f.color_name : 'Колір без назви'}
-              </span>
+              <h3 class="text-sm font-extrabold mw-text-primary tracking-tight line-clamp-2 min-h-[40px] leading-snug" title="${escapeHtml(f.name)}">
+                ${escapeHtml(f.name)}
+              </h3>
+              
+              <!-- Color & Weight info label -->
+              <div class="text-[11px] mw-text-secondary mt-1">
+                ${f.color_name ? escapeHtml(f.color_name) : 'Колір'} · ${weightKg} кг
+              </div>
 
-              <!-- Price & Full Weight -->
-              <div class="grid grid-cols-2 gap-2 my-3.5 p-2.5 rounded-xl mw-elevated border text-xs font-mono">
+              <!-- Divider rule -->
+              <div class="h-px bg-zinc-200 dark:bg-zinc-800 my-3.5"></div>
+
+              <!-- Metrics -->
+              <div class="grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <span class="text-[10px] mw-text-muted font-sans block">Вартість:</span>
-                  <span class="font-extrabold text-[#00AE42]">${f.price_per_kg} ₴/кг</span>
+                  <span class="text-[10px] mw-text-muted block mb-0.5">Вартість матеріалу</span>
+                  <strong class="text-sm font-extrabold text-[#00AE42] font-mono">${f.price_per_kg} <span class="text-[11px] font-normal mw-text-muted">₴/кг</span></strong>
                 </div>
                 <div>
-                  <span class="text-[10px] mw-text-muted font-sans block">Повна вага:</span>
-                  <span class="font-bold mw-text-primary">${spoolW} г</span>
+                  <span class="text-[10px] mw-text-muted block mb-0.5">Повна вага</span>
+                  <strong class="text-sm font-extrabold mw-text-primary font-mono">${spoolW} <span class="text-[11px] font-normal mw-text-muted">г</span></strong>
                 </div>
               </div>
             </div>
 
             <!-- Card Actions -->
-            <div class="pt-3 border-t mw-border flex items-center justify-between gap-2">
-              <a href="/calc?filament_id=${f.id}" class="px-3 py-1.5 rounded-xl bg-[#00AE42] hover:bg-[#00993A] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
-                <span>🧮</span>
-                <span>В калькулятор</span>
+            <div class="pt-4 mt-2 flex items-center gap-2">
+              <a href="/calc?filament_id=${f.id}" class="flex-1 py-2 px-3 rounded-xl bg-[#00AE42] hover:bg-[#00993A] text-white text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm text-center">
+                <span>Перейти в калькулятор</span>
               </a>
-              <div class="flex items-center gap-1">
-                <button type="button" onclick="editFilamentModal(${f.id})" class="p-1.5 rounded-lg mw-elevated hover:border-[#00AE42] border transition" title="Редагувати">
-                  ✏️
+              <button type="button" onclick="editFilamentModal(${f.id})" class="p-2 rounded-xl mw-elevated border mw-border hover:border-[#00AE42] mw-text-secondary hover:mw-text-primary transition" title="Редагувати">
+                ✎
+              </button>
+              <button type="button" onclick="deleteFilament(${f.id})" class="p-2 rounded-xl mw-elevated border mw-border hover:text-red-500 mw-text-secondary transition" title="Видалити">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              </button>
+            </div>
+
+          </article>
+        `;
+      }).join('');
+
+      // 2. Render Table View Rows (matching Mockup)
+      tableBody.innerHTML = filtered.map(f => {
+        const spoolW = parseFloat(f.weight_spool_g) || 1000;
+        const colorHex = f.color_hex || '#00AE42';
+
+        return `
+          <tr class="hover:bg-black/5 dark:hover:bg-white/[0.02] transition">
+            <td class="px-4 py-3.5">
+              <span class="font-extrabold mw-text-primary block">${escapeHtml(f.name)}</span>
+            </td>
+            <td class="px-4 py-3.5">
+              <span class="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-[#00AE42]/15 text-[#00AE42] border border-[#00AE42]/30">
+                ${escapeHtml(f.material_type)}
+              </span>
+            </td>
+            <td class="px-4 py-3.5 mw-text-secondary">
+              ${escapeHtml(f.brand || '—')}
+            </td>
+            <td class="px-4 py-3.5 whitespace-nowrap">
+              <div class="flex items-center gap-2">
+                <span class="w-3.5 h-3.5 rounded-full border border-black/30 shrink-0" style="background-color: ${colorHex}"></span>
+                <span class="mw-text-secondary">${escapeHtml(f.color_name || 'Без назви')}</span>
+              </div>
+            </td>
+            <td class="px-4 py-3.5 font-mono font-bold text-[#00AE42]">
+              ${f.price_per_kg} ₴
+            </td>
+            <td class="px-4 py-3.5 font-mono mw-text-primary">
+              ${spoolW} г
+            </td>
+            <td class="px-4 py-3.5 text-right whitespace-nowrap">
+              <div class="flex items-center justify-end gap-1.5">
+                <a href="/calc?filament_id=${f.id}" class="px-2.5 py-1.5 rounded-lg bg-[#00AE42]/15 text-[#00AE42] hover:bg-[#00AE42] hover:text-white text-xs font-bold transition">
+                  Калькулятор 🧮
+                </a>
+                <button type="button" onclick="editFilamentModal(${f.id})" class="p-1.5 rounded-lg mw-elevated border mw-border hover:border-[#00AE42] mw-text-secondary hover:mw-text-primary transition" title="Редагувати">
+                  ✎
                 </button>
-                <button type="button" onclick="deleteFilament(${f.id})" class="p-1.5 rounded-lg mw-elevated hover:text-red-500 border transition" title="Видалити">
+                <button type="button" onclick="deleteFilament(${f.id})" class="p-1.5 rounded-lg mw-elevated border mw-border hover:text-red-500 mw-text-secondary transition" title="Видалити">
                   🗑️
                 </button>
               </div>
-            </div>
-
-          </div>
+            </td>
+          </tr>
         `;
       }).join('');
     }
@@ -993,7 +1147,7 @@
     function openAddFilamentModal() {
       document.getElementById('filamentForm').reset();
       document.getElementById('formFilamentId').value = '';
-      document.getElementById('filamentModalTitle').innerHTML = '<span>🧵</span><span>Додати котушку філаменту</span>';
+      document.getElementById('filamentModalTitle').innerHTML = '<span>🧵</span><span>Нова котушка</span>';
       document.getElementById('formColorHex').value = '#00AE42';
       document.getElementById('formColorName').value = '';
       document.getElementById('formMaterialType').value = 'PETG';
@@ -1014,7 +1168,7 @@
       document.getElementById('formPricePerKg').value = f.price_per_kg || 650;
       document.getElementById('formWeightSpool').value = f.weight_spool_g || 1000;
 
-      document.getElementById('filamentModalTitle').innerHTML = '<span>✏️</span><span>Редагувати котушку</span>';
+      document.getElementById('filamentModalTitle').innerHTML = '<span>✎</span><span>Редагувати котушку</span>';
       document.getElementById('filamentModal').classList.remove('hidden');
     }
 
@@ -1180,18 +1334,18 @@
         const marginUah = Math.max(0, (c.client_price || 0) - (c.cost_price || 0));
 
         return `
-          <div class="mw-surface border rounded-2xl p-4 sm:p-5 shadow-sm hover:border-[#00AE42]/60 transition flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="mw-surface border mw-border rounded-2xl p-4 sm:p-5 shadow-sm hover:border-[#00AE42]/60 transition flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div class="flex items-center gap-2">
-                <h4 class="text-sm sm:text-base font-bold mw-text-primary">${c.title}</h4>
-                <span class="text-[10px] px-2 py-0.5 rounded-md bg-[#00AE42]/15 text-[#00AE42] font-semibold">${c.material_type || '3D'}</span>
+                <h4 class="text-sm sm:text-base font-bold mw-text-primary">${escapeHtml(c.title || 'Розрахунок')}</h4>
+                <span class="text-[10px] px-2 py-0.5 rounded-md bg-[#00AE42]/15 text-[#00AE42] font-semibold">${escapeHtml(c.material_type || '3D')}</span>
               </div>
-              <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs mw-text-secondary mt-1">
-                <span>🧵 ${c.filament_name || 'Пластик'}</span>
+              <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs mw-text-secondary mt-1 font-mono">
+                <span>🧵 ${escapeHtml(c.filament_name || 'Пластик')}</span>
                 <span>⚖️ ${c.weight_g} г</span>
                 <span>⏱️ ${c.print_hours}г ${c.print_minutes}хв</span>
                 <span>📦 ${c.quantity} шт</span>
-                <span class="mw-text-muted">${dateStr}</span>
+                <span class="mw-text-muted font-sans">${dateStr}</span>
               </div>
             </div>
 
@@ -1202,10 +1356,10 @@
                 <span class="text-[10px] text-emerald-500 font-semibold block">+${marginUah.toFixed(0)} ₴ націнка</span>
               </div>
               <div class="flex items-center gap-2">
-                <a href="/calc?load_calc=${c.id}" class="px-3 py-1.5 rounded-xl mw-elevated border hover:border-[#00AE42] text-xs font-semibold mw-text-primary transition">
+                <a href="/calc?load_calc=${c.id}" class="px-3 py-1.5 rounded-xl mw-elevated border mw-border hover:border-[#00AE42] text-xs font-semibold mw-text-primary transition">
                   Відкрити 🧮
                 </a>
-                <button type="button" onclick="deleteCalculation(${c.id})" class="p-1.5 rounded-lg mw-elevated hover:text-red-500 border transition" title="Видалити">
+                <button type="button" onclick="deleteCalculation(${c.id})" class="p-1.5 rounded-lg mw-elevated border mw-border hover:text-red-500 transition cursor-pointer" title="Видалити">
                   🗑️
                 </button>
               </div>
