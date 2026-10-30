@@ -125,21 +125,12 @@
 
       <!-- Navigation & Actions -->
       <div class="flex items-center gap-3">
-        <a href="/calc" class="px-3.5 py-1.5 rounded-xl mw-elevated border hover:border-[#00AE42] text-xs font-semibold mw-text-primary transition flex items-center gap-1.5 shadow-sm">
-          <span>🧮</span>
-          <span>Калькулятор 3D</span>
-        </a>
-        <a href="/" class="px-3.5 py-1.5 rounded-xl mw-elevated border hover:border-[#00AE42] text-xs font-semibold mw-text-primary transition flex items-center gap-1.5 shadow-sm">
-          <span>🔍</span>
-          <span>Пошук моделей</span>
-        </a>
-
         <!-- Theme Toggle -->
-        <button onclick="toggleTheme()" class="p-2 rounded-xl mw-elevated border hover:border-[#00AE42] transition" title="Змінити тему">
-          <svg id="themeIconSun" class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button onclick="toggleTheme()" class="p-2 rounded-lg mw-elevated border hover:border-[#00AE42] transition relative overflow-hidden" title="Перемкнути Світлу / Темну тему">
+          <svg id="themeIconSun" class="w-4 h-4 text-amber-400 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
           </svg>
-          <svg id="themeIconMoon" class="w-4 h-4 text-sky-400 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg id="themeIconMoon" class="w-4 h-4 text-sky-400 hidden transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
           </svg>
         </button>
@@ -173,17 +164,8 @@
       </p>
 
       <!-- Google Button Wrapper -->
-      <div class="flex flex-col items-center gap-3">
+      <div class="flex flex-col items-center justify-center pt-2">
         <div id="googleSignInCabinetBtn" class="flex justify-center min-h-[44px]"></div>
-        <button type="button" onclick="loginDevDemo()"
-                class="w-full py-2.5 px-4 rounded-xl mw-elevated border hover:border-[#00AE42] text-xs font-semibold mw-text-primary transition flex items-center justify-center gap-2">
-          <span>⚡</span>
-          <span>Увійти в Демо-режим (без Google)</span>
-        </button>
-      </div>
-
-      <div class="mt-6 pt-5 border-t mw-border text-[11px] mw-text-muted text-left">
-        💡 <strong>Примітка для розробки:</strong> Вхід через Google працює за наявності <code class="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/5 font-mono">google_client_id</code> у <code class="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/5 font-mono">config.json</code>. Для тестування можна використати швидкий Демо-режим.
       </div>
     </div>
 
@@ -597,27 +579,39 @@
       await initAuth();
     });
 
-    // Theme Switcher
-    function initTheme() {
-      const saved = localStorage.getItem('stlhub_theme');
-      if (saved === 'light') {
-        document.documentElement.classList.remove('dark');
-        updateThemeIcons(false);
-      } else {
-        document.documentElement.classList.add('dark');
-        updateThemeIcons(true);
+    // Theme Switcher with Sun/Moon icon sync (identical to main page)
+    function syncThemeIcon() {
+      const isDark = document.documentElement.classList.contains('dark');
+      const sun = document.getElementById('themeIconSun');
+      const moon = document.getElementById('themeIconMoon');
+      if (sun && moon) {
+        sun.classList.toggle('hidden', !isDark);
+        moon.classList.toggle('hidden', isDark);
       }
     }
 
     function toggleTheme() {
-      const isDark = document.documentElement.classList.toggle('dark');
-      localStorage.setItem('stlhub_theme', isDark ? 'dark' : 'light');
-      updateThemeIcons(isDark);
+      const html = document.documentElement;
+      const applySwitch = () => {
+        html.classList.toggle('dark');
+        localStorage.setItem('stlhub_theme', html.classList.contains('dark') ? 'dark' : 'light');
+        syncThemeIcon();
+      };
+      if (document.startViewTransition) {
+        document.startViewTransition(applySwitch);
+      } else {
+        applySwitch();
+      }
     }
 
-    function updateThemeIcons(isDark) {
-      document.getElementById('themeIconSun').classList.toggle('hidden', isDark);
-      document.getElementById('themeIconMoon').classList.toggle('hidden', !isDark);
+    function initTheme() {
+      const saved = localStorage.getItem('stlhub_theme');
+      if (saved === 'light') {
+        document.documentElement.classList.remove('dark');
+      } else {
+        document.documentElement.classList.add('dark');
+      }
+      syncThemeIcon();
     }
 
     function showToast(msg) {
@@ -679,12 +673,7 @@
           </div>
         `;
       } else {
-        c.innerHTML = `
-          <button onclick="loginDevDemo()" class="px-3.5 py-1.5 rounded-xl bg-[#00AE42] hover:bg-[#00993A] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
-            <span>🔐</span>
-            <span>Увійти</span>
-          </button>
-        `;
+        c.innerHTML = '';
       }
     }
 

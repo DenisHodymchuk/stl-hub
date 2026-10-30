@@ -206,9 +206,8 @@
           <span>Пошук моделей</span>
         </a>
         <div id="calcAuthContainer" class="flex items-center">
-          <a href="/cabinet" class="px-3.5 py-1.5 rounded-xl mw-elevated border hover:border-[#00AE42] text-xs font-semibold mw-text-primary transition flex items-center gap-1.5 shadow-sm">
-            <span>🧵</span>
-            <span>Особистий кабінет</span>
+          <a href="/cabinet" class="px-3.5 py-1.5 rounded-xl mw-elevated border hover:border-[#00AE42] text-xs font-semibold mw-text-primary transition flex items-center shadow-sm">
+            Увійти в кабінет
           </a>
         </div>
         <!-- Theme Toggle -->
@@ -804,8 +803,8 @@
     }
 
     function updateThemeIcons(isDark) {
-      document.getElementById('themeIconSun').classList.toggle('hidden', isDark);
-      document.getElementById('themeIconMoon').classList.toggle('hidden', !isDark);
+      document.getElementById('themeIconSun').classList.toggle('hidden', !isDark);
+      document.getElementById('themeIconMoon').classList.toggle('hidden', isDark);
     }
 
     // ==================== AUTH & USER FILAMENTS INTEGRATION ====================
@@ -838,9 +837,8 @@
         handleUrlParams();
       } else {
         authContainer.innerHTML = `
-          <a href="/cabinet" class="px-3.5 py-1.5 rounded-xl bg-[#00AE42] hover:bg-[#00993A] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
-            <span>🔐</span>
-            <span>Увійти</span>
+          <a href="/cabinet" class="px-3.5 py-1.5 rounded-xl mw-elevated border hover:border-[#00AE42] text-xs font-semibold mw-text-primary transition flex items-center shadow-sm">
+            Увійти в кабінет
           </a>
         `;
       }

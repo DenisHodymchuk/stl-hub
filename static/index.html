@@ -512,14 +512,9 @@
 
       <!-- Right Controls: Theme Switcher & Cabinet -->
       <div class="flex items-center gap-2.5 shrink-0">
-        <a href="/calc" class="px-3.5 py-1.5 rounded-xl mw-elevated border hover:border-[#00AE42] text-xs font-semibold mw-text-primary transition hidden sm:flex items-center gap-1.5 shadow-sm">
-          <span>🧮</span>
-          <span>Калькулятор</span>
-        </a>
         <div id="indexAuthContainer" class="flex items-center">
-          <a href="/cabinet" class="px-3.5 py-1.5 rounded-xl mw-elevated border hover:border-[#00AE42] text-xs font-semibold mw-text-primary transition flex items-center gap-1.5 shadow-sm">
-            <span>🧵</span>
-            <span>Кабінет</span>
+          <a href="/cabinet" class="px-3.5 py-1.5 rounded-xl mw-elevated border hover:border-[#00AE42] text-xs font-semibold mw-text-primary transition flex items-center shadow-sm">
+            Увійти в кабінет
           </a>
         </div>
         <button onclick="toggleTheme()" class="p-2 rounded-lg mw-elevated border hover:border-[#00AE42] transition relative overflow-hidden" title="Перемкнути Світлу / Темну тему">
@@ -1381,9 +1376,8 @@
           `;
         } else {
           c.innerHTML = `
-            <a href="/cabinet" class="px-3 py-1.5 rounded-xl mw-elevated border hover:border-[#00AE42] text-xs font-semibold mw-text-primary transition flex items-center gap-1.5 shadow-sm">
-              <span>🧵</span>
-              <span>Кабінет</span>
+            <a href="/cabinet" class="px-3.5 py-1.5 rounded-xl mw-elevated border hover:border-[#00AE42] text-xs font-semibold mw-text-primary transition flex items-center shadow-sm">
+              Увійти в кабінет
             </a>
           `;
         }
