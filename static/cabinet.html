@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="uk" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Особистий кабінет майстра 3D-друку | STL-HUB</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v=2" />
+  <link rel="shortcut icon" href="/static/favicon.svg?v=2" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Google Identity Services SDK -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            bambu: {
+              DEFAULT: '#00AE42',
+              hover: '#00993A',
+              light: '#E6F7ED',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --bg-base: #F5F6F7;
+      --bg-surface: #FFFFFF;
+      --bg-elevated: #F0F2F5;
+      --text-primary: #242424;
+      --text-secondary: #595959;
+      --text-muted: #8C8C8C;
+      --border-color: #E5E7EB;
+      --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    html.dark {
+      --bg-base: #121212;
+      --bg-surface: #1C1C1E;
+      --bg-elevated: #262629;
+      --text-primary: #F2F2F2;
+      --text-secondary: #A6A6A6;
+      --text-muted: #737373;
+      --border-color: #2E2E32;
+      --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mw-surface { background-color: var(--bg-surface); border-color: var(--border-color); }
+    .mw-elevated { background-color: var(--bg-elevated); border-color: var(--border-color); }
+    .mw-text-primary { color: var(--text-primary); }
+    .mw-text-secondary { color: var(--text-secondary); }
+    .mw-text-muted { color: var(--text-muted); }
+    .mw-border { border-color: var(--border-color); }
+
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none !important;
+      margin: 0 !important;
+    }
+    input[type=number] {
+      -moz-appearance: textfield !important;
+      appearance: textfield !important;
+    }
+
+    .tab-active {
+      background-color: #00AE42 !important;
+      color: #FFFFFF !important;
+      box-shadow: 0 2px 8px rgba(0, 174, 66, 0.25);
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-[#00AE42] selection:text-white flex flex-col min-h-screen">
+
+  <!-- ======================== HEADER ======================== -->
+  <header class="sticky top-0 z-40 mw-surface border-b backdrop-blur-md bg-opacity-90 dark:bg-opacity-90">
+    <div class="max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8 h-[68px] flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-4">
+        <a href="/" class="flex items-center gap-3 shrink-0 group">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00C853] to-[#008C35] flex items-center justify-center text-white shadow-md shadow-[#00AE42]/20 group-hover:scale-105 transition-transform">
+            <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+              <path d="M3 8V5C3 3.89543 3.89543 3 5 3H8" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M20 3H23C24.1046 3 25 3.89543 25 5V8" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M25 20V23C25 24.1046 24.1046 25 23 25H20" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M8 25H5C3.89543 25 3 24.1046 3 23V20" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M14 7.5L20 11V17L14 20.5L8 17V11L14 7.5Z" fill="white" fill-opacity="0.22" stroke="white" stroke-width="1.8" stroke-linejoin="round"/>
+              <path d="M8 11L14 14.5L20 11" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M14 14.5V20.5" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="flex flex-col">
+            <div class="flex items-center gap-1.5">
+              <span class="font-extrabold text-xl tracking-tight mw-text-primary">STL<span class="text-[#00AE42]">-HUB</span></span>
+            </div>
+            <span class="text-[11px] mw-text-muted hidden sm:block leading-none mt-0.5">Особистий кабінет</span>
+          </div>
+        </a>
+
+        <span class="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#00AE42]/15 text-[#00AE42] border border-[#00AE42]/30">
+          <span>🧵</span>
+          <span>Мій склад філаментів</span>
+        </span>
+      </div>
+
+      <!-- Navigation & Actions -->
+      <div class="flex items-center gap-3">
+        <a href="/calc" class="px-3.5 py-1.5 rounded-xl mw-elevated border hover:border-[#00AE42] text-xs font-semibold mw-text-primary transition flex items-center gap-1.5 shadow-sm">
+          <span>🧮</span>
+          <span>Калькулятор 3D</span>
+        </a>
+        <a href="/" class="px-3.5 py-1.5 rounded-xl mw-elevated border hover:border-[#00AE42] text-xs font-semibold mw-text-primary transition flex items-center gap-1.5 shadow-sm">
+          <span>🔍</span>
+          <span>Пошук моделей</span>
+        </a>
+
+        <!-- Theme Toggle -->
+        <button onclick="toggleTheme()" class="p-2 rounded-xl mw-elevated border hover:border-[#00AE42] transition" title="Змінити тему">
+          <svg id="themeIconSun" class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+          <svg id="themeIconMoon" class="w-4 h-4 text-sky-400 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+          </svg>
+        </button>
+
+        <!-- User Profile Header Section -->
+        <div id="headerAuthContainer">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ======================== MAIN CONTENT ======================== -->
+  <main class="max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1">
+
+    <!-- Loading State -->
+    <div id="loadingState" class="py-20 text-center">
+      <div class="inline-block animate-spin w-10 h-10 border-4 border-[#00AE42] border-t-transparent rounded-full mb-3"></div>
+      <p class="text-sm mw-text-muted">Завантаження кабінету...</p>
+    </div>
+
+    <!-- Login Prompt (Shown if not logged in) -->
+    <div id="notLoggedInCard" class="hidden max-w-lg mx-auto my-12 p-8 mw-surface border rounded-3xl text-center shadow-lg">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[#00AE42]/15 text-[#00AE42] flex items-center justify-center text-3xl">
+        🔐
+      </div>
+      <h2 class="text-xl font-extrabold mw-text-primary">Увійдіть у свій кабінет</h2>
+      <p class="text-xs sm:text-sm mw-text-secondary mt-2 mb-6">
+        Зберігайте власні котушки філаменту з точними цінами, синхронізуйте налаштування друкарні та рахуйте собівартість в один клік.
+      </p>
+
+      <!-- Google Button Wrapper -->
+      <div class="flex flex-col items-center gap-3">
+        <div id="googleSignInCabinetBtn" class="flex justify-center min-h-[44px]"></div>
+        <button type="button" onclick="loginDevDemo()"
+                class="w-full py-2.5 px-4 rounded-xl mw-elevated border hover:border-[#00AE42] text-xs font-semibold mw-text-primary transition flex items-center justify-center gap-2">
+          <span>⚡</span>
+          <span>Увійти в Демо-режим (без Google)</span>
+        </button>
+      </div>
+
+      <div class="mt-6 pt-5 border-t mw-border text-[11px] mw-text-muted text-left">
+        💡 <strong>Примітка для розробки:</strong> Вхід через Google працює за наявності <code class="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/5 font-mono">google_client_id</code> у <code class="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/5 font-mono">config.json</code>. Для тестування можна використати швидкий Демо-режим.
+      </div>
+    </div>
+
+    <!-- Logged In Cabinet View -->
+    <div id="loggedInView" class="hidden space-y-6">
+
+      <!-- Profile & KPI Summary Banner -->
+      <div class="mw-surface border rounded-3xl p-5 sm:p-7 shadow-sm">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          
+          <!-- User info -->
+          <div class="flex items-center gap-4">
+            <img id="userAvatarImg" src="" alt="Avatar" class="w-16 h-16 rounded-2xl object-cover border-2 border-[#00AE42] shadow-sm bg-zinc-800" />
+            <div>
+              <div class="flex items-center gap-2">
+                <h1 id="userNameHeading" class="text-xl sm:text-2xl font-extrabold mw-text-primary tracking-tight">Завантаження...</h1>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#00AE42]/15 text-[#00AE42] border border-[#00AE42]/30">3D-Майстер</span>
+              </div>
+              <p id="userEmailText" class="text-xs mw-text-secondary font-mono mt-0.5">user@example.com</p>
+              <div class="flex items-center gap-3 mt-2 text-[11px] mw-text-muted">
+                <span id="userJoinDate">В системі з ...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick KPI Counters -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 shrink-0">
+            <div class="p-3.5 rounded-2xl mw-elevated border text-center">
+              <span class="text-[11px] mw-text-muted font-semibold block">Котушок у складі</span>
+              <span id="kpiSpoolsCount" class="text-xl font-extrabold text-[#00AE42] font-mono mt-0.5 block">0</span>
+            </div>
+            <div class="p-3.5 rounded-2xl mw-elevated border text-center">
+              <span class="text-[11px] mw-text-muted font-semibold block">Залишок пластику</span>
+              <span id="kpiRemainingWeight" class="text-xl font-extrabold mw-text-primary font-mono mt-0.5 block">0.0 кг</span>
+            </div>
+            <div class="p-3.5 rounded-2xl mw-elevated border text-center">
+              <span class="text-[11px] mw-text-muted font-semibold block">Вартість запасу</span>
+              <span id="kpiTotalStockValue" class="text-xl font-extrabold mw-text-primary font-mono mt-0.5 block">0 ₴</span>
+            </div>
+            <div class="p-3.5 rounded-2xl mw-elevated border text-center">
+              <span class="text-[11px] mw-text-muted font-semibold block">Збережених кошторисів</span>
+              <span id="kpiCalculationsCount" class="text-xl font-extrabold mw-text-primary font-mono mt-0.5 block">0</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Tab Navigation Switcher -->
+      <div class="flex flex-wrap items-center justify-between gap-4 border-b mw-border pb-3">
+        <div class="flex items-center gap-2 p-1 rounded-2xl mw-surface border text-xs font-bold shadow-sm">
+          <button type="button" onclick="switchCabinetTab('filaments')" id="tabNavFilaments"
+                  class="px-4 py-2 rounded-xl transition flex items-center gap-2 tab-active cursor-pointer">
+            <span>🧵</span>
+            <span>Мої котушки філаменту</span>
+            <span id="tabBadgeFilaments" class="px-1.5 py-0.2 rounded-full text-[10px] bg-white/20 text-white font-mono">0</span>
+          </button>
+          <button type="button" onclick="switchCabinetTab('settings')" id="tabNavSettings"
+                  class="px-4 py-2 rounded-xl transition flex items-center gap-2 mw-text-muted hover:mw-text-primary cursor-pointer">
+            <span>⚙️</span>
+            <span>Тарифи майстерні</span>
+          </button>
+          <button type="button" onclick="switchCabinetTab('calculations')" id="tabNavCalculations"
+                  class="px-4 py-2 rounded-xl transition flex items-center gap-2 mw-text-muted hover:mw-text-primary cursor-pointer">
+            <span>📋</span>
+            <span>Збережені розрахунки</span>
+            <span id="tabBadgeCalculations" class="px-1.5 py-0.2 rounded-full text-[10px] bg-zinc-700 text-white font-mono">0</span>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button type="button" onclick="openAddFilamentModal()"
+                  class="px-4 py-2 rounded-xl bg-[#00AE42] hover:bg-[#00993A] text-white font-bold text-xs shadow-md shadow-[#00AE42]/20 flex items-center gap-2 transition transform active:scale-95 cursor-pointer">
+            <span class="text-sm font-extrabold">+</span>
+            <span>Додати нову котушку</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ==================== TAB 1: FILAMENTS STASH ==================== -->
+      <div id="tabSectionFilaments" class="space-y-4">
+        
+        <!-- Filter and Search Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl mw-surface border shadow-sm">
+          <!-- Search input -->
+          <div class="relative flex-1 min-w-[200px] max-w-md">
+            <span class="absolute left-3 top-2.5 text-xs text-zinc-400">🔍</span>
+            <input id="filamentSearchInput" type="text" placeholder="Пошук за назвою, брендом, кольором..." oninput="filterFilamentsList()"
+                   class="w-full bg-[var(--bg-elevated)] border mw-border rounded-xl pl-8 pr-3 py-1.5 text-xs mw-text-primary focus:outline-none focus:border-[#00AE42]" />
+          </div>
+
+          <!-- Type Filter Pills -->
+          <div class="flex items-center gap-1.5 overflow-x-auto py-1 text-[11px] font-semibold">
+            <button onclick="setFilamentTypeFilter('all')" class="fil-type-btn px-2.5 py-1 rounded-lg bg-[#00AE42] text-white" data-type="all">Всі</button>
+            <button onclick="setFilamentTypeFilter('PLA')" class="fil-type-btn px-2.5 py-1 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary" data-type="PLA">PLA</button>
+            <button onclick="setFilamentTypeFilter('PETG')" class="fil-type-btn px-2.5 py-1 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary" data-type="PETG">PETG</button>
+            <button onclick="setFilamentTypeFilter('ABS')" class="fil-type-btn px-2.5 py-1 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary" data-type="ABS">ABS</button>
+            <button onclick="setFilamentTypeFilter('TPU')" class="fil-type-btn px-2.5 py-1 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary" data-type="TPU">TPU</button>
+            <button onclick="setFilamentTypeFilter('CoPET')" class="fil-type-btn px-2.5 py-1 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary" data-type="CoPET">CoPET</button>
+            <button onclick="setFilamentTypeFilter('Resin')" class="fil-type-btn px-2.5 py-1 rounded-lg mw-elevated mw-text-muted hover:mw-text-primary" data-type="Resin">Смола</button>
+          </div>
+        </div>
+
+        <!-- Filaments Cards Grid -->
+        <div id="filamentsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="filamentsEmptyState" class="hidden p-12 text-center mw-surface border rounded-3xl">
+          <span class="text-4xl block mb-2">🧵</span>
+          <h3 class="text-base font-bold mw-text-primary">Не знайдено жодної котушки</h3>
+          <p class="text-xs mw-text-muted mt-1 max-w-sm mx-auto">
+            Додайте свій перший пластик, щоб автоматично підставляти його точну вартість у калькулятор.
+          </p>
+          <button onclick="openAddFilamentModal()" class="mt-4 px-4 py-2 rounded-xl bg-[#00AE42] text-white text-xs font-bold">
+            + Додати першу котушку
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ==================== TAB 2: WORKSHOP SETTINGS ==================== -->
+      <div id="tabSectionSettings" class="hidden max-w-3xl space-y-5">
+        <div class="mw-surface border rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+          <div>
+            <h2 class="text-lg font-bold mw-text-primary flex items-center gap-2">
+              <span>⚙️</span>
+              <span>Індивідуальні тарифи друкарні</span>
+            </h2>
+            <p class="text-xs mw-text-secondary mt-1">
+              Ці тарифи синхронізуються з вашим акаунтом і автоматично завантажуються в калькулятор при кожному вході.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold mw-text-secondary mb-1.5">Тариф на електроенергію (грн/кВт·год):</label>
+              <div class="relative flex items-center rounded-xl mw-elevated border mw-border h-10 px-3">
+                <input id="setPowerKwh" type="number" step="0.01" min="0" value="4.32"
+                       class="w-full bg-transparent text-xs sm:text-sm mw-text-primary font-mono font-bold focus:outline-none" />
+                <span class="text-[11px] mw-text-muted font-mono select-none">₴/кВт·г</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold mw-text-secondary mb-1.5">Споживання 3D-принтера (Вт):</label>
+              <div class="relative flex items-center rounded-xl mw-elevated border mw-border h-10 px-3">
+                <input id="setPrinterWatts" type="number" step="10" min="10" value="180"
+                       class="w-full bg-transparent text-xs sm:text-sm mw-text-primary font-mono font-bold focus:outline-none" />
+                <span class="text-[11px] mw-text-muted font-mono select-none">Вт</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold mw-text-secondary mb-1.5">Амортизація та знос сопла (грн/год друку):</label>
+              <div class="relative flex items-center rounded-xl mw-elevated border mw-border h-10 px-3">
+                <input id="setDepreciation" type="number" step="1" min="0" value="20"
+                       class="w-full bg-transparent text-xs sm:text-sm mw-text-primary font-mono font-bold focus:outline-none" />
+                <span class="text-[11px] mw-text-muted font-mono select-none">₴/год</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold mw-text-secondary mb-1.5">Підготовка замовлення та слайсинг (фіксовано):</label>
+              <div class="relative flex items-center rounded-xl mw-elevated border mw-border h-10 px-3">
+                <input id="setPrepFee" type="number" step="5" min="0" value="20"
+                       class="w-full bg-transparent text-xs sm:text-sm mw-text-primary font-mono font-bold focus:outline-none" />
+                <span class="text-[11px] mw-text-muted font-mono select-none">₴/зам</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold mw-text-secondary mb-1.5">Закладений ризик браку (%):</label>
+              <div class="relative flex items-center rounded-xl mw-elevated border mw-border h-10 px-3">
+                <input id="setFailureRisk" type="number" step="1" min="0" max="50" value="5"
+                       class="w-full bg-transparent text-xs sm:text-sm mw-text-primary font-mono font-bold focus:outline-none" />
+                <span class="text-[11px] mw-text-muted font-mono select-none">%</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold mw-text-secondary mb-1.5">Стандартна націнка на роботу (%):</label>
+              <div class="relative flex items-center rounded-xl mw-elevated border mw-border h-10 px-3">
+                <input id="setMarkupPercent" type="number" step="5" min="0" max="500" value="100"
+                       class="w-full bg-transparent text-xs sm:text-sm mw-text-primary font-mono font-bold focus:outline-none" />
+                <span class="text-[11px] mw-text-muted font-mono select-none">%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t mw-border flex items-center justify-between">
+            <button type="button" onclick="saveWorkshopSettingsBtn()"
+                    class="px-5 py-2.5 rounded-xl bg-[#00AE42] hover:bg-[#00993A] text-white font-bold text-xs shadow-md shadow-[#00AE42]/20 flex items-center gap-2 transition transform active:scale-95">
+              <span>💾</span>
+              <span>Зберегти налаштування майстерні</span>
+            </button>
+            <span id="saveSettingsStatus" class="text-xs text-[#00AE42] font-semibold hidden">✓ Збережено успішно!</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== TAB 3: SAVED CALCULATIONS ==================== -->
+      <div id="tabSectionCalculations" class="hidden space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-bold mw-text-primary">Збережені розрахунки та кошториси</h2>
+            <p class="text-xs mw-text-secondary">Історія ваших прорахунків із калькулятора 3D-друку.</p>
+          </div>
+          <a href="/calc" class="px-3.5 py-1.5 rounded-xl bg-[#00AE42] text-white text-xs font-bold hover:bg-[#00993A] transition">
+            + Новий розрахунок
+          </a>
+        </div>
+
+        <div id="calculationsList" class="space-y-3">
+          <!-- Populated by JS -->
+        </div>
+
+        <div id="calculationsEmptyState" class="hidden p-12 text-center mw-surface border rounded-3xl">
+          <span class="text-4xl block mb-2">📋</span>
+          <h3 class="text-base font-bold mw-text-primary">Ще немає збережених розрахунків</h3>
+          <p class="text-xs mw-text-muted mt-1 max-w-sm mx-auto">
+            Перейдіть у калькулятор 3D-друку, завантажте модель або введіть вагу, та натисніть «Зберегти в особистий кабінет».
+          </p>
+          <a href="/calc" class="inline-block mt-4 px-4 py-2 rounded-xl bg-[#00AE42] text-white text-xs font-bold">
+            Перейти до калькулятора
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ======================== MODAL: ADD / EDIT FILAMENT ======================== -->
+  <div id="filamentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm hidden">
+    <div class="mw-surface border rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[92vh] animate-in fade-in duration-200">
+      
+      <!-- Modal Header -->
+      <div class="p-5 border-b mw-border flex items-center justify-between">
+        <h3 id="filamentModalTitle" class="text-base font-bold mw-text-primary flex items-center gap-2">
+          <span>🧵</span>
+          <span>Додати котушку філаменту</span>
+        </h3>
+        <button type="button" onclick="closeFilamentModal()" class="p-1 rounded-lg mw-elevated hover:text-red-500 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <form id="filamentForm" onsubmit="submitFilamentForm(event)" class="p-5 overflow-y-auto space-y-4 flex-1">
+        <input type="hidden" id="formFilamentId" value="" />
+
+        <div>
+          <label class="block text-xs font-semibold mw-text-secondary mb-1">Назва котушки / маркування *</label>
+          <input id="formFilamentName" type="text" required placeholder="Наприклад: PLA Basic Black або PETG White"
+                 class="w-full bg-[var(--bg-elevated)] border mw-border rounded-xl px-3 py-2 text-xs sm:text-sm mw-text-primary focus:outline-none focus:border-[#00AE42]" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold mw-text-secondary mb-1">Тип пластику / смоли</label>
+            <select id="formMaterialType" onchange="onMaterialTypeSelectChange()"
+                    class="w-full bg-[var(--bg-elevated)] border mw-border rounded-xl px-3 py-2 text-xs mw-text-primary focus:outline-none focus:border-[#00AE42]">
+              <option value="PLA">PLA (1.24 г/см³)</option>
+              <option value="PETG" selected>PETG (1.27 г/см³)</option>
+              <option value="ABS">ABS (1.05 г/см³)</option>
+              <option value="ASA">ASA (1.07 г/см³)</option>
+              <option value="TPU">TPU 95A (1.21 г/см³)</option>
+              <option value="CoPET">CoPET (1.27 г/см³)</option>
+              <option value="Nylon">Nylon PA (1.14 г/см³)</option>
+              <option value="Resin">Resin / Смола (1.10 г/см³)</option>
+              <option value="Other">Інший матеріал</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold mw-text-secondary mb-1">Бренд / Виробник</label>
+            <input id="formBrand" type="text" placeholder="Bambu Lab, Plexiwire..."
+                   class="w-full bg-[var(--bg-elevated)] border mw-border rounded-xl px-3 py-2 text-xs mw-text-primary focus:outline-none focus:border-[#00AE42]" />
+          </div>
+        </div>
+
+        <!-- Color Section -->
+        <div>
+          <label class="block text-xs font-semibold mw-text-secondary mb-1">Колір пластику</label>
+          <div class="flex items-center gap-3">
+            <input id="formColorHex" type="color" value="#00AE42" onchange="syncColorInput(this.value)"
+                   class="w-10 h-10 rounded-xl cursor-pointer bg-transparent border-0 p-0" />
+            <input id="formColorName" type="text" placeholder="Назва кольору: Чорний, Смарагдовий..."
+                   class="flex-1 bg-[var(--bg-elevated)] border mw-border rounded-xl px-3 py-2 text-xs mw-text-primary focus:outline-none focus:border-[#00AE42]" />
+          </div>
+          <!-- Quick color presets -->
+          <div class="flex items-center gap-1.5 mt-2">
+            <button type="button" onclick="setColorPreset('#1C1C1E', 'Чорний')" class="w-5 h-5 rounded-full border border-white/20 bg-[#1C1C1E]" title="Чорний"></button>
+            <button type="button" onclick="setColorPreset('#FFFFFF', 'Білий')" class="w-5 h-5 rounded-full border border-black/20 bg-white" title="Білий"></button>
+            <button type="button" onclick="setColorPreset('#71717A', 'Сірий')" class="w-5 h-5 rounded-full border border-white/20 bg-zinc-500" title="Сірий"></button>
+            <button type="button" onclick="setColorPreset('#EF4444', 'Червоний')" class="w-5 h-5 rounded-full border border-white/20 bg-red-500" title="Червоний"></button>
+            <button type="button" onclick="setColorPreset('#3B82F6', 'Синій')" class="w-5 h-5 rounded-full border border-white/20 bg-blue-500" title="Синій"></button>
+            <button type="button" onclick="setColorPreset('#00AE42', 'Зелений Bambu')" class="w-5 h-5 rounded-full border border-white/20 bg-[#00AE42]" title="Зелений Bambu"></button>
+            <button type="button" onclick="setColorPreset('#F59E0B', 'Помаранчевий')" class="w-5 h-5 rounded-full border border-white/20 bg-amber-500" title="Помаранчевий"></button>
+            <button type="button" onclick="setColorPreset('#A855F7', 'Фіолетовий')" class="w-5 h-5 rounded-full border border-white/20 bg-purple-500" title="Фіолетовий"></button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold mw-text-secondary mb-1">Вартість котушки (грн/кг) *</label>
+            <div class="relative flex items-center rounded-xl mw-elevated border mw-border px-3 h-10">
+              <input id="formPricePerKg" type="number" step="10" min="1" required value="650"
+                     class="w-full bg-transparent text-xs font-mono font-bold mw-text-primary focus:outline-none" />
+              <span class="text-[11px] mw-text-muted font-mono select-none">₴/кг</span>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold mw-text-secondary mb-1">Густина (г/см³)</label>
+            <div class="relative flex items-center rounded-xl mw-elevated border mw-border px-3 h-10">
+              <input id="formDensity" type="number" step="0.01" min="0.5" max="3" required value="1.27"
+                     class="w-full bg-transparent text-xs font-mono font-bold mw-text-primary focus:outline-none" />
+              <span class="text-[11px] mw-text-muted font-mono select-none">г/см³</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Weight Tracking -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold mw-text-secondary mb-1">Повна вага котушки (г)</label>
+            <div class="relative flex items-center rounded-xl mw-elevated border mw-border px-3 h-10">
+              <input id="formWeightSpool" type="number" step="50" min="100" max="5000" value="1000"
+                     class="w-full bg-transparent text-xs font-mono font-bold mw-text-primary focus:outline-none" />
+              <span class="text-[11px] mw-text-muted font-mono select-none">г</span>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold mw-text-secondary mb-1">Поточний залишок на котушці (г)</label>
+            <div class="relative flex items-center rounded-xl mw-elevated border mw-border px-3 h-10">
+              <input id="formRemainingWeight" type="number" step="10" min="0" max="5000" value="1000"
+                     class="w-full bg-transparent text-xs font-mono font-bold mw-text-primary focus:outline-none" />
+              <span class="text-[11px] mw-text-muted font-mono select-none">г</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Temps -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold mw-text-secondary mb-1">Температура сопла (°C)</label>
+            <input id="formNozzleTemp" type="number" step="5" min="0" max="350" placeholder="220"
+                   class="w-full bg-[var(--bg-elevated)] border mw-border rounded-xl px-3 py-2 text-xs font-mono mw-text-primary focus:outline-none focus:border-[#00AE42]" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold mw-text-secondary mb-1">Температура столу (°C)</label>
+            <input id="formBedTemp" type="number" step="5" min="0" max="150" placeholder="60"
+                   class="w-full bg-[var(--bg-elevated)] border mw-border rounded-xl px-3 py-2 text-xs font-mono mw-text-primary focus:outline-none focus:border-[#00AE42]" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold mw-text-secondary mb-1">Примітки / нотатки</label>
+          <textarea id="formNotes" rows="2" placeholder="Наприклад: колір партії 2026, сушити 4 год при 50°C..."
+                    class="w-full bg-[var(--bg-elevated)] border mw-border rounded-xl px-3 py-2 text-xs mw-text-primary focus:outline-none focus:border-[#00AE42]"></textarea>
+        </div>
+
+        <!-- Submit Footer -->
+        <div class="pt-4 border-t mw-border flex items-center justify-end gap-3">
+          <button type="button" onclick="closeFilamentModal()" class="px-4 py-2 rounded-xl mw-elevated text-xs font-semibold mw-text-muted hover:mw-text-primary">
+            Скасувати
+          </button>
+          <button type="submit" id="btnSaveFilament"
+                  class="px-5 py-2 rounded-xl bg-[#00AE42] hover:bg-[#00993A] text-white text-xs font-bold shadow-md shadow-[#00AE42]/20">
+            Зберегти котушку
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastNotification" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300">
+    <div class="px-4 py-3 rounded-2xl bg-[#00AE42] text-white text-xs font-bold shadow-xl flex items-center gap-2">
+      <span class="text-base">✓</span>
+      <span id="toastMessage">Збережено успішно</span>
+    </div>
+  </div>
+
+  <!-- ======================== APPLICATION JAVASCRIPT ======================== -->
+  <script>
+    let currentUser = null;
+    let allFilaments = [];
+    let allCalculations = [];
+    let currentFilamentFilterType = 'all';
+
+    const DENSITIES_BY_TYPE = {
+      PLA: 1.24,
+      PETG: 1.27,
+      ABS: 1.05,
+      ASA: 1.07,
+      TPU: 1.21,
+      CoPET: 1.27,
+      Nylon: 1.14,
+      Resin: 1.10,
+      Other: 1.24
+    };
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      initTheme();
+      await initAuth();
+    });
+
+    // Theme Switcher
+    function initTheme() {
+      const saved = localStorage.getItem('stlhub_theme');
+      if (saved === 'light') {
+        document.documentElement.classList.remove('dark');
+        updateThemeIcons(false);
+      } else {
+        document.documentElement.classList.add('dark');
+        updateThemeIcons(true);
+      }
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('stlhub_theme', isDark ? 'dark' : 'light');
+      updateThemeIcons(isDark);
+    }
+
+    function updateThemeIcons(isDark) {
+      document.getElementById('themeIconSun').classList.toggle('hidden', isDark);
+      document.getElementById('themeIconMoon').classList.toggle('hidden', !isDark);
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toastNotification');
+      const text = document.getElementById('toastMessage');
+      text.textContent = msg;
+      t.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        t.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+      }, 3000);
+    }
+
+    // ==================== AUTHENTICATION ====================
+
+    async function initAuth() {
+      try {
+        const resp = await fetch('/api/auth/me');
+        const data = await resp.json();
+        currentUser = data.user;
+      } catch (e) {
+        currentUser = null;
+      }
+
+      renderAuthHeader();
+
+      const loadingEl = document.getElementById('loadingState');
+      loadingEl.classList.add('hidden');
+
+      if (currentUser) {
+        document.getElementById('notLoggedInCard').classList.add('hidden');
+        document.getElementById('loggedInView').classList.remove('hidden');
+        populateUserProfile(currentUser);
+        await Promise.all([
+          loadFilaments(),
+          loadWorkshopSettings(),
+          loadCalculations()
+        ]);
+      } else {
+        document.getElementById('loggedInView').classList.add('hidden');
+        document.getElementById('notLoggedInCard').classList.remove('hidden');
+        initGoogleSignIn();
+      }
+    }
+
+    function renderAuthHeader() {
+      const c = document.getElementById('headerAuthContainer');
+      if (currentUser) {
+        const avatarSrc = currentUser.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name)}&background=00AE42&color=fff`;
+        c.innerHTML = `
+          <div class="flex items-center gap-2.5">
+            <div class="flex items-center gap-2 pl-2 pr-3 py-1 rounded-xl mw-elevated border">
+              <img src="${avatarSrc}" alt="Avatar" class="w-6 h-6 rounded-lg object-cover" />
+              <span class="text-xs font-bold mw-text-primary hidden sm:inline max-w-[120px] truncate">${currentUser.name}</span>
+            </div>
+            <button onclick="logout()" class="px-3 py-1.5 rounded-xl mw-elevated border hover:text-red-500 text-xs font-semibold transition" title="Вийти з акаунта">
+              Вийти
+            </button>
+          </div>
+        `;
+      } else {
+        c.innerHTML = `
+          <button onclick="loginDevDemo()" class="px-3.5 py-1.5 rounded-xl bg-[#00AE42] hover:bg-[#00993A] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+            <span>🔐</span>
+            <span>Увійти</span>
+          </button>
+        `;
+      }
+    }
+
+    async function initGoogleSignIn() {
+      try {
+        const res = await fetch('/api/auth/config');
+        const cfg = await res.json();
+        const clientId = cfg.google_client_id;
+        if (!clientId) return;
+
+        let retries = 0;
+        const tryRender = () => {
+          if (window.google && google.accounts && google.accounts.id) {
+            google.accounts.id.initialize({
+              client_id: clientId,
+              callback: handleGoogleCredentialResponse,
+            });
+            const btnEl = document.getElementById('googleSignInCabinetBtn');
+            if (btnEl) {
+              btnEl.innerHTML = '';
+              google.accounts.id.renderButton(
+                btnEl,
+                { theme: 'outline', size: 'large', text: 'signin_with', shape: 'pill', width: 280 }
+              );
+            }
+          } else if (retries < 25) {
+            retries++;
+            setTimeout(tryRender, 120);
+          }
+        };
+        tryRender();
+      } catch (e) {
+        console.warn('Google Sign-In init error:', e);
+      }
+    }
+
+    async function handleGoogleCredentialResponse(response) {
+      try {
+        const res = await fetch('/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ credential: response.credential }),
+        });
+        const data = await res.json();
+        if (res.ok && data.user) {
+          currentUser = data.user;
+          showToast(`Вітаємо, ${currentUser.name}!`);
+          setTimeout(() => window.location.reload(), 400);
+        } else {
+          alert(data.detail || 'Помилка авторизації через Google');
+        }
+      } catch (err) {
+        alert('Помилка сервера при вході: ' + err);
+      }
+    }
+
+    async function loginDevDemo() {
+      try {
+        const res = await fetch('/api/auth/dev-login', { method: 'POST' });
+        const data = await res.json();
+        if (res.ok && data.user) {
+          currentUser = data.user;
+          showToast(`Вхід виконано! Вітаємо, ${currentUser.name}!`);
+          setTimeout(() => window.location.reload(), 400);
+        } else {
+          alert('Помилка входу');
+        }
+      } catch (e) {
+        alert('Помилка сервера: ' + e);
+      }
+    }
+
+    async function logout() {
+      if (!confirm('Ви дійсно бажаєте вийти з акаунта?')) return;
+      try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+      } catch (e) {}
+      window.location.reload();
+    }
+
+    function populateUserProfile(user) {
+      document.getElementById('userNameHeading').textContent = user.name;
+      document.getElementById('userEmailText').textContent = user.email;
+      const avatarSrc = user.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=00AE42&color=fff`;
+      document.getElementById('userAvatarImg').src = avatarSrc;
+      if (user.created_at) {
+        const date = new Date(user.created_at * 1000).toLocaleDateString('uk-UA', { year: 'numeric', month: 'long', day: 'numeric' });
+        document.getElementById('userJoinDate').textContent = `В системі з ${date}`;
+      }
+    }
+
+    // ==================== TABS SWITCHING ====================
+
+    function switchCabinetTab(tabId) {
+      const tabs = ['filaments', 'settings', 'calculations'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tabNav${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        const sec = document.getElementById(`tabSection${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        if (t === tabId) {
+          btn.classList.add('tab-active');
+          btn.classList.remove('mw-text-muted');
+          sec.classList.remove('hidden');
+        } else {
+          btn.classList.remove('tab-active');
+          btn.classList.add('mw-text-muted');
+          sec.classList.add('hidden');
+        }
+      });
+    }
+
+    // ==================== FILAMENTS MANAGEMENT ====================
+
+    async function loadFilaments() {
+      try {
+        const res = await fetch('/api/user/filaments');
+        const data = await res.json();
+        allFilaments = data.filaments || [];
+        updateFilamentsKPI();
+        renderFilamentsList();
+      } catch (e) {
+        console.error('Failed to load filaments:', e);
+      }
+    }
+
+    function updateFilamentsKPI() {
+      document.getElementById('kpiSpoolsCount').textContent = allFilaments.length;
+      document.getElementById('tabBadgeFilaments').textContent = allFilaments.length;
+
+      let totalRemainingG = 0;
+      let totalValueUah = 0;
+
+      allFilaments.forEach(f => {
+        const remG = parseFloat(f.remaining_weight_g) || 0;
+        const pricePerG = (parseFloat(f.price_per_kg) || 0) / 1000;
+        totalRemainingG += remG;
+        totalValueUah += remG * pricePerG;
+      });
+
+      document.getElementById('kpiRemainingWeight').textContent = `${(totalRemainingG / 1000).toFixed(2)} кг`;
+      document.getElementById('kpiTotalStockValue').textContent = `${Math.round(totalValueUah).toLocaleString('uk-UA')} ₴`;
+    }
+
+    function setFilamentTypeFilter(type) {
+      currentFilamentFilterType = type;
+      document.querySelectorAll('.fil-type-btn').forEach(btn => {
+        if (btn.getAttribute('data-type') === type) {
+          btn.classList.add('bg-[#00AE42]', 'text-white');
+          btn.classList.remove('mw-elevated', 'mw-text-muted');
+        } else {
+          btn.classList.remove('bg-[#00AE42]', 'text-white');
+          btn.classList.add('mw-elevated', 'mw-text-muted');
+        }
+      });
+      renderFilamentsList();
+    }
+
+    function filterFilamentsList() {
+      renderFilamentsList();
+    }
+
+    function renderFilamentsList() {
+      const grid = document.getElementById('filamentsGrid');
+      const empty = document.getElementById('filamentsEmptyState');
+      const q = (document.getElementById('filamentSearchInput').value || '').toLowerCase().trim();
+
+      const filtered = allFilaments.filter(f => {
+        const matchType = currentFilamentFilterType === 'all' || f.material_type.toUpperCase().includes(currentFilamentFilterType.toUpperCase());
+        const matchQ = !q || (f.name && f.name.toLowerCase().includes(q)) ||
+                             (f.brand && f.brand.toLowerCase().includes(q)) ||
+                             (f.color_name && f.color_name.toLowerCase().includes(q)) ||
+                             (f.material_type && f.material_type.toLowerCase().includes(q));
+        return matchType && matchQ;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+
+      empty.classList.add('hidden');
+      grid.innerHTML = filtered.map(f => {
+        const spoolW = parseFloat(f.weight_spool_g) || 1000;
+        const remW = parseFloat(f.remaining_weight_g) || 0;
+        const pct = Math.min(100, Math.max(0, Math.round((remW / spoolW) * 100)));
+        const isLow = remW < 200;
+        const colorHex = f.color_hex || '#00AE42';
+
+        return `
+          <div class="mw-surface border rounded-3xl p-5 shadow-sm hover:border-[#00AE42]/60 transition flex flex-col justify-between group">
+            <div>
+              <!-- Top Row: Color + Type + Brand -->
+              <div class="flex items-center justify-between gap-2 mb-3">
+                <div class="flex items-center gap-2">
+                  <span class="w-4 h-4 rounded-full border border-black/20 shadow-sm shrink-0" style="background-color: ${colorHex}"></span>
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wide bg-[#00AE42]/15 text-[#00AE42] border border-[#00AE42]/30">
+                    ${f.material_type}
+                  </span>
+                  ${f.brand ? `<span class="text-[11px] mw-text-muted truncate font-medium">${f.brand}</span>` : ''}
+                </div>
+                ${isLow ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-500 border border-amber-500/30">Мало!</span>` : ''}
+              </div>
+
+              <!-- Title -->
+              <h4 class="text-sm font-extrabold mw-text-primary tracking-tight line-clamp-1" title="${f.name}">
+                ${f.name}
+              </h4>
+              <span class="text-[11px] mw-text-secondary block mt-0.5">
+                ${f.color_name ? f.color_name : 'Колір без назви'}
+              </span>
+
+              <!-- Price & Density -->
+              <div class="grid grid-cols-2 gap-2 my-3 p-2.5 rounded-xl mw-elevated border text-xs font-mono">
+                <div>
+                  <span class="text-[10px] mw-text-muted font-sans block">Ціна:</span>
+                  <span class="font-extrabold text-[#00AE42]">${f.price_per_kg} ₴/кг</span>
+                </div>
+                <div>
+                  <span class="text-[10px] mw-text-muted font-sans block">Густина:</span>
+                  <span class="font-bold mw-text-primary">${f.density} г/см³</span>
+                </div>
+              </div>
+
+              <!-- Remaining Weight Progress -->
+              <div class="space-y-1 mb-3">
+                <div class="flex items-center justify-between text-[11px]">
+                  <span class="mw-text-muted font-medium">Залишок:</span>
+                  <span class="font-mono font-bold ${isLow ? 'text-amber-500' : 'mw-text-primary'}">${remW} / ${spoolW} г</span>
+                </div>
+                <div class="w-full h-2 rounded-full bg-zinc-700/30 overflow-hidden">
+                  <div class="h-full rounded-full transition-all duration-500 ${isLow ? 'bg-amber-500' : 'bg-[#00AE42]'}" style="width: ${pct}%"></div>
+                </div>
+              </div>
+
+              ${(f.nozzle_temp || f.bed_temp) ? `
+                <div class="flex items-center gap-2 text-[10px] mw-text-muted font-mono mb-2">
+                  ${f.nozzle_temp ? `<span>🔥 Сопло: ${f.nozzle_temp}°C</span>` : ''}
+                  ${f.bed_temp ? `<span>🛏️ Стіл: ${f.bed_temp}°C</span>` : ''}
+                </div>
+              ` : ''}
+
+              ${f.notes ? `<p class="text-[11px] mw-text-muted line-clamp-2 italic">${f.notes}</p>` : ''}
+            </div>
+
+            <!-- Card Actions -->
+            <div class="pt-4 mt-3 border-t mw-border flex items-center justify-between gap-2">
+              <a href="/calc?filament_id=${f.id}" class="px-3 py-1.5 rounded-xl bg-[#00AE42] hover:bg-[#00993A] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                <span>🧮</span>
+                <span>В калькулятор</span>
+              </a>
+              <div class="flex items-center gap-1">
+                <button type="button" onclick="editFilamentModal(${f.id})" class="p-1.5 rounded-lg mw-elevated hover:border-[#00AE42] border transition" title="Редагувати">
+                  ✏️
+                </button>
+                <button type="button" onclick="deleteFilament(${f.id})" class="p-1.5 rounded-lg mw-elevated hover:text-red-500 border transition" title="Видалити">
+                  🗑️
+                </button>
+              </div>
+            </div>
+
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ==================== MODAL: ADD / EDIT FILAMENT ====================
+
+    function openAddFilamentModal() {
+      document.getElementById('filamentForm').reset();
+      document.getElementById('formFilamentId').value = '';
+      document.getElementById('filamentModalTitle').innerHTML = '<span>🧵</span><span>Додати котушку філаменту</span>';
+      document.getElementById('formColorHex').value = '#00AE42';
+      document.getElementById('formMaterialType').value = 'PETG';
+      onMaterialTypeSelectChange();
+      document.getElementById('filamentModal').classList.remove('hidden');
+    }
+
+    function editFilamentModal(id) {
+      const f = allFilaments.find(x => x.id === id);
+      if (!f) return;
+      document.getElementById('formFilamentId').value = f.id;
+      document.getElementById('formFilamentName').value = f.name || '';
+      document.getElementById('formMaterialType').value = f.material_type || 'PLA';
+      document.getElementById('formBrand').value = f.brand || '';
+      document.getElementById('formColorHex').value = f.color_hex || '#00AE42';
+      document.getElementById('formColorName').value = f.color_name || '';
+      document.getElementById('formPricePerKg').value = f.price_per_kg || 650;
+      document.getElementById('formDensity').value = f.density || 1.24;
+      document.getElementById('formWeightSpool').value = f.weight_spool_g || 1000;
+      document.getElementById('formRemainingWeight').value = f.remaining_weight_g || 1000;
+      document.getElementById('formNozzleTemp').value = f.nozzle_temp || '';
+      document.getElementById('formBedTemp').value = f.bed_temp || '';
+      document.getElementById('formNotes').value = f.notes || '';
+
+      document.getElementById('filamentModalTitle').innerHTML = '<span>✏️</span><span>Редагувати котушку</span>';
+      document.getElementById('filamentModal').classList.remove('hidden');
+    }
+
+    function closeFilamentModal() {
+      document.getElementById('filamentModal').classList.add('hidden');
+    }
+
+    function onMaterialTypeSelectChange() {
+      const type = document.getElementById('formMaterialType').value;
+      const density = DENSITIES_BY_TYPE[type] || 1.24;
+      document.getElementById('formDensity').value = density;
+      if (!document.getElementById('formNozzleTemp').value) {
+        if (type === 'PLA') { document.getElementById('formNozzleTemp').value = 215; document.getElementById('formBedTemp').value = 55; }
+        if (type === 'PETG') { document.getElementById('formNozzleTemp').value = 235; document.getElementById('formBedTemp').value = 75; }
+        if (type === 'ABS') { document.getElementById('formNozzleTemp').value = 245; document.getElementById('formBedTemp').value = 100; }
+        if (type === 'TPU') { document.getElementById('formNozzleTemp').value = 225; document.getElementById('formBedTemp').value = 50; }
+      }
+    }
+
+    function syncColorInput(val) {
+      document.getElementById('formColorHex').value = val;
+    }
+
+    function setColorPreset(hex, name) {
+      document.getElementById('formColorHex').value = hex;
+      document.getElementById('formColorName').value = name;
+    }
+
+    async function submitFilamentForm(e) {
+      e.preventDefault();
+      const id = document.getElementById('formFilamentId').value;
+      const payload = {
+        name: document.getElementById('formFilamentName').value.trim(),
+        material_type: document.getElementById('formMaterialType').value,
+        brand: document.getElementById('formBrand').value.trim(),
+        color_name: document.getElementById('formColorName').value.trim(),
+        color_hex: document.getElementById('formColorHex').value,
+        price_per_kg: parseFloat(document.getElementById('formPricePerKg').value) || 600,
+        density: parseFloat(document.getElementById('formDensity').value) || 1.24,
+        weight_spool_g: parseFloat(document.getElementById('formWeightSpool').value) || 1000,
+        remaining_weight_g: parseFloat(document.getElementById('formRemainingWeight').value) || 1000,
+        nozzle_temp: parseInt(document.getElementById('formNozzleTemp').value) || 0,
+        bed_temp: parseInt(document.getElementById('formBedTemp').value) || 0,
+        notes: document.getElementById('formNotes').value.trim(),
+      };
+
+      const url = id ? `/api/user/filaments/${id}` : '/api/user/filaments';
+      const method = id ? 'PUT' : 'POST';
+
+      try {
+        const res = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+          closeFilamentModal();
+          showToast(id ? 'Котушку оновлено!' : 'Котушку додано!');
+          await loadFilaments();
+        } else {
+          alert(data.detail || 'Помилка збереження');
+        }
+      } catch (err) {
+        alert('Помилка сервера: ' + err);
+      }
+    }
+
+    async function deleteFilament(id) {
+      const f = allFilaments.find(x => x.id === id);
+      if (!confirm(`Видалити котушку "${f ? f.name : ''}" зі свого складу?`)) return;
+      try {
+        const res = await fetch(`/api/user/filaments/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          showToast('Котушку видалено');
+          await loadFilaments();
+        } else {
+          alert('Помилка видалення');
+        }
+      } catch (e) {
+        alert('Помилка сервера: ' + e);
+      }
+    }
+
+    // ==================== WORKSHOP SETTINGS ====================
+
+    async function loadWorkshopSettings() {
+      try {
+        const res = await fetch('/api/user/settings');
+        const data = await res.json();
+        const st = data.settings;
+        if (st) {
+          if (st.power_kwh) document.getElementById('setPowerKwh').value = st.power_kwh;
+          if (st.printer_watts) document.getElementById('setPrinterWatts').value = st.printer_watts;
+          if (st.depreciation !== undefined) document.getElementById('setDepreciation').value = st.depreciation;
+          if (st.prep_fee !== undefined) document.getElementById('setPrepFee').value = st.prep_fee;
+          if (st.failure_risk !== undefined) document.getElementById('setFailureRisk').value = st.failure_risk;
+          if (st.markup_percent !== undefined) document.getElementById('setMarkupPercent').value = st.markup_percent;
+        }
+      } catch (e) {
+        console.error('Failed to load workshop settings:', e);
+      }
+    }
+
+    async function saveWorkshopSettingsBtn() {
+      const payload = {
+        power_kwh: parseFloat(document.getElementById('setPowerKwh').value) || 4.32,
+        printer_watts: parseFloat(document.getElementById('setPrinterWatts').value) || 180,
+        depreciation: parseFloat(document.getElementById('setDepreciation').value) || 20,
+        prep_fee: parseFloat(document.getElementById('setPrepFee').value) || 20,
+        failure_risk: parseFloat(document.getElementById('setFailureRisk').value) || 5,
+        markup_percent: parseFloat(document.getElementById('setMarkupPercent').value) || 100,
+      };
+
+      try {
+        const res = await fetch('/api/user/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          showToast('Тарифи майстерні збережено!');
+          const st = document.getElementById('saveSettingsStatus');
+          st.classList.remove('hidden');
+          setTimeout(() => st.classList.add('hidden'), 3500);
+        } else {
+          alert('Помилка збереження налаштувань');
+        }
+      } catch (e) {
+        alert('Помилка сервера: ' + e);
+      }
+    }
+
+    // ==================== SAVED CALCULATIONS ====================
+
+    async function loadCalculations() {
+      try {
+        const res = await fetch('/api/user/calculations');
+        const data = await res.json();
+        allCalculations = data.calculations || [];
+        document.getElementById('kpiCalculationsCount').textContent = allCalculations.length;
+        document.getElementById('tabBadgeCalculations').textContent = allCalculations.length;
+        renderCalculationsList();
+      } catch (e) {
+        console.error('Failed to load calculations:', e);
+      }
+    }
+
+    function renderCalculationsList() {
+      const list = document.getElementById('calculationsList');
+      const empty = document.getElementById('calculationsEmptyState');
+
+      if (allCalculations.length === 0) {
+        list.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+
+      empty.classList.add('hidden');
+      list.innerHTML = allCalculations.map(c => {
+        const dateStr = c.created_at ? new Date(c.created_at * 1000).toLocaleString('uk-UA') : '';
+        const marginUah = Math.max(0, (c.client_price || 0) - (c.cost_price || 0));
+
+        return `
+          <div class="mw-surface border rounded-2xl p-4 sm:p-5 shadow-sm hover:border-[#00AE42]/60 transition flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <h4 class="text-sm sm:text-base font-bold mw-text-primary">${c.title}</h4>
+                <span class="text-[10px] px-2 py-0.5 rounded-md bg-[#00AE42]/15 text-[#00AE42] font-semibold">${c.material_type || '3D'}</span>
+              </div>
+              <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs mw-text-secondary mt-1">
+                <span>🧵 ${c.filament_name || 'Пластик'}</span>
+                <span>⚖️ ${c.weight_g} г</span>
+                <span>⏱️ ${c.print_hours}г ${c.print_minutes}хв</span>
+                <span>📦 ${c.quantity} шт</span>
+                <span class="mw-text-muted">${dateStr}</span>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-3 md:pt-0 mw-border">
+              <div class="text-right">
+                <span class="text-[10px] mw-text-muted block">Собівартість: ${c.cost_price} ₴</span>
+                <span class="text-base sm:text-lg font-extrabold text-[#00AE42] font-mono">${c.client_price} ₴</span>
+                <span class="text-[10px] text-emerald-500 font-semibold block">+${marginUah.toFixed(0)} ₴ націнка</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <a href="/calc?load_calc=${c.id}" class="px-3 py-1.5 rounded-xl mw-elevated border hover:border-[#00AE42] text-xs font-semibold mw-text-primary transition">
+                  Відкрити 🧮
+                </a>
+                <button type="button" onclick="deleteCalculation(${c.id})" class="p-1.5 rounded-lg mw-elevated hover:text-red-500 border transition" title="Видалити">
+                  🗑️
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function deleteCalculation(id) {
+      if (!confirm('Видалити цей розрахунок?')) return;
+      try {
+        const res = await fetch(`/api/user/calculations/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          showToast('Розрахунок видалено');
+          await loadCalculations();
+        } else {
+          alert('Помилка видалення');
+        }
+      } catch (e) {
+        alert('Помилка сервера: ' + e);
+      }
+    }
+  </script>
+</body>
+</html>

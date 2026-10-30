@@ -23,27 +23,26 @@ def _get_genai_client(api_key: str) -> genai.Client:
 
 
 def load_config() -> Dict[str, Any]:
+    cfg = {"gemini_api_key": DEFAULT_API_KEY, "model": "gemini-2.5-flash", "google_client_id": ""}
     if os.path.exists(CONFIG_PATH):
         try:
             with open(CONFIG_PATH, "r", encoding="utf-8") as f:
                 data = json.load(f)
-                if data.get("gemini_api_key"):
-                    return data
+                if isinstance(data, dict):
+                    cfg.update(data)
         except Exception:
             pass
-    return {"gemini_api_key": DEFAULT_API_KEY, "model": "gemini-2.5-flash"}
+    return cfg
 
 
-def save_config(api_key: str, model: str = "gemini-2.5-flash") -> None:
-    existing = {}
-    if os.path.exists(CONFIG_PATH):
-        try:
-            with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-                existing = json.load(f)
-        except Exception:
-            existing = {}
-    existing["gemini_api_key"] = api_key.strip()
-    existing["model"] = model
+def save_config(api_key: Optional[str] = None, model: Optional[str] = None, google_client_id: Optional[str] = None) -> None:
+    existing = load_config()
+    if api_key is not None:
+        existing["gemini_api_key"] = api_key.strip()
+    if model is not None:
+        existing["model"] = model.strip()
+    if google_client_id is not None:
+        existing["google_client_id"] = google_client_id.strip()
     with open(CONFIG_PATH, "w", encoding="utf-8") as f:
         json.dump(existing, f, indent=2, ensure_ascii=False)
 

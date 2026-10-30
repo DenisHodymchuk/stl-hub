@@ -460,6 +460,36 @@
             </div>
           </div>
 
+          <!-- 3. Google OAuth Settings Card -->
+          <div class="mw-surface border rounded-2xl p-6 shadow-sm space-y-4">
+            <div>
+              <h2 class="text-base font-bold mw-text-primary flex items-center gap-2">
+                <span>🔐</span>
+                <span>Авторизація Google OAuth (Особистий кабінет)</span>
+              </h2>
+              <p class="text-xs mw-text-muted mt-1">
+                Клієнтський ID для авторизації користувачів через Google Identity Services (GIS).
+              </p>
+            </div>
+
+            <form onsubmit="submitGoogleClientId(event)" class="space-y-3 max-w-xl pt-2">
+              <div>
+                <label class="block text-xs font-semibold mw-text-secondary mb-1">Google OAuth Client ID:</label>
+                <input id="settingsGoogleClientId" type="text" placeholder="наприклад: 123456789-abc.apps.googleusercontent.com"
+                       class="w-full px-3.5 py-2 rounded-xl mw-elevated border text-xs font-mono mw-text-primary focus:outline-none focus:border-[#00AE42]" />
+              </div>
+              <p class="text-[11px] mw-text-muted">
+                Отримати Client ID можна безкоштовно у <a href="https://console.cloud.google.com/apis/credentials" target="_blank" class="text-[#00AE42] underline">Google Cloud Console</a>. Додайте авторизовані JavaScript Origins (наприклад: <code>https://stl-hub.top</code> та <code>http://localhost:8000</code>).
+              </p>
+              <div class="pt-1 flex items-center gap-3">
+                <button type="submit" class="px-5 py-2.5 rounded-xl bg-[#00AE42] hover:bg-[#00993A] text-white text-xs font-bold transition shadow cursor-pointer">
+                  Зберегти Google Client ID
+                </button>
+                <span id="googleIdSaveMsg" class="text-xs text-[#00AE42] font-semibold hidden">✓ Збережено!</span>
+              </div>
+            </form>
+          </div>
+
           <!-- 3. System & Search Engines Info -->
           <div class="mw-surface border rounded-2xl p-6 shadow-sm space-y-4">
             <div>
@@ -1018,9 +1048,46 @@
       }
     }
 
+    async function loadAdminSettings() {
+      try {
+        const res = await fetch('/api/settings');
+        const data = await res.json();
+        const input = document.getElementById('settingsGoogleClientId');
+        if (input && data.google_client_id) {
+          input.value = data.google_client_id;
+        }
+      } catch (e) {}
+    }
+
+    async function submitGoogleClientId(e) {
+      e.preventDefault();
+      const clientId = document.getElementById('settingsGoogleClientId').value.trim();
+      try {
+        const resp = await fetch('/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            gemini_api_key: 'KEEP_CURRENT_KEY',
+            model: 'gemini-2.5-flash',
+            google_client_id: clientId
+          })
+        });
+        if (resp.ok) {
+          const msg = document.getElementById('googleIdSaveMsg');
+          msg.classList.remove('hidden');
+          setTimeout(() => msg.classList.add('hidden'), 3500);
+        } else {
+          alert('Помилка збереження');
+        }
+      } catch (err) {
+        alert('Помилка: ' + err);
+      }
+    }
+
     // Auto-init on load
     if (adminToken) {
       showDashboard();
+      loadAdminSettings();
     }
   </script>
 </body>

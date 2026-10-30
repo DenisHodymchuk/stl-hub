@@ -510,8 +510,18 @@
         </div>
       </div>
 
-      <!-- Right Controls: Theme Switcher -->
+      <!-- Right Controls: Theme Switcher & Cabinet -->
       <div class="flex items-center gap-2.5 shrink-0">
+        <a href="/calc" class="px-3.5 py-1.5 rounded-xl mw-elevated border hover:border-[#00AE42] text-xs font-semibold mw-text-primary transition hidden sm:flex items-center gap-1.5 shadow-sm">
+          <span>🧮</span>
+          <span>Калькулятор</span>
+        </a>
+        <div id="indexAuthContainer" class="flex items-center">
+          <a href="/cabinet" class="px-3.5 py-1.5 rounded-xl mw-elevated border hover:border-[#00AE42] text-xs font-semibold mw-text-primary transition flex items-center gap-1.5 shadow-sm">
+            <span>🧵</span>
+            <span>Кабінет</span>
+          </a>
+        </div>
         <button onclick="toggleTheme()" class="p-2 rounded-lg mw-elevated border hover:border-[#00AE42] transition relative overflow-hidden" title="Перемкнути Світлу / Темну тему">
           <svg id="themeIconSun" class="w-4 h-4 text-amber-400 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -596,6 +606,18 @@
                   </svg>
                 </div>
                 <span class="text-xs font-medium mw-text-secondary group-hover:mw-text-primary transition truncate">Калькулятор друку</span>
+              </div>
+              <span class="text-xs mw-text-muted group-hover:text-[#00AE42] transition">↗</span>
+            </a>
+
+            <!-- Item 2: Особистий кабінет -->
+            <a href="/cabinet"
+               class="flex items-center justify-between px-3 py-2 rounded-xl mw-elevated hover:bg-black/5 dark:hover:bg-white/5 border border-transparent hover:border-black/10 dark:hover:border-white/10 transition group">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-7 h-7 rounded-lg bg-black/5 dark:bg-white/5 mw-text-muted group-hover:text-[#00AE42] flex items-center justify-center shrink-0 transition">
+                  <span class="text-xs">🧵</span>
+                </div>
+                <span class="text-xs font-medium mw-text-secondary group-hover:mw-text-primary transition truncate">Особистий кабінет</span>
               </div>
               <span class="text-xs mw-text-muted group-hover:text-[#00AE42] transition">↗</span>
             </a>
@@ -1340,6 +1362,34 @@
       }
       syncThemeIcon();
     })();
+
+    // Check user auth state for header profile badge
+    async function checkIndexAuth() {
+      try {
+        const resp = await fetch('/api/auth/me');
+        const data = await resp.json();
+        const user = data.user;
+        const c = document.getElementById('indexAuthContainer');
+        if (!c) return;
+        if (user) {
+          const avatarSrc = user.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=00AE42&color=fff`;
+          c.innerHTML = `
+            <a href="/cabinet" class="flex items-center gap-2 pl-2 pr-3 py-1 rounded-xl mw-elevated border hover:border-[#00AE42] transition shadow-sm" title="Особистий кабінет">
+              <img src="${avatarSrc}" alt="Avatar" class="w-6 h-6 rounded-lg object-cover" />
+              <span class="text-xs font-bold mw-text-primary hidden md:inline max-w-[100px] truncate">${user.name}</span>
+            </a>
+          `;
+        } else {
+          c.innerHTML = `
+            <a href="/cabinet" class="px-3 py-1.5 rounded-xl mw-elevated border hover:border-[#00AE42] text-xs font-semibold mw-text-primary transition flex items-center gap-1.5 shadow-sm">
+              <span>🧵</span>
+              <span>Кабінет</span>
+            </a>
+          `;
+        }
+      } catch (e) {}
+    }
+    checkIndexAuth();
 
     // Favorites Management
     function loadFavorites() {

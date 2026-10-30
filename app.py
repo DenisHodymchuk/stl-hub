@@ -24,6 +24,27 @@ from analytics import (
     record_heartbeat,
     remove_heartbeat,
 )
+from auth import (
+    verify_google_id_token,
+    get_google_client_id,
+    get_current_user_optional,
+    require_current_user,
+    get_session_token_from_request,
+)
+from user_db import (
+    upsert_google_user,
+    create_user_session,
+    delete_user_session,
+    get_user_filaments,
+    add_user_filament,
+    update_user_filament,
+    delete_user_filament,
+    get_user_workshop_settings,
+    save_user_workshop_settings,
+    get_user_calculations,
+    add_user_calculation,
+    delete_user_calculation,
+)
 from scrapers import search_all_sites, search_makerworld_by_image, create_session, _SEARCH_EXECUTOR
 from starlette.middleware.gzip import GZipMiddleware
 
@@ -73,6 +94,49 @@ def _cache_put(cache: OrderedDict, key: str, value: object, max_items: int) -> N
 class SettingsPayload(BaseModel):
     gemini_api_key: str
     model: Optional[str] = "gemini-2.5-flash"
+    google_client_id: Optional[str] = None
+
+
+class GoogleLoginPayload(BaseModel):
+    credential: str
+
+
+class FilamentPayload(BaseModel):
+    name: str
+    material_type: str
+    brand: Optional[str] = ""
+    color_name: Optional[str] = ""
+    color_hex: Optional[str] = "#3b82f6"
+    price_per_kg: float
+    density: Optional[float] = 1.24
+    weight_spool_g: Optional[float] = 1000.0
+    remaining_weight_g: Optional[float] = 1000.0
+    nozzle_temp: Optional[int] = 0
+    bed_temp: Optional[int] = 0
+    notes: Optional[str] = ""
+    is_favorite: Optional[bool] = False
+
+
+class WorkshopSettingsPayload(BaseModel):
+    power_kwh: float
+    printer_watts: float
+    depreciation: float
+    prep_fee: float
+    failure_risk: float
+    markup_percent: float
+
+
+class CalculationPayload(BaseModel):
+    title: str
+    filament_name: Optional[str] = ""
+    material_type: Optional[str] = ""
+    weight_g: Optional[float] = 0
+    print_hours: Optional[float] = 0
+    print_minutes: Optional[float] = 0
+    quantity: Optional[int] = 1
+    cost_price: Optional[float] = 0
+    client_price: Optional[float] = 0
+    details_json: Optional[str] = "{}"
 
 
 class FeedbackStatusPayload(BaseModel):
@@ -165,6 +229,21 @@ async def calc_page(request: Request):
     )
 
 
+@app.get("/cabinet", response_class=HTMLResponse)
+async def cabinet_page(request: Request):
+    _SEARCH_EXECUTOR.submit(
+        log_page_view,
+        _get_client_ip(request),
+        request.headers.get("user-agent", ""),
+        request.headers.get("referer", ""),
+    )
+    content = get_template_content("cabinet.html")
+    return HTMLResponse(
+        content=content,
+        headers={"Cache-Control": "no-cache, no-store, must-revalidate"},
+    )
+
+
 @app.get("/favicon.ico", include_in_schema=False)
 @app.get("/favicon.svg", include_in_schema=False)
 async def favicon():
@@ -186,14 +265,19 @@ async def get_settings():
         "has_key": bool(key),
         "masked_key": masked,
         "model": cfg.get("model", "gemini-2.5-flash"),
+        "google_client_id": cfg.get("google_client_id", ""),
     }
 
 
 @app.post("/api/settings")
 async def update_settings(payload: SettingsPayload):
-    if not payload.gemini_api_key.strip():
+    cfg = load_config()
+    key = payload.gemini_api_key.strip()
+    if not key or key == "KEEP_CURRENT_KEY":
+        key = cfg.get("gemini_api_key", "")
+    if not key:
         raise HTTPException(status_code=400, detail="API ключ не може бути порожнім")
-    save_config(payload.gemini_api_key, payload.model or "gemini-2.5-flash")
+    save_config(key, payload.model or cfg.get("model", "gemini-2.5-flash"), payload.google_client_id)
     return {"status": "ok"}
 
 
@@ -520,6 +604,169 @@ async def proxy_image(url: str = Query(...)):
         )
     except Exception:
         raise HTTPException(status_code=404, detail="Image not found")
+
+
+# ==================== GOOGLE AUTH & USER CABINET API ====================
+
+@app.get("/api/auth/config")
+async def auth_config():
+    client_id = get_google_client_id()
+    return {
+        "google_client_id": client_id,
+        "has_google_auth": bool(client_id),
+    }
+
+
+@app.get("/api/auth/me")
+async def auth_me(request: Request):
+    user = await get_current_user_optional(request)
+    return {"user": user}
+
+
+@app.post("/api/auth/google")
+async def auth_google(payload: GoogleLoginPayload, response: Response):
+    token = (payload.credential or "").strip()
+    if not token:
+        raise HTTPException(status_code=400, detail="Токен Google не надано")
+
+    user_info = verify_google_id_token(token)
+    if not user_info:
+        raise HTTPException(status_code=401, detail="Не вдалося перевірити токен Google або закінчився його термін дії")
+
+    user = upsert_google_user(
+        google_id=user_info["google_id"],
+        email=user_info["email"],
+        name=user_info["name"],
+        avatar_url=user_info["avatar_url"],
+    )
+    sess_token = create_user_session(user["id"])
+    response.set_cookie(
+        key="stlhub_session",
+        value=sess_token,
+        max_age=30 * 86400,
+        httponly=True,
+        samesite="lax",
+        path="/",
+    )
+    return {"status": "ok", "user": user, "token": sess_token}
+
+
+@app.post("/api/auth/dev-login")
+async def auth_dev_login(response: Response):
+    """Швидкий вхід у тестовий акаунт майстра для перевірки кабінету"""
+    user = upsert_google_user(
+        google_id="demo_master_user",
+        email="demo@stl-hub.top",
+        name="3D Майстер",
+        avatar_url="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+    )
+    sess_token = create_user_session(user["id"])
+    response.set_cookie(
+        key="stlhub_session",
+        value=sess_token,
+        max_age=30 * 86400,
+        httponly=True,
+        samesite="lax",
+        path="/",
+    )
+    return {"status": "ok", "user": user, "token": sess_token}
+
+
+@app.post("/api/auth/logout")
+async def auth_logout(request: Request, response: Response):
+    token = get_session_token_from_request(request)
+    if token:
+        delete_user_session(token)
+    response.delete_cookie(key="stlhub_session", path="/")
+    return {"status": "ok"}
+
+
+# ==================== USER FILAMENTS API ====================
+
+@app.get("/api/user/filaments")
+async def api_get_filaments(request: Request):
+    user = await require_current_user(request)
+    filaments = get_user_filaments(user["id"])
+    return {"filaments": filaments}
+
+
+@app.post("/api/user/filaments")
+async def api_add_filament(request: Request, payload: FilamentPayload):
+    user = await require_current_user(request)
+    name = payload.name.strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="Назва пластику обов'язкова")
+    if payload.price_per_kg <= 0:
+        raise HTTPException(status_code=400, detail="Ціна має бути більше 0")
+
+    fil = add_user_filament(user["id"], payload.dict())
+    return {"status": "ok", "filament": fil}
+
+
+@app.put("/api/user/filaments/{filament_id}")
+async def api_update_filament(filament_id: int, request: Request, payload: FilamentPayload):
+    user = await require_current_user(request)
+    name = payload.name.strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="Назва пластику обов'язкова")
+    if payload.price_per_kg <= 0:
+        raise HTTPException(status_code=400, detail="Ціна має бути більше 0")
+
+    fil = update_user_filament(user["id"], filament_id, payload.dict())
+    if not fil:
+        raise HTTPException(status_code=404, detail="Філамент не знайдено")
+    return {"status": "ok", "filament": fil}
+
+
+@app.delete("/api/user/filaments/{filament_id}")
+async def api_delete_filament(filament_id: int, request: Request):
+    user = await require_current_user(request)
+    ok = delete_user_filament(user["id"], filament_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Філамент не знайдено")
+    return {"status": "ok"}
+
+
+# ==================== USER WORKSHOP SETTINGS API ====================
+
+@app.get("/api/user/settings")
+async def api_get_user_settings(request: Request):
+    user = await require_current_user(request)
+    st = get_user_workshop_settings(user["id"])
+    return {"settings": st}
+
+
+@app.post("/api/user/settings")
+async def api_save_user_settings(request: Request, payload: WorkshopSettingsPayload):
+    user = await require_current_user(request)
+    st = save_user_workshop_settings(user["id"], payload.dict())
+    return {"status": "ok", "settings": st}
+
+
+# ==================== USER SAVED CALCULATIONS API ====================
+
+@app.get("/api/user/calculations")
+async def api_get_calculations(request: Request):
+    user = await require_current_user(request)
+    calcs = get_user_calculations(user["id"])
+    return {"calculations": calcs}
+
+
+@app.post("/api/user/calculations")
+async def api_save_calculation(request: Request, payload: CalculationPayload):
+    user = await require_current_user(request)
+    title = payload.title.strip() or "Розрахунок 3D-друку"
+    calc = add_user_calculation(user["id"], {**payload.dict(), "title": title})
+    return {"status": "ok", "calculation": calc}
+
+
+@app.delete("/api/user/calculations/{calc_id}")
+async def api_delete_calculation(calc_id: int, request: Request):
+    user = await require_current_user(request)
+    ok = delete_user_calculation(user["id"], calc_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Розрахунок не знайдено")
+    return {"status": "ok"}
 
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
