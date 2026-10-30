@@ -4,9 +4,12 @@ import concurrent.futures
 import hashlib
 import hmac
 import json
+import logging
 import os
 import time
 from typing import Optional
+
+logger = logging.getLogger("stlhub")
 from fastapi import FastAPI, File, UploadFile, Form, Query, HTTPException, Request, Header
 from fastapi.responses import HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -31,6 +34,7 @@ from auth import (
     require_current_user,
     get_session_token_from_request,
 )
+import user_db
 from user_db import (
     upsert_google_user,
     create_user_session,
@@ -44,6 +48,7 @@ from user_db import (
     get_user_calculations,
     add_user_calculation,
     delete_user_calculation,
+    get_all_users_analytics,
 )
 from scrapers import search_all_sites, search_makerworld_by_image, create_session, _SEARCH_EXECUTOR
 from starlette.middleware.gzip import GZipMiddleware

@@ -769,7 +769,12 @@
       switchTab('stats');
       loadStats();
       if (refreshTimer) clearInterval(refreshTimer);
-      refreshTimer = setInterval(loadStats, 5000);
+      refreshTimer = setInterval(() => {
+        loadStats();
+        if (currentTab === 'users') {
+          loadUsersAnalytics();
+        }
+      }, 5000);
     }
 
     async function loadStats() {
