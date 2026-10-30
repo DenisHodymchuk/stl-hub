@@ -1131,52 +1131,42 @@
           calculateCost(true);
         }
 
-        // Fetch detailed sliced specs from API if modelId and site exist
-        if (modelId) {
-          try {
-            const res = await fetch(`/api/model-specs?site=${encodeURIComponent(site)}&id=${encodeURIComponent(modelId)}`);
-            if (res.ok) {
-              const specs = await res.json();
-              if (specs && specs.status === 'ok') {
-                if (specs.weight_g) {
-                  document.getElementById('inputWeightGrams').value = specs.weight_g;
-                }
-                if (specs.print_hours !== undefined) {
-                  document.getElementById('inputHours').value = specs.print_hours;
-                }
-                if (specs.print_minutes !== undefined) {
-                  document.getElementById('inputMinutes').value = specs.print_minutes;
-                }
-                if (specs.material_type) {
-                  const mKey = specs.material_type.toLowerCase();
-                  if (MATERIALS[mKey]) {
-                    setMaterial(mKey);
-                  }
-                }
-
-                const bannerStatus = document.getElementById('modelBannerStatusText');
-                if (bannerStatus) {
-                  if (specs.is_estimate) {
-                    bannerStatus.textContent = 'Орієнтовні параметри STL-HUB (можна змінити)';
-                  } else {
-                    bannerStatus.textContent = `${specs.source}: ${specs.weight_g} г • ${specs.print_hours}год ${specs.print_minutes}хв`;
-                  }
-                }
-                calculateCost(true);
-                showToast(`Завантажено параметри моделі "${title}"`);
+        // Fetch detailed sliced specs from API (with modelId, site and title for accurate model-specific weight)
+        try {
+          const res = await fetch(`/api/model-specs?site=${encodeURIComponent(site)}&id=${encodeURIComponent(modelId || '')}&title=${encodeURIComponent(title)}`);
+          if (res.ok) {
+            const specs = await res.json();
+            if (specs && specs.status === 'ok') {
+              if (specs.weight_g) {
+                document.getElementById('inputWeightGrams').value = specs.weight_g;
               }
+              if (specs.print_hours !== undefined) {
+                document.getElementById('inputHours').value = specs.print_hours;
+              }
+              if (specs.print_minutes !== undefined) {
+                document.getElementById('inputMinutes').value = specs.print_minutes;
+              }
+              if (specs.material_type) {
+                const mKey = specs.material_type.toLowerCase();
+                if (MATERIALS[mKey]) {
+                  setMaterial(mKey);
+                }
+              }
+
+              const bannerStatus = document.getElementById('modelBannerStatusText');
+              if (bannerStatus) {
+                if (specs.is_estimate) {
+                  bannerStatus.textContent = `${specs.source}: ${specs.weight_g} г • ${specs.print_hours}год ${specs.print_minutes}хв (можна змінити)`;
+                } else {
+                  bannerStatus.textContent = `${specs.source}: ${specs.weight_g} г • ${specs.print_hours}год ${specs.print_minutes}хв`;
+                }
+              }
+              calculateCost(true);
+              showToast(`Завантажено параметри моделі "${title}"`);
             }
-          } catch (e) {
-            console.warn('Failed to fetch model specs:', e);
           }
-        } else {
-          // Fallback if only title passed without direct weight
-          if (directWeight <= 0) {
-            document.getElementById('inputWeightGrams').value = 35;
-            document.getElementById('inputHours').value = 1;
-            document.getElementById('inputMinutes').value = 25;
-            calculateCost(true);
-          }
+        } catch (e) {
+          console.warn('Failed to fetch model specs:', e);
         }
       }
     }

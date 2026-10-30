@@ -502,9 +502,9 @@ async def track_click(request: Request, payload: ClickTrackPayload):
 
 
 @app.get("/api/model-specs")
-async def api_model_specs(site: str = "", id: str = ""):
+async def api_model_specs(site: str = "", id: str = "", title: str = ""):
     from scrapers import get_model_specs
-    specs = get_model_specs(site, id)
+    specs = get_model_specs(site, id, title)
     return specs
 
 
