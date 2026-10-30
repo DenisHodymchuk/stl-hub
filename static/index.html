@@ -2226,15 +2226,6 @@
                 <span>Знайти</span><span>↗</span>
               </span>
             </div>
-
-            <!-- Instant Calculator Button -->
-            <div class="pt-2 border-t mw-border">
-              <button type="button"
-                      onclick="openInCalculator(event, '${escapeJsString(item.id)}', '${escapeJsString(item.title)}', '${escapeJsString(rawImg)}', '${escapeJsString(item.url)}', '${escapeJsString(item.site_id || item.site || '')}', ${item.weight_g || 'null'})"
-                      class="w-full py-2 px-3 rounded-xl bg-[#00AE42] hover:bg-[#00993A] text-white font-bold text-xs transition flex items-center justify-center shadow-sm group/btn cursor-pointer">
-                <span>Розрахувати</span>
-              </button>
-            </div>
           </div>
         </a>
       `;
@@ -2359,21 +2350,6 @@
           keepalive: true
         });
       } catch (e) {}
-    }
-
-    function openInCalculator(e, id, title, image, url, site, weight) {
-      if (e) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-      const params = new URLSearchParams();
-      if (id) params.set('model_id', id);
-      if (title) params.set('title', title);
-      if (image) params.set('img', image);
-      if (url) params.set('url', url);
-      if (site) params.set('site', site);
-      if (weight && !isNaN(weight)) params.set('weight', weight);
-      window.open('/calc?' + params.toString(), '_blank');
     }
 
     function formatNum(n) {

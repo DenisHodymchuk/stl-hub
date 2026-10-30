@@ -501,13 +501,6 @@ async def track_click(request: Request, payload: ClickTrackPayload):
     return {"status": "ok"}
 
 
-@app.get("/api/model-specs")
-async def api_model_specs(site: str = "", id: str = "", title: str = ""):
-    from scrapers import get_model_specs
-    specs = get_model_specs(site, id, title)
-    return specs
-
-
 @app.post("/api/feedback")
 async def submit_feedback(request: Request, payload: FeedbackPayload):
     msg = (payload.message or "").strip()

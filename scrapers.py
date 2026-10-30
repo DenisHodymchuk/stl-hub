@@ -298,7 +298,6 @@ def search_printables(query: str, limit: int = 24) -> List[Dict[str, Any]]:
                 id
                 name
               }
-              weight
             }
           }
         }
@@ -336,7 +335,6 @@ def search_printables(query: str, limit: int = 24) -> List[Dict[str, Any]]:
                     "license_code": lic_info["license_code"],
                     "license_label": lic_info["license_label"],
                     "similarity": max(70, 93 - idx),
-                    "weight_g": float(item.get("weight") or 0) if item.get("weight") else None,
                 })
             _set_cached("printables", query, limit, results)
     except Exception as e:
@@ -384,7 +382,6 @@ def search_makerworld(query: str, limit: int = 24) -> List[Dict[str, Any]]:
                     "license_code": lic_info["license_code"],
                     "license_label": lic_info["license_label"],
                     "similarity": max(70, 93 - idx),
-                    "weight_g": float(hit.get("weight") or 0) if hit.get("weight") else None,
                 })
             _set_cached("makerworld", query, limit, results)
     except Exception as e:
@@ -968,205 +965,3 @@ def search_all_sites(
         "counts_by_site": counts_by_site,
         "results": all_items,
     }
-
-
-# ==============================================================================
-# Model Specs for Instant 3D Printing Cost Calculator
-# ==============================================================================
-_MODEL_SPECS_CACHE: Dict[str, tuple] = {}
-_SPECS_LOCK = threading.Lock()
-_SPECS_TTL = 3600  # 1 hour cache
-
-
-def get_model_specs(site: str, model_id: str, title: str = "") -> Dict[str, Any]:
-    """
-    Retrieves or calculates estimated 3D printing specs (filament weight, print time, material)
-    for a given 3D model to feed directly into the STL-HUB cost calculator.
-    """
-    site_key = (site or "").lower().strip()
-    mid = str(model_id or "").strip()
-    clean_title = (title or "").strip()
-    cache_key = f"{site_key}:{mid}:{clean_title.lower()}"
-    now = time.time()
-
-    with _SPECS_LOCK:
-        if cache_key in _MODEL_SPECS_CACHE:
-            ts, cached_val = _MODEL_SPECS_CACHE[cache_key]
-            if now - ts < _SPECS_TTL:
-                return dict(cached_val)
-
-    res = _fetch_model_specs(site_key, mid, clean_title)
-
-    with _SPECS_LOCK:
-        if len(_MODEL_SPECS_CACHE) > 500:
-            _MODEL_SPECS_CACHE.clear()
-        _MODEL_SPECS_CACHE[cache_key] = (now, dict(res))
-
-    return res
-
-
-def _fetch_model_specs(site_key: str, mid: str, title: str = "") -> Dict[str, Any]:
-    # 1. MakerWorld Native Sliced Profiles
-    if "makerworld" in site_key:
-        clean_id = mid.replace("makerworld_", "").split("-")[0]
-        if clean_id.isdigit():
-            try:
-                sess = create_session()
-                url = f"https://makerworld.com/api/v1/design-service/design/{clean_id}"
-                resp = sess.get(url, headers=_MW_HEADERS, timeout=5)
-                if resp.status_code == 200:
-                    data = resp.json()
-                    instances = data.get("instances") or []
-                    if instances:
-                        inst = instances[0]
-                        weight = float(inst.get("weight") or 0)
-                        prediction_sec = int(inst.get("prediction") or 0)
-                        filaments = inst.get("instanceFilaments") or []
-                        mat_type = filaments[0].get("type") if filaments else "PLA"
-                        hours = prediction_sec // 3600
-                        minutes = (prediction_sec % 3600) // 60
-                        if weight > 0:
-                            return {
-                                "status": "ok",
-                                "weight_g": round(weight, 1),
-                                "print_hours": hours,
-                                "print_minutes": minutes,
-                                "material_type": (mat_type or "PLA").upper(),
-                                "is_estimate": False,
-                                "source": "MakerWorld Profile"
-                            }
-            except Exception as e:
-                print(f"[Model Specs MakerWorld Error] {e}")
-
-    # 2. Printables Sliced G-Codes
-    elif "printables" in site_key:
-        clean_id = mid.replace("printables_", "").split("-")[0]
-        if clean_id.isdigit():
-            try:
-                sess = create_session()
-                url = "https://api.printables.com/graphql/"
-                gql = """
-                query GetPrint($id: ID!) {
-                  print(id: $id) {
-                    weight
-                    gcodes { weight }
-                  }
-                }
-                """
-                resp = sess.post(url, json={"query": gql, "variables": {"id": clean_id}}, timeout=5)
-                if resp.status_code == 200:
-                    p = resp.json().get("data", {}).get("print") or {}
-                    weight_str = p.get("weight")
-                    weight = float(weight_str) if weight_str else 0.0
-                    gcodes = p.get("gcodes") or []
-                    if not weight and gcodes:
-                        weight = float(gcodes[0].get("weight") or 0.0)
-                    if weight > 0:
-                        total_mins = max(15, int(weight * 3))
-                        return {
-                            "status": "ok",
-                            "weight_g": round(weight, 1),
-                            "print_hours": total_mins // 60,
-                            "print_minutes": total_mins % 60,
-                            "material_type": "PLA",
-                            "is_estimate": False,
-                            "source": "Printables G-Code"
-                        }
-            except Exception as e:
-                print(f"[Model Specs Printables Error] {e}")
-
-    # 3. Cross-search MakerWorld for matching print profile by title
-    if title and len(title.strip()) >= 3:
-        try:
-            sess = create_session()
-            q_clean = extract_keywords_from_title(title)
-            if not q_clean or len(q_clean) < 3:
-                q_clean = " ".join([w for w in re.sub(r"[^a-zA-Z0-9\s]", " ", title).split() if len(w) >= 3][:3])
-            if q_clean:
-                q_enc = urllib.parse.quote(q_clean)
-                url = f"https://makerworld.com/api/v1/search-service/select/design2?keyword={q_enc}&offset=0&limit=2"
-                resp = sess.get(url, headers=_MW_HEADERS, timeout=4)
-                if resp.status_code == 200:
-                    hits = resp.json().get("hits") or []
-                    for h in hits:
-                        mw_id = str(h.get("id") or "")
-                        if mw_id.isdigit():
-                            mw_specs = get_model_specs("makerworld", mw_id)
-                            if mw_specs and mw_specs.get("weight_g") and not mw_specs.get("is_estimate"):
-                                return {
-                                    "status": "ok",
-                                    "weight_g": mw_specs["weight_g"],
-                                    "print_hours": mw_specs["print_hours"],
-                                    "print_minutes": mw_specs["print_minutes"],
-                                    "material_type": mw_specs.get("material_type", "PLA"),
-                                    "is_estimate": False,
-                                    "source": "Слайс-профіль моделі"
-                                }
-        except Exception as e:
-            print(f"[Cross Search MW Error] {e}")
-
-    # 4. Intelligent Category & Title Heuristics (Distinct weight per model)
-    return estimate_by_title_heuristics(title or "3D Model", mid)
-
-
-def estimate_by_title_heuristics(title: str, model_id: str = "") -> Dict[str, Any]:
-    import hashlib
-    t = (title or "").lower()
-
-    # Deterministic variance modifier (+- 15%) so distinct models have distinct weights
-    h = int(hashlib.md5(f"{title}_{model_id}".encode("utf-8")).hexdigest()[:6], 16)
-    variance = 0.88 + (h % 25) / 100.0  # 0.88 to 1.13
-
-    # Priority-ordered categories
-    rules = [
-        # Micro / Tiny
-        (["keychain", "key ring", "cable clip", "clip", "whistle", "pick", "button", "knob", "cap", "spacer"], 10),
-        # Calibration / Benchmarks
-        (["benchy", "calibration", "test cube", "xyz cube"], 14),
-        # Tabletop / Games
-        (["dice", "d&d", "miniature", "token", "chess", "pawn"], 18),
-        # Small flat items
-        (["coaster", "fidget", "spinner", "card", "tag", "bookmark"], 24),
-        # Large articulated / Dragons / Animals
-        (["articulated", "flexi", "dragon", "lizard", "snake", "dinosaur", "t-rex", "crocodile"], 120),
-        # Cosplay / Helmets / Props
-        (["helmet", "mask", "armor", "shield", "cosplay", "sword", "dagger", "prop", "wand"], 270),
-        # Storage / Organization
-        (["organizer", "gridfinity", "drawer", "tool rack", "bin", "storage box", "tray"], 135),
-        # Vases / Pots
-        (["vase", "planter", "flower pot", "pot", "bowl", "cup"], 85),
-        # Lighting / Lamps
-        (["lampshade", "lithophane", "lamp", "desk lamp", "lantern"], 95),
-        # Stands & Mounts
-        (["phone stand", "phone holder", "tablet stand", "headphone stand", "stand", "holder", "dock"], 55),
-        # Hardware & Mechanisms
-        (["bolt", "latch", "lock", "hinge", "bracket", "mount", "handle", "sliding", "clamp", "gear"], 42),
-        # Cases & Enclosures
-        (["case", "enclosure", "housing", "box"], 60),
-        # Sculptures & Figures
-        (["statue", "bust", "sculpture", "figure", "figurine"], 75),
-    ]
-
-    base_weight = 45.0
-    for keywords, weight in rules:
-        if any(kw in t for kw in keywords):
-            base_weight = weight
-            break
-
-    final_weight = round(base_weight * variance, 1)
-
-    # Modern FDM print time: ~20g/hr (approx 3.1 mins per gram)
-    total_mins = max(18, int(final_weight * 3.1))
-    hours = total_mins // 60
-    minutes = total_mins % 60
-
-    return {
-        "status": "ok",
-        "weight_g": final_weight,
-        "print_hours": hours,
-        "print_minutes": minutes,
-        "material_type": "PLA",
-        "is_estimate": True,
-        "source": "Орієнтовний розрахунок STL-HUB"
-    }
-

@@ -1472,22 +1472,12 @@
         const dateStr = c.created_at ? new Date(c.created_at * 1000).toLocaleString('uk-UA') : '';
         const marginUah = Math.max(0, (c.client_price || 0) - (c.cost_price || 0));
 
-        let details = {};
-        try { details = JSON.parse(c.details_json || '{}'); } catch(e) {}
-        const catalogUrl = details.catalog_url;
-        const catalogSource = details.catalog_source;
-
         return `
           <div class="mw-surface border mw-border rounded-2xl p-4 sm:p-5 shadow-sm hover:border-[#00AE42]/60 transition flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <div class="flex items-center gap-2 flex-wrap">
+              <div class="flex items-center gap-2">
                 <h4 class="text-sm sm:text-base font-bold mw-text-primary">${escapeHtml(c.title || 'Розрахунок')}</h4>
                 <span class="text-[10px] px-2 py-0.5 rounded-md bg-[#00AE42]/15 text-[#00AE42] font-semibold">${escapeHtml(c.material_type || '3D')}</span>
-                ${catalogUrl ? `
-                  <a href="${escapeHtml(catalogUrl)}" target="_blank" rel="noopener noreferrer" class="text-[10px] px-2 py-0.5 rounded-md mw-elevated border mw-border hover:border-[#00AE42] hover:text-[#00AE42] mw-text-secondary transition flex items-center gap-1 font-semibold" title="Відкрити сторінку моделі">
-                    <span>🔗</span><span>${escapeHtml(catalogSource || 'Джерело')}</span><span>↗</span>
-                  </a>
-                ` : ''}
               </div>
               <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs mw-text-secondary mt-1 font-mono">
                 <span>🧵 ${escapeHtml(c.filament_name || 'Пластик')}</span>
